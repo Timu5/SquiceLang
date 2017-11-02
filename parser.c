@@ -35,7 +35,7 @@ void match2(int token, int token2)
 
 node_t* expr();
 
-// primary :=  ident | number | '(' expr ')'
+// primary :=  ident | number | function | '(' expr ')'
 node_t* primary()
 {
 	node_t* prim = NULL;
@@ -45,7 +45,40 @@ node_t* primary()
 	}	
 	else if(lasttoken == T_IDENT)
 	{
-		prim = node_ident((char*)strdup(buffer));
+		char* name = strdup(buffer);
+		if(nexttoken() == T_LPAREN)
+		{
+			// parser fn call
+			node_list_t* args = NULL;
+			nexttoken();
+			while(lasttoken != T_RPAREN)
+			{
+				node_t* e = expr(0);
+				node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
+				tmp->el = e;
+				tmp->next  = NULL;
+				if(args == NULL)
+				{
+					args = tmp;
+				}
+				else
+				{
+					node_list_t* last = args;
+					while(last->next) last = last->next;
+					last->next = tmp;
+				}
+				if(lasttoken != T_COMMA)
+					break;	
+			}
+			match(T_RPAREN);
+			nexttoken();
+			return node_call(name, args);
+		}
+		else
+		{
+			// ident
+			return node_ident(name);
+		}
 	}
 	else if(lasttoken == T_LPAREN)
 	{
