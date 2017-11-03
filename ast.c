@@ -106,7 +106,7 @@ void node_print(node_t* node, int ind)
 		node_list_t* n = node->block;
 		while(n)
 		{
-			node_print(n->el, ind+1);
+			node_print(n->el, ind + 1);
 			n = n->next;
 		}
 		break;
@@ -115,15 +115,51 @@ void node_print(node_t* node, int ind)
 		break;
 	case N_UNARY:
 		printf("unary: %s\n", tokenstr(node->unary.op));
-		node_print(node->unary.val, ind+1);
+		node_print(node->unary.val, ind + 1);
 		break;
 	case N_BINARY:
 		printf("binary: %s\n", tokenstr(node->binary.op));
-		node_print(node->binary.a, ind+1);
-		node_print(node->binary.b, ind+1);
+		node_print(node->binary.a, ind + 1);
+		node_print(node->binary.b, ind + 1);
 		break;
 	case N_VALUE:
 		printf("value %f\n", node->value->number);
+		break;
+	case N_CALL:
+		printf("call %s\n", node->call.name);
+		node_list_t* n2 = node->call.args;
+		while(n2)
+		{
+			node_print(n2->el, ind + 1);
+			n2 = n2->next;
+		}
+		break;
+	case N_COND:
+		printf("cond\n");
+		printtab(ind);
+		printf("->arg:\n");
+		node_print(node->cond.arg, ind + 1);
+		printtab(ind);
+		printf("->body:\n");
+		node_print(node->cond.body, ind + 1);
+		break;
+	case N_LOOP:
+		printf("loop\n");
+		printtab(ind);
+		printf("->arg:\n");
+		node_print(node->loop.arg, ind + 1);
+		printtab(ind);
+		printf("->body:\n");
+		node_print(node->loop.body, ind + 1);
+		break;
+	case N_DECL:
+		printf("decl\n");
+		printtab(ind);
+		printf("->name:\n");
+		node_print(node->decl.name, ind + 1);
+		printtab(ind);
+		printf("->value:\n");
+		node_print(node->decl.value, ind + 1);
 		break;
 	}
 }
