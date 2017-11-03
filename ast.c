@@ -90,4 +90,40 @@ node_t* node_block(node_list_t* list)
 	return node;
 }
 
+static void printtab(int n)
+{
+	for(int i=0; i < n; i++)
+		putchar('\t');
+}
 
+void node_print(node_t* node, int ind)
+{
+	printtab(ind);
+	switch(node->type)
+	{
+	case N_BLOCK:
+		printf("block\n");
+		node_list_t* n = node->block;
+		while(n)
+		{
+			node_print(n->el, ind+1);
+			n = n->next;
+		}
+		break;
+	case N_IDENT:
+		printf("ident: %s\n", node->ident);
+		break;
+	case N_UNARY:
+		printf("unary: %s\n", tokenstr(node->unary.op));
+		node_print(node->unary.val, ind+1);
+		break;
+	case N_BINARY:
+		printf("binary: %s\n", tokenstr(node->binary.op));
+		node_print(node->binary.a, ind+1);
+		node_print(node->binary.b, ind+1);
+		break;
+	case N_VALUE:
+		printf("value %f\n", node->value->number);
+		break;
+	}
+}

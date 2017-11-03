@@ -53,4 +53,6 @@ node_t* node_loop(node_t* arg, node_t* body);
 node_t* node_decl(node_t* name, node_t* value);
 node_t* node_block(node_list_t* list);
 
+void node_print(node_t* node, int ind);
+
 #endif
