@@ -2,6 +2,7 @@
 #define _EVAL_H_
 
 #include "value.h"
+#include "ast.h"
 #include "stack.h"
 
 struct var_s {
@@ -10,13 +11,23 @@ struct var_s {
 	struct var_s* next;
 };
 
+struct fn_s {
+	char* name;
+	node_t* body;
+	int native; // if not 0 call fn else eval body
+	value_t* (*fn)(struct var_s* args);
+	struct fn_s* next;
+};
+
 struct ctx_s {
 	struct ctx_s* parent;
 	struct var_s* vars;
+	struct fn_s* funcs;
 	stack_t* stack;
 };
 
 typedef struct var_s var_t;
+typedef struct fn_s fn_t;
 typedef struct ctx_s ctx_t;
 
 struct node_s;

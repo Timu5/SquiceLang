@@ -1,26 +1,26 @@
 #include <stdio.h>
 
+#include "lexer.h"
 #include "eval.h"
 #include "ast.h"
 
 void eval_setvar(char* name, value_t* value, ctx_t* ctx)
 {
 	ctx_t* c = ctx;
-	while(c != NULL)
+	while(c)
 	{
 		var_t* v = c->vars;
-		while(v != NULL)
+		while(v)
 		{
 			if(strcmp(v->name, name) == 0)
 			{
 				v->val = value;
 				return;
 			}
-			v = ctx->vars->next;
+			v = v->next;
 		}
-		c = ctx->parent;
+		c = c->parent;
 	}
-	// error variable not found
 	printf("Variable %s not found.\n", name);
 	exit(-3);
 }
@@ -28,17 +28,34 @@ void eval_setvar(char* name, value_t* value, ctx_t* ctx)
 value_t* eval_getvar(char* name, ctx_t* ctx)
 {
 	ctx_t* c = ctx;
-	while(c != NULL)
+	while(c)
 	{
 		var_t* v = c->vars;
-		while(v != NULL)
+		while(v)
 		{
 			if(strcmp(v->name, name) == 0)
 				return v->val;
 
-			v = ctx->vars->next;
+			v = v->next;
 		}
-		c = ctx->parent;
+		c = c->parent;
+	}
+	return NULL;
+}
+
+fn_t* eval_getfn(char* name, ctx_t* ctx)
+{
+	ctx_t* c = ctx;
+	while(c)
+	{
+		fn_t* f = c->funcs;
+		while(f)
+		{
+			if(strcmp(f->name, name) == 0)
+				return f;
+			f = f->next;
+		}
+		c = c->parent;
 	}
 	return NULL;
 }
@@ -63,12 +80,15 @@ void eval_unary(node_t* node, ctx_t* ctx)
 
 void eval_binary(node_t* node, ctx_t* ctx)
 {
-	printf("a: %d b: %d\n", node->binary.a->type, node->binary.b->type);
 	node->binary.a->eval(node->binary.a, ctx);
 	node->binary.b->eval(node->binary.b, ctx);
 	value_t* b = stack_pop(ctx->stack);
 	value_t* a = stack_pop(ctx->stack);
-	stack_push(ctx->stack, value_binary(node->binary.op, a, b));
+	if(node->binary.op == T_ASSIGN) // special case
+		memcpy(a, b, sizeof(value_t));
+	else
+		stack_push(ctx->stack, value_binary(node->binary.op, a, b));
+	
 }
 
 void eval_value(node_t* node, ctx_t* ctx)
@@ -78,7 +98,37 @@ void eval_value(node_t* node, ctx_t* ctx)
 
 void eval_call(node_t* node, ctx_t* ctx)
 {
-	// TODO
+	fn_t* f = eval_getfn(node->call.name, ctx);
+	if(!f)
+	{
+		printf("Cannot find function %s\n", node->call.name);
+		exit(-4);
+	}
+	var_t* args = NULL;
+	var_t* last = NULL;
+	node_list_t* n = node->call.args;
+	while(n)
+	{
+		n->el->eval(n->el, ctx);
+		var_t* tmp = (var_t*)malloc(sizeof(var_t));
+		tmp->name = NULL;
+		tmp->val = (value_t*)stack_pop(ctx->stack);
+		tmp->next = NULL;
+		if(!args)
+			args = tmp;	
+		else
+			last->next = tmp;
+		last = tmp;
+		n = n->next;
+	}
+	if(f->native)
+	{
+		f->fn(args);
+	}
+	else
+	{
+		// TODO
+	}
 }
 
 void eval_cond(node_t* node, ctx_t* ctx)
@@ -118,6 +168,7 @@ void eval_block(node_t* node, ctx_t* ctx)
 	ctx_t* c = (ctx_t*)malloc(sizeof(ctx_t));
 	c->parent = ctx;
 	c->vars = NULL;
+	c->funcs = NULL;
 	c->stack = stack_new();
 
 	node_list_t* n = node->block;
@@ -126,8 +177,5 @@ void eval_block(node_t* node, ctx_t* ctx)
 		n->el->eval(n->el, c);
 		n = n->next;
 	}
-	printf("size: %d\n", c->stack->used);
 }
-
-
 
