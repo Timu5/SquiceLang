@@ -133,9 +133,30 @@ node_t* statment()
 	switch(lasttoken)
 	{
 	case T_LBRACE:
-		//parse block
+		nexttoken();
+		
+		node_list_t* list = NULL;
+		while(lasttoken != T_RBRACE)
+		{
+			node_t* node = statment();
+			nexttoken();
+			node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
+			tmp->el = node;
+			tmp->next = NULL;
+			if(!list)
+			{
+				list = tmp;
+			}
+			else
+			{
+				node_list_t* last = list;
+				while(last->next) last = last->next;
+				last->next = tmp;
+			}
+		}
 		match(T_RBRACE);
-		break;
+		
+		return node_block(list);
 	case T_LET:
 		nexttoken();
 		match(T_IDENT);	
@@ -189,7 +210,7 @@ node_t* parse()
 	{
 		node_t* n = statment();
 		nexttoken();
-		
+	
 		if(list == NULL)
 		{
 			list = (node_list_t*)malloc(sizeof(node_list_t));
