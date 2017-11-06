@@ -165,6 +165,8 @@ void eval_cond(node_t* node, ctx_t* ctx)
 	value_t* arg = stack_pop(ctx->stack);
 	if(arg->number != 0)
 		node->cond.body->eval(node->cond.body, ctx);
+	else if(node->cond.elsebody != NULL)
+		node->cond.elsebody->eval(node->cond.elsebody, ctx);
 }
 
 void eval_loop(node_t* node, ctx_t* ctx)

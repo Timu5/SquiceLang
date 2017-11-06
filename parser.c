@@ -139,7 +139,7 @@ node_t* statment()
 		while(lasttoken != T_RBRACE)
 		{
 			node_t* node = statment();
-			nexttoken();
+			//nexttoken();
 			node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
 			tmp->el = node;
 			tmp->next = NULL;
@@ -156,6 +156,7 @@ node_t* statment()
 		}
 		match(T_RBRACE);
 		
+		nexttoken();
 		return node_block(list);
 	case T_LET:
 		nexttoken();
@@ -169,6 +170,7 @@ node_t* statment()
 		node_t* exp = expr(0);
 		match(T_SEMICOLON);
 
+		nexttoken();
 		return node_decl(node_ident(name), exp);
 	case T_IF:
 		nexttoken();
@@ -180,8 +182,15 @@ node_t* statment()
 
 		nexttoken();
 		node_t* body = statment();
-		
-		return node_cond(arg, body);
+		node_t* elsebody = NULL;
+
+		if(lasttoken == T_ELSE)
+		{
+			nexttoken();
+			elsebody = statment();
+		}
+
+		return node_cond(arg, body, elsebody);
 	case T_WHILE:
 		nexttoken();
 		match(T_LPAREN);
@@ -197,6 +206,7 @@ node_t* statment()
 	default:;
 		node_t* e = expr(0);
 		match(T_SEMICOLON);
+		nexttoken();
 		return e;
 	}
 }
@@ -209,7 +219,7 @@ node_t* parse()
 	while(lasttoken != T_EOF)
 	{
 		node_t* n = statment();
-		nexttoken();
+		//nexttoken();
 	
 		if(list == NULL)
 		{

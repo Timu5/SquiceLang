@@ -6,6 +6,9 @@ print(a);
 
 if(a>10) a = 100;
 
+if(10>20) print(123);
+else print(321);
+
 print(a);
 
 while(a>20) a = a - 1;

@@ -73,12 +73,13 @@ node_t* node_func(int argc, char** argv, node_t* body)
 	return node;
 }
 
-node_t* node_cond(node_t* arg, node_t* body)
+node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody)
 {
 	node_t* node = (node_t*)malloc(sizeof(node_t));
 	node->type = N_COND;
 	node->cond.arg = arg;
 	node->cond.body = body;
+	node->cond.elsebody = elsebody;
 	node->eval = eval_cond;
 	return node;
 }
