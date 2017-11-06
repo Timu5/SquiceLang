@@ -43,6 +43,15 @@ value_t* eval_getvar(char* name, ctx_t* ctx)
 	return NULL;
 }
 
+void eval_declvar(char* name, value_t* val, ctx_t* ctx)
+{
+	var_t* tmp = ctx->vars;
+	ctx->vars = (var_t*)malloc(sizeof(var_t));
+	ctx->vars->name = name;
+	ctx->vars->val = val;
+	ctx->vars->next = tmp;
+}
+
 fn_t* eval_getfn(char* name, ctx_t* ctx)
 {
 	ctx_t* c = ctx;
@@ -58,6 +67,16 @@ fn_t* eval_getfn(char* name, ctx_t* ctx)
 		c = c->parent;
 	}
 	return NULL;
+}
+
+void eval_root(node_t* node, ctx_t* ctx)
+{
+	node_list_t* n = node->root.stmts;
+	while(n)
+	{
+		n->el->eval(n->el, ctx);
+		n = n->next;
+	}
 }
 
 void eval_ident(node_t* node, ctx_t* ctx)
@@ -104,31 +123,40 @@ void eval_call(node_t* node, ctx_t* ctx)
 		printf("Cannot find function %s\n", node->call.name);
 		exit(-4);
 	}
-	var_t* args = NULL;
-	var_t* last = NULL;
+
+	int i = 0;
 	node_list_t* n = node->call.args;
 	while(n)
 	{
 		n->el->eval(n->el, ctx);
-		var_t* tmp = (var_t*)malloc(sizeof(var_t));
-		tmp->name = NULL;
-		tmp->val = (value_t*)stack_pop(ctx->stack);
-		tmp->next = NULL;
-		if(!args)
-			args = tmp;	
-		else
-			last->next = tmp;
-		last = tmp;
 		n = n->next;
+		i++;
 	}
+
+	stack_push(ctx->stack, value_number((double)i));
+	
 	if(f->native)
 	{
-		f->fn(args);
+		f->fn(ctx);
 	}
 	else
 	{
-		// TODO
+		ctx_t* c = (ctx_t*)malloc(sizeof(ctx_t));
+		c->parent = ctx;
+		c->vars = NULL;
+		c->funcs = NULL;
+		c->stack = stack_new();
+		
+		for(int i = f->body->func.argc - 1; i >= 0; i--)
+			eval_declvar(f->body->func.argv[i], (value_t*)stack_pop(ctx->stack), c);
+
+		f->body->eval(f->body, c);
 	}
+}
+
+void eval_func(node_t* node, ctx_t* ctx)
+{
+	node->func.body->eval(node->func.body, ctx);
 }
 
 void eval_cond(node_t* node, ctx_t* ctx)

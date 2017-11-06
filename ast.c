@@ -1,6 +1,17 @@
 #include <stdlib.h>
 #include "ast.h"
 #include "eval.h"
+#include "lexer.h"
+
+node_t* node_root(node_list_t* funcs, node_list_t* stmts)
+{
+	node_t* node = (node_t*)malloc(sizeof(node_t));
+	node->type = N_ROOT;
+	node->root.funcs = funcs;
+	node->root.stmts = stmts;
+	node->eval = eval_root;
+	return node;
+}
 
 node_t* node_ident(char* name)
 {
@@ -48,6 +59,17 @@ node_t* node_call(char* name, node_list_t* args)
 	node->call.name = name;
 	node->call.args = args;
 	node->eval = eval_call;
+	return node;
+}
+
+node_t* node_func(int argc, char** argv, node_t* body)
+{
+	node_t* node = (node_t*)malloc(sizeof(node_t));
+	node->type = N_FUNC;
+	node->func.argc = argc;
+	node->func.argv = argv;
+	node->func.body = body;
+	node->eval = eval_func;
 	return node;
 }
 

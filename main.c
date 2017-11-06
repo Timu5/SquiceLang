@@ -14,16 +14,17 @@ void quit()
 	fclose(input);
 }
 
-void print(var_t* args)
+void print(ctx_t* ctx)
 {
-	var_t* arg = args;
-	while(arg)
+	int n = ((value_t*)stack_pop(ctx->stack))->number;
+	while(n > 0)
 	{
-		if(arg->val->type == V_NUMBER)
-			printf("%f", arg->val->number);
-		else if(arg->val->type == V_STRING)
-			printf("%s", arg->val->string);
-		arg = arg->next;
+		value_t* v = (value_t*)stack_pop(ctx->stack);
+		if(v->type == V_NUMBER)
+			printf("%g", v->number);
+		else if(v->type == V_STRING)
+			printf("%s", v->string);
+		n--;
 	}
 	putchar('\n');
 }
