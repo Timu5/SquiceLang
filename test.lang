@@ -1,24 +1,26 @@
+print("hello world :)");
+
 fn myprint(x)
 {
 	print(x);
 }
 
 let a = 1;
-print(a);
+print("a = ", a);
 
 a = a + 10;
-print(a);
+print("a + 10 = ", a);
 
-if(a>10) a = 100;
+if(a > 10) a = 100;
 
-if(10>20) print(123);
-else print(321);
+if(10 > 20) print("True");
+else print("False");
 
-print(a);
+print("a = ", a);
 
 while(a>20) a = a - 1;
 
-print(a);
+print("a = ", a);
 
-myprint(1);
+myprint("Hello world 2 ;D");
 

@@ -36,14 +36,18 @@ void match2(int token, int token2)
 
 node_t* expr();
 
-// primary :=  ident | number | function | '(' expr ')'
+// primary :=  ident | number | string | function | '(' expr ')'
 node_t* primary()
 {
 	node_t* prim = NULL;
 	if(lasttoken == T_NUMBER)
 	{
 		prim = node_value(value_number((float)number));
-	}	
+	}
+	else if(lasttoken == T_STRING)
+	{
+		prim = node_value(value_string(strdup(buffer)));
+	}
 	else if(lasttoken == T_IDENT)
 	{
 		char* name = strdup(buffer);

@@ -88,7 +88,24 @@ int gettoken()
 			
 		return T_NUMBER;
 	}
-	
+	else if(lastchar == '"')
+	{
+		nextchar();
+		int ptr = 0;
+		while(lastchar != '"' && lastchar > 0)
+		{
+			buffer[ptr++] = (char)lastchar;
+			nextchar();
+		}
+		if(lastchar < 0)
+		{
+			printf("Unexpecxted end of file\n");
+			exit(-10);
+		}
+		buffer[ptr] = 0;
+		nextchar();
+		return T_STRING;
+	}
 
 	int tmp = T_UNKOWN;
 	switch(lastchar)
