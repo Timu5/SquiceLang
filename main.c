@@ -17,15 +17,20 @@ void quit()
 void print(ctx_t* ctx)
 {
 	int n = ((value_t*)stack_pop(ctx->stack))->number;
+	stack_t* stack = stack_new(sizeof(value_t));
 	while(n > 0)
 	{
-		value_t* v = (value_t*)stack_pop(ctx->stack);
+		stack_push(stack, stack_pop(ctx->stack));
+		n--;
+	}
+	while(stack->used > 0)
+	{
+		value_t* v = (value_t*)stack_pop(stack);
 		if(v->type == V_NUMBER)
 			printf("%g", v->number);
 		else if(v->type == V_STRING)
 			printf("%s", v->string);
-		n--;
-	}
+	}	
 	putchar('\n');
 }
 
