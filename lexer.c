@@ -57,6 +57,8 @@ int gettoken()
 			return T_WHILE;
 		else if(strcmp(buffer, "let") == 0)
 			return T_LET;
+		else if(strcmp(buffer, "fn") == 0)
+			return T_FN;
 
 		return T_IDENT;
 	}

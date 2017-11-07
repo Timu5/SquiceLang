@@ -47,10 +47,11 @@ int main(int argc, char ** argv)
 	atexit(quit);
 	
 	node_t* tree = parse();
-	
+
 	ctx_t* global = (ctx_t*)malloc(sizeof(ctx_t));
 	global->parent = NULL;
 	global->vars = NULL;
+	global->stack = stack_new(sizeof(value_t));
 	global->funcs = (fn_t*)malloc(sizeof(fn_t));
 	global->funcs->name = "print";
 	global->funcs->body = NULL;

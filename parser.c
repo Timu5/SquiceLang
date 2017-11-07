@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parser.h"
+#include "stack.h"
 
 extern char buffer[255];
 extern int number;
@@ -68,7 +69,8 @@ node_t* primary()
 					last->next = tmp;
 				}
 				if(lasttoken != T_COMMA)
-					break;	
+					break;
+				nexttoken();	
 			}
 			match(T_RPAREN);
 			nexttoken();
@@ -89,6 +91,7 @@ node_t* primary()
 	else
 	{
 		printf("Unexpexted token in primary!\n");
+		exit(-7);
 		//error, unexpected token
 	}
 	nexttoken();
@@ -203,6 +206,35 @@ node_t* statment()
 		node_t* body2 = statment();
 		
 		return node_loop(arg2, body2);
+	case T_FN:
+		nexttoken();
+		match(T_IDENT);
+		
+		char* fnname = strdup(buffer);
+		
+		nexttoken();
+		match(T_LPAREN);
+	
+		stack_t* args = stack_new();
+		
+		while(nexttoken() != T_RPAREN)
+		{
+			match(T_IDENT);
+			stack_push(args, strdup(buffer));
+			if(nexttoken() != T_COMMA)
+				break;
+		}
+		
+		char** argv = args->data;
+		int argc = args->used;
+		free(args);
+		
+		match(T_RPAREN);
+		nexttoken();
+
+		node_t* fnbody = statment();
+
+		return node_func(fnname, argc, argv, fnbody);
 	default:;
 		node_t* e = expr(0);
 		match(T_SEMICOLON);
@@ -214,28 +246,35 @@ node_t* statment()
 node_t* parse()
 {
 	nexttoken();
-	node_list_t* list = NULL;
-	node_list_t* last = NULL;
+	node_list_t* funcs = NULL;
+	node_list_t* stmts = NULL;
 	while(lasttoken != T_EOF)
 	{
 		node_t* n = statment();
-		//nexttoken();
 	
-		if(list == NULL)
+		node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
+		tmp->el = n;
+		tmp->next = NULL;
+
+		if(n->type == N_FUNC)
 		{
-			list = (node_list_t*)malloc(sizeof(node_list_t));
-			list->el = n;
-			list->next = NULL;
-			last = list;
+			node_list_t* old = funcs;
+			funcs = tmp;
+			tmp->next = old;
 		}
 		else
-		{	
-			node_list_t* tmp = last;
-			last = (node_list_t*)malloc(sizeof(node_list_t));
-			last->el = n;
-			last->next = NULL;
-			tmp->next = last;
+		{
+			if(!stmts)
+			{
+				stmts = tmp;
+			}
+			else
+			{
+				node_list_t* s = stmts;
+				while(s->next) s = s->next;
+				s->next = tmp;
+			} 
 		}
 	}
-	return node_block(list);
+	return node_root(funcs, stmts);
 }

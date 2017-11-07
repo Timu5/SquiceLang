@@ -71,6 +71,24 @@ fn_t* eval_getfn(char* name, ctx_t* ctx)
 
 void eval_root(node_t* node, ctx_t* ctx)
 {
+	node_list_t* f = node->root.funcs;
+	while(f)
+	{
+		fn_t* fn = (fn_t*)malloc(sizeof(fn_t));
+		fn->name = strdup(f->el->func.name);
+		fn->body = f->el;
+		fn->native = 0;
+		fn->next = NULL;
+		if(!ctx->funcs)
+			ctx->funcs = fn;
+		else	
+		{
+			fn_t* tmp = ctx->funcs;
+			while(tmp->next) tmp = tmp->next;
+			tmp->next = fn;
+		}
+		f = f->next;
+	}
 	node_list_t* n = node->root.stmts;
 	while(n)
 	{
@@ -146,7 +164,12 @@ void eval_call(node_t* node, ctx_t* ctx)
 		c->vars = NULL;
 		c->funcs = NULL;
 		c->stack = stack_new();
-		
+		double argc = ((value_t*)stack_pop(ctx->stack))->number;
+		if(argc != f->body->func.argc)
+		{
+			printf("Wrong number of arguments\n"); 
+			exit(-6);
+		}
 		for(int i = f->body->func.argc - 1; i >= 0; i--)
 			eval_declvar(f->body->func.argv[i], (value_t*)stack_pop(ctx->stack), c);
 

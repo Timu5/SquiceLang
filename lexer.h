@@ -7,6 +7,7 @@ enum {
 	T_STRING,
 	
 	//keyword
+	T_FN,
 	T_LET,
 	T_IF,
 	T_ELSE,

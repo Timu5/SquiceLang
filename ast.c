@@ -62,10 +62,11 @@ node_t* node_call(char* name, node_list_t* args)
 	return node;
 }
 
-node_t* node_func(int argc, char** argv, node_t* body)
+node_t* node_func(char* name, int argc, char** argv, node_t* body)
 {
 	node_t* node = (node_t*)malloc(sizeof(node_t));
 	node->type = N_FUNC;
+	node->func.name = name;
 	node->func.argc = argc;
 	node->func.argv = argv;
 	node->func.body = body;
@@ -124,6 +125,15 @@ void node_print(node_t* node, int ind)
 	printtab(ind);
 	switch(node->type)
 	{
+	case N_ROOT:
+		printf("root\n");
+		node_list_t* n4 = node->root.stmts;
+		while(n4)
+		{
+			node_print(n4->el, ind + 1);
+			n4 = n4->next;
+		}
+		break;
 	case N_BLOCK:
 		printf("block\n");
 		node_list_t* n = node->block;
