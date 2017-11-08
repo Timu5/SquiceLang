@@ -36,7 +36,7 @@ void match2(int token, int token2)
 
 node_t* expr();
 
-// primary :=  ident | number | string | function | '(' expr ')'
+// primary :=  ident | number | string | function | '(' expr ')' | UNARY_OP primary
 node_t* primary()
 {
 	node_t* prim = NULL;
@@ -91,6 +91,12 @@ node_t* primary()
 		nexttoken();
 		prim = expr(0);
 		match(T_RPAREN);
+	}
+	else if(lasttoken == T_PLUS || lasttoken == T_MINUS || lasttoken == T_EXCLAM)
+	{
+		int op = lasttoken;
+		nexttoken();
+		return node_unary(op, primary());
 	}
 	else
 	{
