@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "stack.h"
 #include "eval.h"
+#include "ex.h"
 
 extern FILE* input;
 
@@ -50,21 +51,29 @@ int main(int argc, char ** argv)
 		return -2;
 	}
 	atexit(quit);
-	
-	node_t* tree = parse();
 
-	ctx_t* global = (ctx_t*)malloc(sizeof(ctx_t));
-	global->parent = NULL;
-	global->vars = NULL;
-	global->stack = stack_new(sizeof(value_t));
-	global->funcs = (fn_t*)malloc(sizeof(fn_t));
-	global->funcs->name = "print";
-	global->funcs->body = NULL;
-	global->funcs->native = 1;
-	global->funcs->fn = print;
-	global->funcs->next = NULL;
+
+	try
+	{	
+		node_t* tree = parse();
+
+		ctx_t* global = (ctx_t*)malloc(sizeof(ctx_t));
+		global->parent = NULL;
+		global->vars = NULL;
+		global->stack = stack_new(sizeof(value_t));
+		global->funcs = (fn_t*)malloc(sizeof(fn_t));
+		global->funcs->name = "print";
+		global->funcs->body = NULL;
+		global->funcs->native = 1;
+		global->funcs->fn = print;
+		global->funcs->next = NULL;
 	
-	tree->eval(tree, global);
+		tree->eval(tree, global);
+	}
+	catch
+	{
+		puts(ex_msg);
+	}
 
 	return 0;
 }

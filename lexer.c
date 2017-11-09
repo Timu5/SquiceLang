@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "lexer.h"
+#include "ex.h"
 
 FILE* input;
 
@@ -98,10 +99,8 @@ int gettoken()
 			nextchar();
 		}
 		if(lastchar < 0)
-		{
-			printf("Unexpecxted end of file\n");
-			exit(-10);
-		}
+			throw("Unexpected end of file");
+
 		buffer[ptr] = 0;
 		nextchar();
 		return T_STRING;
@@ -185,6 +184,8 @@ char* tokenstr(int token)
 	"T_IDENT", 
 	"T_NUMBER",
 	"T_STRING",
+	
+	"T_FN",
 	"T_LET",
 	"T_IF",
 	"T_ELSE",

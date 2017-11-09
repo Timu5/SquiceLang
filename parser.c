@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "parser.h"
 #include "stack.h"
+#include "ex.h"
 
 extern char buffer[255];
 extern int number;
@@ -11,27 +13,13 @@ int lasttoken;
 
 int nexttoken()
 {
-	lasttoken = gettoken();
-	//printf("Token: %s \n", tokenstr(lasttoken));
-	return lasttoken;
+	return lasttoken = gettoken();
 }
 
 void match(int token)
 {
 	if(lasttoken != token)
-	{
-		printf("Unexpexted token, expect %s got %s\n", tokenstr(token), tokenstr(lasttoken));
-		exit(-1);
-	}
-}
-
-void match2(int token, int token2)
-{
-	if(lasttoken != token && lasttoken != token2)
-	{
-		printf("Unexpexted token, expect %s or %s got %s\n", tokenstr(token), tokenstr(token2), tokenstr(lasttoken));
-		exit(-1);
-	}
+		throw("Unexpexted token, expect %s got %s", tokenstr(token), tokenstr(lasttoken));
 }
 
 node_t* expr();
@@ -100,9 +88,7 @@ node_t* primary()
 	}
 	else
 	{
-		printf("Unexpexted token in primary!\n");
-		exit(-7);
-		//error, unexpected token
+		throw("Unexpexted token in primary!");
 	}
 	nexttoken();
 	return prim;
@@ -152,7 +138,7 @@ node_t* statment()
 		while(lasttoken != T_RBRACE)
 		{
 			node_t* node = statment();
-			//nexttoken();
+
 			node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
 			tmp->el = node;
 			tmp->next = NULL;

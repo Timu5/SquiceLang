@@ -3,6 +3,7 @@
 
 #include "lexer.h"
 #include "value.h"
+#include "ex.h"
 
 value_t* value_number(double val)
 {
@@ -31,7 +32,8 @@ value_t* value_array(value_t* val)
 value_t* value_unary(int op, value_t* a)
 {
 	if(a->type != V_NUMBER)
-		return value_number(0);
+		throw("Cannot perform unary operation on non numbers");
+	
 	switch(op)
 	{
 		case T_PLUS:
@@ -68,7 +70,7 @@ static value_t* binary_number(int op, value_t* a, value_t* b)
 	case T_RCHEVR:
 		return value_number(a->number > b->number); 
 	}
-	return value_number(0);
+	throw("Unkown binary operation");
 }
 
 static value_t* binary_string(int op, value_t* a, value_t* b)
@@ -88,7 +90,7 @@ static value_t* binary_string(int op, value_t* a, value_t* b)
 	case T_NOTEQUAL:
 		return value_number(strcmp(a->string, b->string) != 0);
 	}
-	return value_number(0);
+	throw("Unkown binary operation");
 }
 
 static value_t* binary_array(int op, value_t* a, value_t* b)
@@ -110,6 +112,7 @@ value_t* value_binary(int op, value_t* a, value_t* b)
 	case V_ARRAY:
 		return binary_string(op, a, b);
 	}
+	throw("Unkown value type");
 }
 
 void value_set(int i, value_t* a)

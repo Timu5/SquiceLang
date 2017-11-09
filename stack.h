@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "ex.h"
+
 struct stack_s {
 	void** data;
 	int allocated;
@@ -37,8 +39,9 @@ static inline void* stack_peek(stack_t* stack)
 {
 	if(stack->used > 0)
 		return stack->data[stack->used - 1];
-	printf("peek null!");
-	exit(-3);
+	
+	throw("Empty stack");
+	
 	return NULL;
 }
 

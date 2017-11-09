@@ -3,6 +3,7 @@
 #include "lexer.h"
 #include "eval.h"
 #include "ast.h"
+#include "ex.h"
 
 void eval_setvar(char* name, value_t* value, ctx_t* ctx)
 {
@@ -21,8 +22,7 @@ void eval_setvar(char* name, value_t* value, ctx_t* ctx)
 		}
 		c = c->parent;
 	}
-	printf("Variable %s not found.\n", name);
-	exit(-3);
+	throw("Variable %s not found.", name);
 }
 
 value_t* eval_getvar(char* name, ctx_t* ctx)
@@ -101,10 +101,8 @@ void eval_ident(node_t* node, ctx_t* ctx)
 {
 	value_t* v = eval_getvar(node->ident, ctx);
 	if(!v)
-	{
-		printf("Variable %s not found!\n", node->ident);// error not found
-		exit(-3);
-	}
+		throw("Variable %s not found!", node->ident);
+
 	stack_push(ctx->stack, v);
 }
 
@@ -137,10 +135,7 @@ void eval_call(node_t* node, ctx_t* ctx)
 {
 	fn_t* f = eval_getfn(node->call.name, ctx);
 	if(!f)
-	{
-		printf("Cannot find function %s\n", node->call.name);
-		exit(-4);
-	}
+		throw("Cannot find function %s", node->call.name);
 
 	int i = 0;
 	node_list_t* n = node->call.args;
@@ -166,10 +161,8 @@ void eval_call(node_t* node, ctx_t* ctx)
 		c->stack = stack_new();
 		double argc = ((value_t*)stack_pop(ctx->stack))->number;
 		if(argc != f->body->func.argc)
-		{
-			printf("Wrong number of arguments\n"); 
-			exit(-6);
-		}
+			throw("Wrong number of arguments");
+
 		for(int i = f->body->func.argc - 1; i >= 0; i--)
 			eval_declvar(f->body->func.argv[i], (value_t*)stack_pop(ctx->stack), c);
 
@@ -207,7 +200,7 @@ label:
 void eval_decl(node_t* node, ctx_t* ctx)
 {
 	if(node->decl.name->type != N_IDENT)
-		; // error
+		throw("Declaration name must be identifier"); // error
 	node->decl.value->eval(node->decl.value, ctx);
 	var_t* tmp = ctx->vars;
 	ctx->vars = (var_t*)malloc(sizeof(var_t));
