@@ -21,11 +21,12 @@ value_t* value_string(char* val)
 	return v;
 }
 
-value_t* value_array(value_t* val)
+value_t* value_array(int count, value_t* arr)
 {
 	value_t* v = (value_t*)malloc(sizeof(value_t));
 	v->type = V_ARRAY;
-	v->array = val;
+	v->array.ptr = arr;
+	v->array.count = count;
 	return v;
 }
 
@@ -95,8 +96,7 @@ static value_t* binary_string(int op, value_t* a, value_t* b)
 
 static value_t* binary_array(int op, value_t* a, value_t* b)
 {
-	//TODO
-	return value_number(0);
+	throw("Cannot perform any binary operation on type array");
 }
 
 value_t* value_binary(int op, value_t* a, value_t* b)
@@ -115,14 +115,22 @@ value_t* value_binary(int op, value_t* a, value_t* b)
 	throw("Unkown value type");
 }
 
-void value_set(int i, value_t* a)
-{
-	//TODO
-			
-}
-
 value_t* value_get(int i, value_t* a)
 {
-	return value_number(0);
+	if(a->type == V_STRING)
+	{
+		int len = strlen(a->string);
+		if(i >= len)
+			throw("Index out of range");
+		return value_number(a->string[i]);
+	}
+	else if(a->type == V_ARRAY)
+	{
+		if(i >= a->array.count)
+			throw("Index aut of range");
+		return a->array.ptr[i];
+	}
+
+	throw("Cannot index value of this type");
 }
 

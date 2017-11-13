@@ -209,6 +209,17 @@ void eval_decl(node_t* node, ctx_t* ctx)
 	ctx->vars->next = tmp;
 }
 
+void eval_index(node_t* node, ctx_t* ctx)
+{
+	node->index.var->eval(node->index.var, ctx);
+	node->index.expr->eval(node->index.expr, ctx);
+	value_t* idx = (value_t*)stack_pop(ctx->stack);
+	if(idx->type != V_NUMBER)
+		throw("Index must be a number");
+	
+	stack_push(ctx->stack, value_get((int)idx->number, stack_pop(ctx->stack))); 
+}
+
 void eval_block(node_t* node, ctx_t* ctx)
 {
 	ctx_t* c = (ctx_t*)malloc(sizeof(ctx_t));

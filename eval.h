@@ -44,6 +44,7 @@ void eval_func(struct node_s* node, ctx_t* ctx);
 void eval_cond(struct node_s* node, ctx_t* ctx);
 void eval_loop(struct node_s* node, ctx_t* ctx);
 void eval_decl(struct node_s* node, ctx_t* ctx);
+void eval_index(struct node_s* node, ctx_t* ctx);
 void eval_block(struct node_s* node, ctx_t* ctx);
 
 #endif

@@ -105,6 +105,16 @@ node_t* node_decl(node_t* name, node_t* value)
 	return node;
 }
 
+node_t* node_index(node_t* var, node_t* expr)
+{
+	node_t* node = (node_t*)malloc(sizeof(node_t));
+	node->type = N_INDEX;
+	node->index.var = var;
+	node->index.expr = expr;
+	node->eval = eval_index;
+	return node;
+}
+
 node_t* node_block(node_list_t* list)
 {
 	node_t* node = (node_t*)malloc(sizeof(node_t));

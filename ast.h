@@ -14,6 +14,7 @@ enum {
 	N_COND,
 	N_LOOP,
 	N_DECL,
+	N_INDEX,
 	N_BLOCK
 };
 
@@ -35,6 +36,7 @@ struct node_s {
 		struct { struct node_s* arg; struct node_s* body; struct node_s* elsebody; } cond;
 		struct { struct node_s* arg; struct node_s* body; } loop;
 		struct { struct node_s* name; struct node_s* value; } decl;
+		struct { struct node_s* var; struct node_s* expr; } index;
 		struct node_list_s* block;
 	};
 };
@@ -57,6 +59,7 @@ node_t* node_func(char*name, int argc, char** argv, node_t* body);
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody);
 node_t* node_loop(node_t* arg, node_t* body);
 node_t* node_decl(node_t* name, node_t* value);
+node_t* node_index(node_t* var, node_t* expr);
 node_t* node_block(node_list_t* list);
 
 void node_print(node_t* node, int ind);

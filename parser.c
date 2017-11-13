@@ -24,7 +24,7 @@ void match(int token)
 
 node_t* expr();
 
-// primary :=  ident | number | string | function | '(' expr ')' | UNARY_OP primary
+// primary :=  ident | number | string | call | '(' expr ')' | UNARY_OP primary | primary '[' expr ']'
 node_t* primary()
 {
 	node_t* prim = NULL;
@@ -66,12 +66,14 @@ node_t* primary()
 			}
 			match(T_RPAREN);
 			nexttoken();
-			return node_call(name, args);
+			prim = node_call(name, args);
+			goto lidx;
 		}
 		else
 		{
 			// ident
-			return node_ident(name);
+			prim = node_ident(name);
+			goto lidx;
 		}
 	}
 	else if(lasttoken == T_LPAREN)
@@ -91,6 +93,15 @@ node_t* primary()
 		throw("Unexpexted token in primary!");
 	}
 	nexttoken();
+lidx:
+	while(lasttoken == T_LBRACK)
+	{
+		nexttoken();
+		node_t* e = expr(0);
+		match(T_RBRACK);
+		nexttoken();
+		prim = node_index(prim, e);
+	}
 	return prim;
 }
 
@@ -127,6 +138,12 @@ node_t* expr(int min)
 	return lhs;
 }
 
+
+// block := '{' statement '}'
+// let := 'let' ident '=' expr ';'
+// if := 'if' '(' expr ')' statement ['else' statement]
+// while := 'while' '(' expr ')' statement
+// statement := block | let | if | while | func | expr ';'
 node_t* statment()
 {
 	switch(lasttoken)

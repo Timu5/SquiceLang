@@ -155,6 +155,12 @@ int gettoken()
 	case '}':
 		tmp = T_RBRACE;
 		break;
+	case '[':
+		tmp = T_LBRACK;
+		break;
+	case ']':
+		tmp = T_RBRACK;
+		break;
 	case '<':
 	{
 		if(nextchar() == '=')
@@ -211,7 +217,8 @@ char* tokenstr(int token)
 	"T_RPAREN",    // )
 	"T_LBRACE",    // {
 	"T_RBRACE",    // }
-
+	"T_LBRACK",    // [
+	"T_RBRACK",    // ]
 	"T_EXCLAM",    // !
 
 

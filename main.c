@@ -35,6 +35,25 @@ void print(ctx_t* ctx)
 	putchar('\n');
 }
 
+void list(ctx_t* ctx)
+{
+	int n = ((value_t*)stack_pop(ctx->stack))->number;
+	stack_t* stack = stack_new(sizeof(value_t));
+	while(n > 0)
+	{
+		stack_push(stack, stack_pop(ctx->stack));
+		n--;
+	}
+	value_t** arr = (value_t**)malloc(sizeof(value_t*)*stack->used);
+	int i = 0;
+	while(stack->used > 0)
+	{
+		arr[i] = (value_t*)stack_pop(stack);
+		i++;
+	}
+	stack_push(ctx->stack, value_array(i, arr));
+}
+
 int main(int argc, char ** argv)
 {
 	if(argc < 2)
@@ -67,7 +86,15 @@ int main(int argc, char ** argv)
 		global->funcs->native = 1;
 		global->funcs->fn = print;
 		global->funcs->next = NULL;
-	
+		
+		fn_t* tmp = global->funcs;
+		global->funcs = (fn_t*)malloc(sizeof(fn_t));
+		global->funcs->name = "list";
+		global->funcs->body = NULL;
+		global->funcs->native = 1;
+		global->funcs->fn = list;
+		global->funcs->next = tmp;
+
 		tree->eval(tree, global);
 	}
 	catch

@@ -33,7 +33,8 @@ enum {
 	T_RPAREN,    // )
 	T_LBRACE,    // {
 	T_RBRACE,    // }
-
+	T_LBRACK,    // [
+	T_RBRACK,    // ]
 	T_EXCLAM,    // !
 
 
