@@ -27,4 +27,6 @@ value_t* value_binary(int op, value_t* a, value_t* b);
 
 value_t* value_get(int i, value_t* a);
 
+void value_free(value_t* val);
+
 #endif

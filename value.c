@@ -30,6 +30,16 @@ value_t* value_array(int count, value_t* arr)
 	return v;
 }
 
+void value_free(value_t* val)
+{
+	if(val->type == V_STRING)
+		free(val->string);
+	else if(val->type == V_ARRAY)
+		for(int n = 0; n < val->array.count; n++)
+			value_free(val->array.ptr[n]);
+	free(val);
+}
+
 value_t* value_unary(int op, value_t* a)
 {
 	if(a->type != V_NUMBER)
