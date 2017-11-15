@@ -5,6 +5,13 @@
 #include "value.h"
 #include "ex.h"
 
+value_t* value_null()
+{
+	value_t* v = (value_t*)malloc(sizeof(value_t));
+	v->type = V_NULL;
+	return v;
+}
+
 value_t* value_number(double val)
 {
 	value_t* v = (value_t*)malloc(sizeof(value_t));
@@ -112,9 +119,12 @@ static value_t* binary_array(int op, value_t* a, value_t* b)
 value_t* value_binary(int op, value_t* a, value_t* b)
 {
 	if(a->type != b->type)
-		return value_number(-1);
+		throw("Type mismatch");
+
 	switch(a->type)
 	{
+	case V_NULL:
+		throw("Cannot perfom operation on null");
 	case V_NUMBER:
 		return binary_number(op, a, b);
 	case V_STRING:

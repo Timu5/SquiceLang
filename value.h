@@ -2,6 +2,7 @@
 #define _VALUE_H_
 
 enum {
+	V_NULL,
 	V_NUMBER,
 	V_STRING,
 	V_ARRAY,
@@ -18,6 +19,7 @@ typedef struct value_s {
 	};
 } value_t;
 
+value_t* value_null();
 value_t* value_number(double val);
 value_t* value_string(char* val);
 value_t* value_array(int count, value_t** arr);
