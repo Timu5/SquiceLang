@@ -21,7 +21,7 @@ value_t* value_string(char* val)
 	return v;
 }
 
-value_t* value_array(int count, value_t* arr)
+value_t* value_array(int count, value_t** arr)
 {
 	value_t* v = (value_t*)malloc(sizeof(value_t));
 	v->type = V_ARRAY;

@@ -3,71 +3,8 @@
 #include "lexer.h"
 #include "eval.h"
 #include "ast.h"
+#include "contex.h"
 #include "ex.h"
-
-void eval_setvar(char* name, value_t* value, ctx_t* ctx)
-{
-	ctx_t* c = ctx;
-	while(c)
-	{
-		var_t* v = c->vars;
-		while(v)
-		{
-			if(strcmp(v->name, name) == 0)
-			{
-				v->val = value;
-				return;
-			}
-			v = v->next;
-		}
-		c = c->parent;
-	}
-	throw("Variable %s not found.", name);
-}
-
-value_t* eval_getvar(char* name, ctx_t* ctx)
-{
-	ctx_t* c = ctx;
-	while(c)
-	{
-		var_t* v = c->vars;
-		while(v)
-		{
-			if(strcmp(v->name, name) == 0)
-				return v->val;
-
-			v = v->next;
-		}
-		c = c->parent;
-	}
-	return NULL;
-}
-
-void eval_declvar(char* name, value_t* val, ctx_t* ctx)
-{
-	var_t* tmp = ctx->vars;
-	ctx->vars = (var_t*)malloc(sizeof(var_t));
-	ctx->vars->name = name;
-	ctx->vars->val = val;
-	ctx->vars->next = tmp;
-}
-
-fn_t* eval_getfn(char* name, ctx_t* ctx)
-{
-	ctx_t* c = ctx;
-	while(c)
-	{
-		fn_t* f = c->funcs;
-		while(f)
-		{
-			if(strcmp(f->name, name) == 0)
-				return f;
-			f = f->next;
-		}
-		c = c->parent;
-	}
-	return NULL;
-}
 
 void eval_root(node_t* node, ctx_t* ctx)
 {
@@ -99,7 +36,7 @@ void eval_root(node_t* node, ctx_t* ctx)
 
 void eval_ident(node_t* node, ctx_t* ctx)
 {
-	value_t* v = eval_getvar(node->ident, ctx);
+	value_t* v = ctx_getvar(node->ident, ctx);
 	if(!v)
 		throw("Variable %s not found!", node->ident);
 
@@ -133,7 +70,7 @@ void eval_value(node_t* node, ctx_t* ctx)
 
 void eval_call(node_t* node, ctx_t* ctx)
 {
-	fn_t* f = eval_getfn(node->call.name, ctx);
+	fn_t* f = ctx_getfn(node->call.name, ctx);
 	if(!f)
 		throw("Cannot find function %s", node->call.name);
 
@@ -164,7 +101,7 @@ void eval_call(node_t* node, ctx_t* ctx)
 			throw("Wrong number of arguments");
 
 		for(int i = f->body->func.argc - 1; i >= 0; i--)
-			eval_declvar(f->body->func.argv[i], (value_t*)stack_pop(ctx->stack), c);
+			ctx_declvar(f->body->func.argv[i], (value_t*)stack_pop(ctx->stack), c);
 
 		f->body->eval(f->body, c);
 	}
