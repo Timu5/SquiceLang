@@ -11,19 +11,7 @@ void eval_root(node_t* node, ctx_t* ctx)
 	node_list_t* f = node->root.funcs;
 	while(f)
 	{
-		fn_t* fn = (fn_t*)malloc(sizeof(fn_t));
-		fn->name = strdup(f->el->func.name);
-		fn->body = f->el;
-		fn->native = 0;
-		fn->next = NULL;
-		if(!ctx->funcs)
-			ctx->funcs = fn;
-		else	
-		{
-			fn_t* tmp = ctx->funcs;
-			while(tmp->next) tmp = tmp->next;
-			tmp->next = fn;
-		}
+		ctx_addfn(ctx, f->el->func.name, f->el, NULL);
 		f = f->next;
 	}
 	node_list_t* n = node->root.stmts;
@@ -36,7 +24,7 @@ void eval_root(node_t* node, ctx_t* ctx)
 
 void eval_ident(node_t* node, ctx_t* ctx)
 {
-	value_t* v = ctx_getvar(node->ident, ctx);
+	value_t* v = ctx_getvar(ctx, node->ident);
 	if(!v)
 		throw("Variable %s not found!", node->ident);
 
@@ -70,7 +58,7 @@ void eval_value(node_t* node, ctx_t* ctx)
 
 void eval_call(node_t* node, ctx_t* ctx)
 {
-	fn_t* f = ctx_getfn(node->call.name, ctx);
+	fn_t* f = ctx_getfn(ctx, node->call.name);
 	if(!f)
 		throw("Cannot find function %s", node->call.name);
 
@@ -91,17 +79,13 @@ void eval_call(node_t* node, ctx_t* ctx)
 	}
 	else
 	{
-		ctx_t* c = (ctx_t*)malloc(sizeof(ctx_t));
-		c->parent = ctx;
-		c->vars = NULL;
-		c->funcs = NULL;
-		c->stack = stack_new();
+		ctx_t* c = ctx_new(ctx);
 		double argc = ((value_t*)stack_pop(ctx->stack))->number;
 		if(argc != f->body->func.argc)
 			throw("Wrong number of arguments");
 
 		for(int i = f->body->func.argc - 1; i >= 0; i--)
-			ctx_declvar(f->body->func.argv[i], (value_t*)stack_pop(ctx->stack), c);
+			ctx_addvar(c, f->body->func.argv[i], (value_t*)stack_pop(ctx->stack));
 
 		f->body->eval(f->body, c);
 	}
@@ -139,11 +123,7 @@ void eval_decl(node_t* node, ctx_t* ctx)
 	if(node->decl.name->type != N_IDENT)
 		throw("Declaration name must be identifier"); // error
 	node->decl.value->eval(node->decl.value, ctx);
-	var_t* tmp = ctx->vars;
-	ctx->vars = (var_t*)malloc(sizeof(var_t));
-	ctx->vars->name = node->decl.name->ident;
-	ctx->vars->val = stack_pop(ctx->stack);
-	ctx->vars->next = tmp;
+	ctx_addvar(ctx, node->decl.name->ident, stack_pop(ctx->stack));
 }
 
 void eval_index(node_t* node, ctx_t* ctx)
@@ -159,11 +139,7 @@ void eval_index(node_t* node, ctx_t* ctx)
 
 void eval_block(node_t* node, ctx_t* ctx)
 {
-	ctx_t* c = (ctx_t*)malloc(sizeof(ctx_t));
-	c->parent = ctx;
-	c->vars = NULL;
-	c->funcs = NULL;
-	c->stack = stack_new();
+	ctx_t* c = ctx_new(ctx);
 
 	node_list_t* n = node->block;
 	while(n)

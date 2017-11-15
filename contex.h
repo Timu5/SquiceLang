@@ -32,9 +32,11 @@ typedef struct var_s var_t;
 typedef struct fn_s fn_t;
 typedef struct ctx_s ctx_t;
 
-void ctx_setvar(char* name, value_t* value, ctx_t* ctx);
-value_t* ctx_getvar(char* name, ctx_t* ctx);
-void ctx_declvar(char* name, value_t* val, ctx_t* ctx);
-fn_t* ctx_getfn(char* name, ctx_t* ctx);
+ctx_t* ctx_new(ctx_t* parent);
+void ctx_setvar(ctx_t* ctx, char* name, value_t* value);
+value_t* ctx_getvar(ctx_t* ctx, char* name);
+void ctx_addvar(ctx_t* ctx, char* name, value_t* val);
+fn_t* ctx_getfn(ctx_t* ctx, char* name);
+void ctx_addfn(ctx_t* ctx, char* name, node_t* body, value_t* (*fn)(ctx_t*));
 
 #endif

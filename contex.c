@@ -1,7 +1,17 @@
 #include "ex.h"
 #include "contex.h"
 
-void ctx_setvar(char* name, value_t* value, ctx_t* ctx)
+ctx_t* ctx_new(ctx_t* parent)
+{
+	ctx_t* ctx = (ctx_t*)malloc(sizeof(ctx_t));
+	ctx->parent = parent;
+	ctx->vars = NULL;
+	ctx->funcs = NULL;
+	ctx->stack = stack_new();
+	return ctx;
+}
+
+void ctx_setvar(ctx_t* ctx, char* name, value_t* value)
 {
 	ctx_t* c = ctx;
 	while(c)
@@ -21,7 +31,7 @@ void ctx_setvar(char* name, value_t* value, ctx_t* ctx)
 	throw("Variable %s not found.", name);
 }
 
-value_t* ctx_getvar(char* name, ctx_t* ctx)
+value_t* ctx_getvar(ctx_t* ctx, char* name)
 {
 	ctx_t* c = ctx;
 	while(c)
@@ -39,7 +49,7 @@ value_t* ctx_getvar(char* name, ctx_t* ctx)
 	return NULL;
 }
 
-void ctx_declvar(char* name, value_t* val, ctx_t* ctx)
+void ctx_addvar(ctx_t* ctx, char* name, value_t* val)
 {
 	var_t* tmp = ctx->vars;
 	ctx->vars = (var_t*)malloc(sizeof(var_t));
@@ -48,7 +58,7 @@ void ctx_declvar(char* name, value_t* val, ctx_t* ctx)
 	ctx->vars->next = tmp;
 }
 
-fn_t* ctx_getfn(char* name, ctx_t* ctx)
+fn_t* ctx_getfn(ctx_t* ctx, char* name)
 {
 	ctx_t* c = ctx;
 	while(c)
@@ -65,4 +75,14 @@ fn_t* ctx_getfn(char* name, ctx_t* ctx)
 	return NULL;
 }
 
+void ctx_addfn(ctx_t* ctx, char* name, node_t* body, value_t* (*fn)(ctx_t*))
+{
+	fn_t* func = (fn_t*)malloc(sizeof(fn_t));
+	func->name = strdup(name);
+	func->body = body;
+	func->fn = fn;
+	func->native = fn ? 1 : 0;
+	func->next = ctx->funcs;
+	ctx->funcs = func;
 
+}

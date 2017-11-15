@@ -238,7 +238,7 @@ node_t* statment()
 				break;
 		}
 		
-		char** argv = args->data;
+		char** argv = (char**)args->data;
 		int argc = args->used;
 		free(args);
 		

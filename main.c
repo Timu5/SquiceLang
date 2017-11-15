@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "stack.h"
 #include "eval.h"
+#include "contex.h"
 #include "ex.h"
 
 extern FILE* input;
@@ -15,18 +16,14 @@ void quit()
 	fclose(input);
 }
 
-void print(ctx_t* ctx)
+value_t* print(ctx_t* ctx)
 {
 	int n = ((value_t*)stack_pop(ctx->stack))->number;
-	stack_t* stack = stack_new(sizeof(value_t));
-	while(n > 0)
+	int end = ctx->stack->used;
+	int start = end - n;
+	for(int i = start; i < end; i++)
 	{
-		stack_push(stack, stack_pop(ctx->stack));
-		n--;
-	}
-	while(stack->used > 0)
-	{
-		value_t* v = (value_t*)stack_pop(stack);
+		value_t* v = (value_t*)ctx->stack->data[i];
 		if(v->type == V_NUMBER)
 			printf("%g", v->number);
 		else if(v->type == V_STRING)
@@ -35,7 +32,7 @@ void print(ctx_t* ctx)
 	putchar('\n');
 }
 
-void list(ctx_t* ctx)
+value_t* list(ctx_t* ctx)
 {
 	int n = ((value_t*)stack_pop(ctx->stack))->number;
 	stack_t* stack = stack_new(sizeof(value_t));
@@ -76,25 +73,10 @@ int main(int argc, char ** argv)
 	{	
 		node_t* tree = parse();
 
-		ctx_t* global = (ctx_t*)malloc(sizeof(ctx_t));
-		global->parent = NULL;
-		global->vars = NULL;
-		global->stack = stack_new(sizeof(value_t));
-		global->funcs = (fn_t*)malloc(sizeof(fn_t));
-		global->funcs->name = "print";
-		global->funcs->body = NULL;
-		global->funcs->native = 1;
-		global->funcs->fn = print;
-		global->funcs->next = NULL;
+		ctx_t* global = ctx_new(NULL);
+		ctx_addfn(global, "print", NULL, print);
+		ctx_addfn(global, "list", NULL, list);
 		
-		fn_t* tmp = global->funcs;
-		global->funcs = (fn_t*)malloc(sizeof(fn_t));
-		global->funcs->name = "list";
-		global->funcs->body = NULL;
-		global->funcs->native = 1;
-		global->funcs->fn = list;
-		global->funcs->next = tmp;
-
 		tree->eval(tree, global);
 	}
 	catch
