@@ -8,6 +8,7 @@ enum {
 	
 	//keyword
 	T_FN,
+	T_RETURN,
 	T_LET,
 	T_IF,
 	T_ELSE,

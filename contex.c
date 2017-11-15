@@ -8,6 +8,7 @@ ctx_t* ctx_new(ctx_t* parent)
 	ctx->vars = NULL;
 	ctx->funcs = NULL;
 	ctx->stack = stack_new();
+	ctx->ret = NULL;
 	return ctx;
 }
 

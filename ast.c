@@ -74,6 +74,15 @@ node_t* node_func(char* name, int argc, char** argv, node_t* body)
 	return node;
 }
 
+node_t* node_return(node_t* expr)
+{
+	node_t* node = (node_t*)malloc(sizeof(node_t));
+	node->type = N_RETURN;
+	node->ret = expr;
+	node->eval = eval_return;
+	return node;
+}
+
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody)
 {
 	node_t* node = (node_t*)malloc(sizeof(node_t));

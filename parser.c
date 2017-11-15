@@ -143,7 +143,8 @@ node_t* expr(int min)
 // let := 'let' ident '=' expr ';'
 // if := 'if' '(' expr ')' statement ['else' statement]
 // while := 'while' '(' expr ')' statement
-// statement := block | let | if | while | func | expr ';'
+// return := 'return' ';' | 'return' expr ';'
+// statement := block | let | if | while | funca | return | expr ';'
 node_t* statment()
 {
 	switch(lasttoken)
@@ -248,6 +249,17 @@ node_t* statment()
 		node_t* fnbody = statment();
 
 		return node_func(fnname, argc, argv, fnbody);
+	case T_RETURN:
+		nexttoken();
+		
+		node_t* retnode = NULL;		
+		if(lasttoken != T_SEMICOLON)
+			retnode = expr(0);
+		
+		match(T_SEMICOLON);
+		nexttoken();
+		
+		return node_return(retnode);
 	default:;
 		node_t* e = expr(0);
 		match(T_SEMICOLON);

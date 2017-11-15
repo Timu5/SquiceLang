@@ -11,6 +11,7 @@ enum {
 	N_VALUE,
 	N_CALL,
 	N_FUNC,
+	N_RETURN,
 	N_COND,
 	N_LOOP,
 	N_DECL,
@@ -33,6 +34,7 @@ struct node_s {
 		value_t* value;
 		struct { char* name; struct node_list_s* args; } call;
 		struct { char* name; int argc; char** argv; struct node_s* body; } func;
+		struct node_s* ret;
 		struct { struct node_s* arg; struct node_s* body; struct node_s* elsebody; } cond;
 		struct { struct node_s* arg; struct node_s* body; } loop;
 		struct { struct node_s* name; struct node_s* value; } decl;
@@ -56,6 +58,7 @@ node_t* node_binary(int op, node_t* a, node_t* b);
 node_t* node_value(value_t* value);
 node_t* node_call(char* name, node_list_t* args);
 node_t* node_func(char*name, int argc, char** argv, node_t* body);
+node_t* node_return(node_t* expr);
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody);
 node_t* node_loop(node_t* arg, node_t* body);
 node_t* node_decl(node_t* name, node_t* value);

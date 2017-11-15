@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 		ctx_t* global = ctx_new(NULL);
 		ctx_addfn(global, "print", NULL, print);
 		ctx_addfn(global, "list", NULL, list);
-		
+		//node_print(tree, 0);	
 		tree->eval(tree, global);
 	}
 	catch

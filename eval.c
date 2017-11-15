@@ -91,9 +91,46 @@ void eval_call(node_t* node, ctx_t* ctx)
 	}
 }
 
+value_t* _ret_value;
+
 void eval_func(node_t* node, ctx_t* ctx)
 {
-	node->func.body->eval(node->func.body, ctx);
+	ctx->ret = malloc(sizeof(jmp_buf));
+	if(!setjmp(*ctx->ret))
+	{
+		node->func.body->eval(node->func.body, ctx);
+	}
+	else // return
+	{
+		stack_push(ctx->parent->stack, _ret_value);
+		goto fend;
+	}
+	stack_push(ctx->parent->stack, value_null());
+fend:
+	free(ctx->ret);
+	ctx->ret = NULL;
+}
+
+void eval_return(node_t* node, ctx_t* ctx)
+{
+	if(node->ret != NULL)
+		node->ret->eval(node->ret, ctx);
+	else
+		stack_push(ctx->stack, value_null());
+
+	ctx_t* ret = ctx;
+	while(ret)
+	{
+		if(ret->ret != 0)
+			break;
+		ret = ret->parent;
+	}
+	
+	if(!ret->ret)
+		throw("Nothing to return from");
+
+	_ret_value = stack_pop(ctx->stack);
+	longjmp(*ret->ret, 1);
 }
 
 void eval_cond(node_t* node, ctx_t* ctx)

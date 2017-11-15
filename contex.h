@@ -1,6 +1,8 @@
 #ifndef _CONTEX_H_
 #define _CONTEX_H_
 
+#include <setjmp.h>
+
 #include "ast.h"
 #include "stack.h"
 #include "value.h"
@@ -26,6 +28,7 @@ struct ctx_s {
 	struct var_s* vars;
 	struct fn_s* funcs;
 	stack_t* stack;
+	jmp_buf* ret;
 };
 
 typedef struct var_s var_t;
