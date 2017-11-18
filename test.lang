@@ -1,28 +1,53 @@
+1+2;
 
-print("hello world :)");
+let a = 2 * 2;
 
-fn myprint(x)
+let b = a * 4;
+
+print("Hello world :)");
+
+print(a);
+print(b);
+
+print("a = ", a);
+print("b = ", b);
+
+if(b > 0) print("b > 0");
+
+if(b >= a)
 {
-	print(x);
-	return "myprint ends";
+    print("b >= a");
+}
+else
+{
+    print("b < a");
 }
 
-let a = 1;
-print("a = ", a);
+let i = 0;
+while(i < 10)
+{
+    print(i);
+    i = i + 1;
+}
 
-a = a + 10;
-print("a + 10 = ", a);
+let array = list(1, 2, 3, 4, 5, 6);
 
-if(a > 10) a = 100;
+print("lenght or array = ", len(array));
 
-if(10 > 20) print("True");
-else print("False");
+let i = 0;
+while(i < len(array))
+{
+    print("array[", i, "] = ", array[i]);
+    i = i + 1;
+}
 
-print("a = ", a);
+fn fib(x)
+{
+    if(x == 0) return 0;
+    if(x == 1) return 1;
+    return fib(x - 1) + fib(x - 2);
+}
 
-while(a>20) a = a - 1;
+print("fib(10) = ", fib(10));
 
-print("-a = ", (-a));
-
-print(myprint("Hello world 2 ;D"));
 
