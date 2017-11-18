@@ -4,48 +4,48 @@
 #include "value.h"
 
 enum {
-	N_ROOT,
-	N_IDENT,
-	N_UNARY,
-	N_BINARY,
-	N_VALUE,
-	N_CALL,
-	N_FUNC,
-	N_RETURN,
-	N_COND,
-	N_LOOP,
-	N_DECL,
-	N_INDEX,
-	N_BLOCK
+    N_ROOT,
+    N_IDENT,
+    N_UNARY,
+    N_BINARY,
+    N_VALUE,
+    N_CALL,
+    N_FUNC,
+    N_RETURN,
+    N_COND,
+    N_LOOP,
+    N_DECL,
+    N_INDEX,
+    N_BLOCK
 };
 
 struct node_list_s;
 struct ctx_s;
 
 struct node_s {
-	int type;
-	void (*eval)(struct node_s* this, struct ctx_s* ctx);
-	void (*free)(struct node_s* this);
-	union {
-		struct { struct node_list_s* funcs; struct node_list_s* stmts; } root;
-		char* ident;
-		struct { int op; struct node_s* val; } unary;
-		struct { int op; struct node_s* a; struct node_s* b; } binary;
-		value_t* value;
-		struct { char* name; struct node_list_s* args; } call;
-		struct { char* name; int argc; char** argv; struct node_s* body; } func;
-		struct node_s* ret;
-		struct { struct node_s* arg; struct node_s* body; struct node_s* elsebody; } cond;
-		struct { struct node_s* arg; struct node_s* body; } loop;
-		struct { struct node_s* name; struct node_s* value; } decl;
-		struct { struct node_s* var; struct node_s* expr; } index;
-		struct node_list_s* block;
-	};
+    int type;
+    void (*eval)(struct node_s* this, struct ctx_s* ctx);
+    void (*free)(struct node_s* this);
+    union {
+        struct { struct node_list_s* funcs; struct node_list_s* stmts; } root;
+        char* ident;
+        struct { int op; struct node_s* val; } unary;
+        struct { int op; struct node_s* a; struct node_s* b; } binary;
+        value_t* value;
+        struct { char* name; struct node_list_s* args; } call;
+        struct { char* name; int argc; char** argv; struct node_s* body; } func;
+        struct node_s* ret;
+        struct { struct node_s* arg; struct node_s* body; struct node_s* elsebody; } cond;
+        struct { struct node_s* arg; struct node_s* body; } loop;
+        struct { struct node_s* name; struct node_s* value; } decl;
+        struct { struct node_s* var; struct node_s* expr; } index;
+        struct node_list_s* block;
+    };
 };
 
 struct node_list_s {
-	struct node_s* el;
-	struct node_list_s* next;
+    struct node_s* el;
+    struct node_list_s* next;
 };
 
 typedef struct node_s node_t;

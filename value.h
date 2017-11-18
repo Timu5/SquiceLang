@@ -2,21 +2,21 @@
 #define _VALUE_H_
 
 enum {
-	V_NULL,
-	V_NUMBER,
-	V_STRING,
-	V_ARRAY,
-	//V_OBJECT
+    V_NULL,
+    V_NUMBER,
+    V_STRING,
+    V_ARRAY,
+    //V_OBJECT
 };
 
 
 typedef struct value_s {
-	int type;
-	union {
-		double number;
-		char* string;
-		struct { int count; struct value_s** ptr; } array;
-	};
+    int type;
+    union {
+        double number;
+        char* string;
+        struct { int count; struct value_s** ptr; } array;
+    };
 } value_t;
 
 value_t* value_null();

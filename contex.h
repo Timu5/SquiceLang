@@ -8,27 +8,27 @@
 #include "value.h"
 
 struct var_s {
-	char* name;
-	value_t* val;
-	struct var_s* next;
+    char* name;
+    value_t* val;
+    struct var_s* next;
 };
 
 struct ctx_s;
 
 struct fn_s {
-	char* name;
-	node_t* body;
-	int native; // if not 0 call fn else eval body
-	value_t* (*fn)(struct ctx_s*);
-	struct fn_s* next;
+    char* name;
+    node_t* body;
+    int native; // if not 0 call fn else eval body
+    value_t* (*fn)(struct ctx_s*);
+    struct fn_s* next;
 };
 
 struct ctx_s {
-	struct ctx_s* parent;
-	struct var_s* vars;
-	struct fn_s* funcs;
-	stack_t* stack;
-	jmp_buf* ret;
+    struct ctx_s* parent;
+    struct var_s* vars;
+    struct fn_s* funcs;
+    stack_t* stack;
+    jmp_buf* ret;
 };
 
 typedef struct var_s var_t;
