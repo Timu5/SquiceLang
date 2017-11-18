@@ -67,19 +67,7 @@ int gettoken()
     }
     else if (isdigit(lastchar))
     {
-        int base = 10;
-        if(lastchar == '0') // hex or oct
-        {
-            if(tolower(nextchar()) == 'x')
-            {
-                base = 16;
-                nextchar(); // remove 'x'
-            }
-            else
-                base = 8;
-        }
-        buffer[0] = '0';
-        int ptr = 1;
+        int ptr = 0;
         do
         {
             buffer[ptr++] = (char)lastchar;
@@ -87,8 +75,8 @@ int gettoken()
         } while(isalnum(lastchar));
         buffer[ptr] = 0;
         
-        number = (int)strtol(buffer, NULL, base);
-            
+        number = (int)strtol(buffer, NULL, 0);
+           
         return T_NUMBER;
     }
     else if(lastchar == '"')
