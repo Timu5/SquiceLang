@@ -51,6 +51,27 @@ value_t* list(ctx_t* ctx)
     stack_push(ctx->stack, value_array(i, arr));
 }
 
+value_t* len(ctx_t* ctx)
+{
+    int n = ((value_t*)stack_pop(ctx->stack))->number;
+    if(n != 1)
+        throw("Function len get exacly 1 argument");
+
+    value_t* v = (value_t*)stack_pop(ctx->stack);
+    if(v->type == V_STRING)
+    {
+        stack_push(ctx->stack, value_number(strlen(v->string)));
+        return NULL;
+    }
+    else if(v->type == V_ARRAY)
+    {
+        stack_push(ctx->stack, value_number(v->array.count));
+        return NULL;
+    }
+    
+    throw("Function len need argument of type string or array.");
+}
+
 int main(int argc, char ** argv)
 {
     if(argc < 2)
@@ -76,7 +97,7 @@ int main(int argc, char ** argv)
         ctx_t* global = ctx_new(NULL);
         ctx_addfn(global, "print", NULL, print);
         ctx_addfn(global, "list", NULL, list);
-        //node_print(tree, 0);  
+        ctx_addfn(global, "len", NULL, len);  
         tree->eval(tree, global);
     }
     catch

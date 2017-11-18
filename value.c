@@ -142,7 +142,11 @@ value_t* value_get(int i, value_t* a)
         int len = strlen(a->string);
         if(i >= len)
             throw("Index out of range");
-        return value_number(a->string[i]);
+     
+        char buf[2];
+        buf[0] = a->string[i];
+        buf[1] = 0;
+        return value_string(strdup(buf));
     }
     else if(a->type == V_ARRAY)
     {
