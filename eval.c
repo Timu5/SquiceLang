@@ -8,13 +8,13 @@
 
 void eval_root(node_t* node, ctx_t* ctx)
 {
-    node_list_t* f = node->root.funcs;
+    node_list_t* f = node->root.funcs->block;
     while(f)
     {
         ctx_addfn(ctx, f->el->func.name, f->el, NULL);
         f = f->next;
     }
-    node_list_t* n = node->root.stmts;
+    node_list_t* n = node->root.stmts->block;
     while(n)
     {
         n->el->eval(n->el, ctx);
@@ -63,7 +63,7 @@ void eval_call(node_t* node, ctx_t* ctx)
         throw("Cannot find function %s", node->call.name);
 
     int i = 0;
-    node_list_t* n = node->call.args;
+    node_list_t* n = node->call.args->block;
     while(n)
     {
         n->el->eval(n->el, ctx);

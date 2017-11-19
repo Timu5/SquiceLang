@@ -3,14 +3,28 @@
 #include "eval.h"
 #include "lexer.h"
 
-node_t* node_root(node_list_t* funcs, node_list_t* stmts)
+static void free_root(node_t* node)
+{
+    node_free(node->root.funcs);
+    node_free(node->root.stmts);
+    free(node);
+}
+
+node_t* node_root(node_t* funcs, node_t* stmts)
 {
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_ROOT;
     node->root.funcs = funcs;
     node->root.stmts = stmts;
     node->eval = eval_root;
+    node->free = free_root;
     return node;
+}
+
+static void free_ident(node_t* node)
+{
+    free(node->ident);
+    free(node);
 }
 
 node_t* node_ident(char* name)
@@ -18,8 +32,15 @@ node_t* node_ident(char* name)
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_IDENT;
     node->ident = name;
-    node->eval = eval_ident; 
+    node->eval = eval_ident;
+    node->free = free_ident; 
     return node;
+}
+
+static void free_unary(node_t* node)
+{
+    node_free(node->unary.val);
+    free(node);
 }
 
 node_t* node_unary(int op, node_t* val)
@@ -29,7 +50,15 @@ node_t* node_unary(int op, node_t* val)
     node->unary.op = op;
     node->unary.val = val;
     node->eval = eval_unary;
+    node->free = free_unary;
     return node;
+}
+
+static void free_binary(node_t* node)
+{
+    node_free(node->binary.a);
+    node_free(node->binary.b);
+    free(node);
 }
 
 node_t* node_binary(int op, node_t* a, node_t* b)
@@ -40,7 +69,14 @@ node_t* node_binary(int op, node_t* a, node_t* b)
     node->binary.a = a;
     node->binary.b = b;
     node->eval = eval_binary;
+    node->free = free_binary;
     return node;
+}
+
+static void free_value(node_t* node)
+{
+    value_free(node->value);
+    free(node);
 }
 
 node_t* node_value(value_t* value)
@@ -49,17 +85,35 @@ node_t* node_value(value_t* value)
     node->type = N_VALUE;
     node->value = value;
     node->eval = eval_value;
+    node->free = free_value;
     return node;
 }
 
-node_t* node_call(char* name, node_list_t* args)
+static void free_call(node_t* node)
+{
+    free(node->call.name);
+    node_free(node->call.args);
+    free(node);
+}
+
+node_t* node_call(char* name, node_t* args)
 {
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_CALL;
     node->call.name = name;
     node->call.args = args;
     node->eval = eval_call;
+    node->free = free_call;
     return node;
+}
+
+static void free_func(node_t* node)
+{
+    node_free(node->func.body);
+    for(int i = 0; i < node->func.argc; i++)
+        free(node->func.argv[i]);
+    free(node->func.name);
+    free(node);
 }
 
 node_t* node_func(char* name, int argc, char** argv, node_t* body)
@@ -71,7 +125,14 @@ node_t* node_func(char* name, int argc, char** argv, node_t* body)
     node->func.argv = argv;
     node->func.body = body;
     node->eval = eval_func;
+    node->free = free_func;
     return node;
+}
+
+static void free_return(node_t* node)
+{
+    node_free(node->ret);
+    free(node);
 }
 
 node_t* node_return(node_t* expr)
@@ -80,7 +141,17 @@ node_t* node_return(node_t* expr)
     node->type = N_RETURN;
     node->ret = expr;
     node->eval = eval_return;
+    node->free = free_return;
     return node;
+}
+
+static void free_cond(node_t* node)
+{
+    node_free(node->cond.arg);
+    node_free(node->cond.body);
+    if(node->cond.elsebody)
+        node_free(node->cond.elsebody);
+    free(node);
 }
 
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody)
@@ -91,7 +162,15 @@ node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody)
     node->cond.body = body;
     node->cond.elsebody = elsebody;
     node->eval = eval_cond;
+    node->free = free_cond;
     return node;
+}
+
+static void free_loop(node_t* node)
+{
+    node_free(node->loop.arg);
+    node_free(node->loop.body);
+    free(node);
 }
 
 node_t* node_loop(node_t* arg, node_t* body)
@@ -101,7 +180,15 @@ node_t* node_loop(node_t* arg, node_t* body)
     node->loop.arg = arg;
     node->loop.body = body;
     node->eval = eval_loop;
+    node->free = free_loop;
     return node;
+}
+
+static void free_decl(node_t* node)
+{
+    node_free(node->decl.name);
+    node_free(node->decl.value);
+    free(node);
 }
 
 node_t* node_decl(node_t* name, node_t* value)
@@ -111,7 +198,15 @@ node_t* node_decl(node_t* name, node_t* value)
     node->decl.name = name;
     node->decl.value = value;
     node->eval = eval_decl;
+    node->free = free_decl;
     return node;
+}
+
+static void free_index(node_t* node)
+{
+    node_free(node->index.var);
+    node_free(node->index.expr);
+    free(node);
 }
 
 node_t* node_index(node_t* var, node_t* expr)
@@ -121,7 +216,19 @@ node_t* node_index(node_t* var, node_t* expr)
     node->index.var = var;
     node->index.expr = expr;
     node->eval = eval_index;
+    node->free = free_index;
     return node;
+}
+
+static void free_block(node_t* node)
+{
+    node_list_t* n = node->block;
+    while(n)
+    {
+        node_free(n->el);
+        n = n->next;
+    }
+    free(node);
 }
 
 node_t* node_block(node_list_t* list)
@@ -130,6 +237,7 @@ node_t* node_block(node_list_t* list)
     node->type = N_BLOCK;
     node->block = list;
     node->eval = eval_block;
+    node->free = free_block;
     return node;
 }
 
@@ -146,7 +254,7 @@ void node_print(node_t* node, int ind)
     {
     case N_ROOT:
         printf("root\n");
-        node_list_t* n4 = node->root.stmts;
+        node_list_t* n4 = node->root.stmts->block;
         while(n4)
         {
             node_print(n4->el, ind + 1);
@@ -179,7 +287,7 @@ void node_print(node_t* node, int ind)
         break;
     case N_CALL:
         printf("call %s\n", node->call.name);
-        node_list_t* n2 = node->call.args;
+        node_list_t* n2 = node->call.args->block;
         while(n2)
         {
             node_print(n2->el, ind + 1);

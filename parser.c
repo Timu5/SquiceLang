@@ -66,7 +66,7 @@ node_t* primary()
             }
             match(T_RPAREN);
             nexttoken();
-            prim = node_call(name, args);
+            prim = node_call(name, node_block(args));
             goto lidx;
         }
         else
@@ -301,5 +301,5 @@ node_t* parse()
             } 
         }
     }
-    return node_root(funcs, stmts);
+    return node_root(node_block(funcs), node_block(stmts));
 }

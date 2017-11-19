@@ -24,6 +24,12 @@ static inline stack_t* stack_new()
     return stack;
 }
 
+static inline void stack_free(stack_t* stack)
+{
+    free(stack->data);
+    free(stack);
+}
+
 static inline void stack_push(stack_t* stack, void* el)
 {
     stack->used++;
