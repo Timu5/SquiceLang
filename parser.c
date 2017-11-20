@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "parser.h"
-#include "stack.h"
+#include "vector.h"
 #include "ex.h"
 
 extern char buffer[255];
@@ -229,19 +229,18 @@ node_t* statment()
         nexttoken();
         match(T_LPAREN);
     
-        stack_t* args = stack_new();
+        vector(char*) args = NULL;
         
         while(nexttoken() != T_RPAREN)
         {
             match(T_IDENT);
-            stack_push(args, strdup(buffer));
+            vector_push(args, strdup(buffer));
             if(nexttoken() != T_COMMA)
                 break;
         }
         
-        char** argv = (char**)args->data;
-        int argc = args->used;
-        free(args);
+        char** argv = (char**)args;
+        int argc = vector_size(args);
         
         match(T_RPAREN);
         nexttoken();

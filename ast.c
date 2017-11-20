@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "ast.h"
 #include "eval.h"
 #include "lexer.h"

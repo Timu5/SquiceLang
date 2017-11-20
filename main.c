@@ -4,7 +4,7 @@
 #include "value.h"
 #include "ast.h"
 #include "parser.h"
-#include "stack.h"
+#include "vector.h"
 #include "eval.h"
 #include "contex.h"
 #include "ex.h"
@@ -18,12 +18,12 @@ void quit()
 
 value_t* print(ctx_t* ctx)
 {
-    int n = ((value_t*)stack_pop(ctx->stack))->number;
-    int end = ctx->stack->used;
+    int n = vector_pop(ctx->stack)->number;
+    int end = vector_size(ctx->stack);
     int start = end - n;
     for(int i = start; i < end; i++)
     {
-        value_t* v = (value_t*)ctx->stack->data[i];
+        value_t* v = ctx->stack[i];
         if(v->type == V_NUMBER)
             printf("%g", v->number);
         else if(v->type == V_STRING)
@@ -34,38 +34,32 @@ value_t* print(ctx_t* ctx)
 
 value_t* list(ctx_t* ctx)
 {
-    int n = ((value_t*)stack_pop(ctx->stack))->number;
-    stack_t* stack = stack_new(sizeof(value_t));
-    while(n > 0)
+    int n = vector_pop(ctx->stack)->number; 
+    vector(value_t*) arr = NULL;
+    for(int i = vector_size(ctx->stack)-n; i < vector_size(ctx->stack); i++)
     {
-        stack_push(stack, stack_pop(ctx->stack));
-        n--;
+        vector_push(arr, ctx->stack[i]);
     }
-    value_t** arr = (value_t**)malloc(sizeof(value_t*)*stack->used);
-    int i = 0;
-    while(stack->used > 0)
-    {
-        arr[i] = (value_t*)stack_pop(stack);
-        i++;
-    }
-    stack_push(ctx->stack, value_array(i, arr));
+    vector_shrinkby(ctx->stack, n);
+
+    vector_push(ctx->stack, value_array(vector_size(arr), arr));
 }
 
 value_t* len(ctx_t* ctx)
 {
-    int n = ((value_t*)stack_pop(ctx->stack))->number;
+    int n = vector_pop(ctx->stack)->number;
     if(n != 1)
         throw("Function len get exacly 1 argument");
 
-    value_t* v = (value_t*)stack_pop(ctx->stack);
+    value_t* v = vector_pop(ctx->stack);
     if(v->type == V_STRING)
     {
-        stack_push(ctx->stack, value_number(strlen(v->string)));
+        vector_push(ctx->stack, value_number(strlen(v->string)));
         return NULL;
     }
     else if(v->type == V_ARRAY)
     {
-        stack_push(ctx->stack, value_number(v->array.count));
+        vector_push(ctx->stack, value_number(v->array.count));
         return NULL;
     }
     

@@ -4,7 +4,7 @@
 #include <setjmp.h>
 
 #include "ast.h"
-#include "stack.h"
+#include "vector.h"
 #include "value.h"
 
 struct var_s {
@@ -27,7 +27,7 @@ struct ctx_s {
     struct ctx_s* parent;
     struct var_s* vars;
     struct fn_s* funcs;
-    stack_t* stack;
+    vector(value_t*) stack;
     jmp_buf* ret;
 };
 

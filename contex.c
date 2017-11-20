@@ -7,7 +7,7 @@ ctx_t* ctx_new(ctx_t* parent)
     ctx->parent = parent;
     ctx->vars = NULL;
     ctx->funcs = NULL;
-    ctx->stack = stack_new();
+    ctx->stack = NULL;
     ctx->ret = NULL;
     return ctx;
 }
@@ -85,5 +85,5 @@ void ctx_addfn(ctx_t* ctx, char* name, node_t* body, value_t* (*fn)(ctx_t*))
     func->native = fn ? 1 : 0;
     func->next = ctx->funcs;
     ctx->funcs = func;
-
 }
+
