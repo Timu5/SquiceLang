@@ -111,19 +111,18 @@ node_t* node_call(char* name, node_t* args)
 static void free_func(node_t* node)
 {
     node_free(node->func.body);
-    for(int i = 0; i < node->func.argc; i++)
-        free(node->func.argv[i]);
+    for(int i = 0; i < vector_size(node->func.args); i++)
+        free(node->func.args[i]);
     free(node->func.name);
     free(node);
 }
 
-node_t* node_func(char* name, int argc, char** argv, node_t* body)
+node_t* node_func(char* name, vector(char*) args, node_t* body)
 {
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_FUNC;
     node->func.name = name;
-    node->func.argc = argc;
-    node->func.argv = argv;
+    node->func.args = args;
     node->func.body = body;
     node->eval = eval_func;
     node->free = free_func;
@@ -223,16 +222,13 @@ node_t* node_index(node_t* var, node_t* expr)
 
 static void free_block(node_t* node)
 {
-    node_list_t* n = node->block;
-    while(n)
-    {
-        node_free(n->el);
-        n = n->next;
-    }
+    for(int i = 0; i < vector_size(node->block); i++)
+        node_free(node->block[i]);
+
     free(node);
 }
 
-node_t* node_block(node_list_t* list)
+node_t* node_block(vector(node_t*) list)
 {
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_BLOCK;
@@ -250,7 +246,7 @@ static void printtab(int n)
 
 void node_print(node_t* node, int ind)
 {
-    printtab(ind);
+    /*printtab(ind);
     switch(node->type)
     {
     case N_ROOT:
@@ -322,5 +318,5 @@ void node_print(node_t* node, int ind)
         printf("->value:\n");
         node_print(node->decl.value, ind + 1);
         break;
-    }
+    }*/
 }

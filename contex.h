@@ -18,8 +18,7 @@ struct ctx_s;
 struct fn_s {
     char* name;
     node_t* body;
-    int native; // if not 0 call fn else eval body
-    value_t* (*fn)(struct ctx_s*);
+    value_t* (*native)(struct ctx_s*); // call if not NULL
     struct fn_s* next;
 };
 

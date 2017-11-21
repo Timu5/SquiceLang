@@ -8,17 +8,16 @@
 
 void eval_root(node_t* node, ctx_t* ctx)
 {
-    node_list_t* f = node->root.funcs->block;
-    while(f)
+    for(int i = 0; i < vector_size(node->root.funcs->block); i++)
     {
-        ctx_addfn(ctx, f->el->func.name, f->el, NULL);
-        f = f->next;
+        node_t* f = node->root.funcs->block[i];
+        ctx_addfn(ctx, f->func.name, f, NULL);
     }
-    node_list_t* n = node->root.stmts->block;
-    while(n)
+
+    for(int i = 0; i < vector_size(node->root.stmts->block); i++)
     {
-        n->el->eval(n->el, ctx);
-        n = n->next;
+        node_t* n = node->root.stmts->block[i];
+        n->eval(n, ctx);
     }
 }
 
@@ -61,31 +60,31 @@ void eval_call(node_t* node, ctx_t* ctx)
     fn_t* f = ctx_getfn(ctx, node->call.name);
     if(!f)
         throw("Cannot find function %s", node->call.name);
+    
+    ctx_t* c = ctx_new(ctx);
 
     int i = 0;
-    node_list_t* n = node->call.args->block;
-    while(n)
+    for(; i < vector_size(node->call.args->block); i++)
     {
-        n->el->eval(n->el, ctx);
-        n = n->next;
-        i++;
+        node_t* n = node->call.args->block[i];
+        n->eval(n, c);
     }
 
-    vector_push(ctx->stack, value_number((double)i));
+    vector_push(c->stack, value_number((double)i));
     
     if(f->native)
     {
-        f->fn(ctx);
+        value_t* v = f->native(c);
+        //vector_push(ctx->stack, v);
     }
     else
-    {
-        ctx_t* c = ctx_new(ctx);
-        double argc = vector_pop(ctx->stack)->number;
-        if(argc != f->body->func.argc)
+    {   
+        int argc = vector_size(c->stack);
+        if(argc != vector_size(f->body->func.args))
             throw("Wrong number of arguments");
 
-        for(int i = f->body->func.argc - 1; i >= 0; i--)
-            ctx_addvar(c, f->body->func.argv[i], vector_pop(ctx->stack));
+        for(int i = vector_size(f->body->func.args) - 1; i >= 0; i--)
+            ctx_addvar(c, f->body->func.args[i], vector_pop(c->stack));
 
         f->body->eval(f->body, c);
     }
@@ -179,11 +178,7 @@ void eval_block(node_t* node, ctx_t* ctx)
 {
     ctx_t* c = ctx_new(ctx);
 
-    node_list_t* n = node->block;
-    while(n)
-    {
-        n->el->eval(n->el, c);
-        n = n->next;
-    }
+    for(int i = 0; i < vector_size(node->block); i++)
+        node->block[i]->eval(node->block[i], c);
 }
 

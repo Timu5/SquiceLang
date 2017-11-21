@@ -81,8 +81,7 @@ void ctx_addfn(ctx_t* ctx, char* name, node_t* body, value_t* (*fn)(ctx_t*))
     fn_t* func = (fn_t*)malloc(sizeof(fn_t));
     func->name = strdup(name);
     func->body = body;
-    func->fn = fn;
-    func->native = fn ? 1 : 0;
+    func->native = fn;
     func->next = ctx->funcs;
     ctx->funcs = func;
 }

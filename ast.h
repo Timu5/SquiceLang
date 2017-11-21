@@ -2,6 +2,7 @@
 #define _AST_H_
 
 #include "value.h"
+#include "vector.h"
 
 enum {
     N_ROOT,
@@ -19,7 +20,6 @@ enum {
     N_BLOCK
 };
 
-struct node_list_s;
 struct ctx_s;
 
 struct node_s {
@@ -33,23 +33,17 @@ struct node_s {
         struct { int op; struct node_s* a; struct node_s* b; } binary;
         value_t* value;
         struct { char* name; struct node_s* args; } call;
-        struct { char* name; int argc; char** argv; struct node_s* body; } func;
+        struct { char* name; vector(char*) args; struct node_s* body; } func;
         struct node_s* ret;
         struct { struct node_s* arg; struct node_s* body; struct node_s* elsebody; } cond;
         struct { struct node_s* arg; struct node_s* body; } loop;
         struct { struct node_s* name; struct node_s* value; } decl;
         struct { struct node_s* var; struct node_s* expr; } index;
-        struct node_list_s* block;
+        vector(struct node_s*) block;
     };
 };
 
-struct node_list_s {
-    struct node_s* el;
-    struct node_list_s* next;
-};
-
 typedef struct node_s node_t;
-typedef struct node_list_s node_list_t;
 
 #define node_free(node) ((node)->free((node)))
 
@@ -59,13 +53,13 @@ node_t* node_unary(int op, node_t* val);
 node_t* node_binary(int op, node_t* a, node_t* b);
 node_t* node_value(value_t* value);
 node_t* node_call(char* name, node_t* args);
-node_t* node_func(char*name, int argc, char** argv, node_t* body);
+node_t* node_func(char*name, vector(char*) args, node_t* body);
 node_t* node_return(node_t* expr);
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody);
 node_t* node_loop(node_t* arg, node_t* body);
 node_t* node_decl(node_t* name, node_t* value);
 node_t* node_index(node_t* var, node_t* expr);
-node_t* node_block(node_list_t* list);
+node_t* node_block(vector(node_t*) list);
 
 void node_print(node_t* node, int ind);
 

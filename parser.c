@@ -42,24 +42,13 @@ node_t* primary()
         if(nexttoken() == T_LPAREN)
         {
             // parser fn call
-            node_list_t* args = NULL;
+            vector(node_t*) args = NULL;
             nexttoken();
             while(lasttoken != T_RPAREN)
             {
                 node_t* e = expr(0);
-                node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
-                tmp->el = e;
-                tmp->next  = NULL;
-                if(args == NULL)
-                {
-                    args = tmp;
-                }
-                else
-                {
-                    node_list_t* last = args;
-                    while(last->next) last = last->next;
-                    last->next = tmp;
-                }
+                vector_push(args, e);
+
                 if(lasttoken != T_COMMA)
                     break;
                 nexttoken();    
@@ -152,24 +141,11 @@ node_t* statment()
     case T_LBRACE:
         nexttoken();
         
-        node_list_t* list = NULL;
+        vector(node_t*) list = NULL;
         while(lasttoken != T_RBRACE)
         {
             node_t* node = statment();
-
-            node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
-            tmp->el = node;
-            tmp->next = NULL;
-            if(!list)
-            {
-                list = tmp;
-            }
-            else
-            {
-                node_list_t* last = list;
-                while(last->next) last = last->next;
-                last->next = tmp;
-            }
+            vector_push(list, node);
         }
         match(T_RBRACE);
         
@@ -239,15 +215,12 @@ node_t* statment()
                 break;
         }
         
-        char** argv = (char**)args;
-        int argc = vector_size(args);
-        
         match(T_RPAREN);
         nexttoken();
 
         node_t* fnbody = statment();
 
-        return node_func(fnname, argc, argv, fnbody);
+        return node_func(fnname, args, fnbody);
     case T_RETURN:
         nexttoken();
         
@@ -270,35 +243,16 @@ node_t* statment()
 node_t* parse()
 {
     nexttoken();
-    node_list_t* funcs = NULL;
-    node_list_t* stmts = NULL;
+    vector(node_t*) funcs = NULL;
+    vector(node_t*) stmts = NULL;
     while(lasttoken != T_EOF)
     {
         node_t* n = statment();
-    
-        node_list_t* tmp = (node_list_t*)malloc(sizeof(node_list_t));
-        tmp->el = n;
-        tmp->next = NULL;
 
         if(n->type == N_FUNC)
-        {
-            node_list_t* old = funcs;
-            funcs = tmp;
-            tmp->next = old;
-        }
+            vector_push(funcs, n);
         else
-        {
-            if(!stmts)
-            {
-                stmts = tmp;
-            }
-            else
-            {
-                node_list_t* s = stmts;
-                while(s->next) s = s->next;
-                s->next = tmp;
-            } 
-        }
+            vector_push(stmts, n); 
     }
     return node_root(node_block(funcs), node_block(stmts));
 }
