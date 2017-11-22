@@ -44,7 +44,10 @@ void eval_binary(node_t* node, ctx_t* ctx)
     value_t* b = vector_pop(ctx->stack);
     value_t* a = vector_pop(ctx->stack);
     if(node->binary.op == T_ASSIGN) // special case
-        memcpy(a, b, sizeof(value_t));
+    {
+        value_assign(a, b);
+        vector_push(ctx->stack, a);
+    }
     else
         vector_push(ctx->stack, value_binary(node->binary.op, a, b));
     
@@ -75,7 +78,6 @@ void eval_call(node_t* node, ctx_t* ctx)
     if(f->native)
     {
         value_t* v = f->native(c);
-        //vector_push(ctx->stack, v);
     }
     else
     {   
@@ -88,6 +90,10 @@ void eval_call(node_t* node, ctx_t* ctx)
 
         f->body->eval(f->body, c);
     }
+
+    value_t* ret = vector_pop(c->stack);
+    vector_push(ctx->stack, ret); 
+    //ctx_free(c);
 }
 
 value_t* _ret_value;
@@ -101,10 +107,10 @@ void eval_func(node_t* node, ctx_t* ctx)
     }
     else // return
     {
-        vector_push(ctx->parent->stack, _ret_value);
+        vector_push(ctx->stack, _ret_value);
         goto fend;
     }
-    vector_push(ctx->parent->stack, value_null());
+    vector_push(ctx->stack, value_null());
 fend:
     free(ctx->ret);
     ctx->ret = NULL;
@@ -180,5 +186,7 @@ void eval_block(node_t* node, ctx_t* ctx)
 
     for(int i = 0; i < vector_size(node->block); i++)
         node->block[i]->eval(node->block[i], c);
+    
+    //ctx_free(c);
 }
 

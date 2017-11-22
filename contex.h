@@ -10,7 +10,6 @@
 struct var_s {
     char* name;
     value_t* val;
-    struct var_s* next;
 };
 
 struct ctx_s;
@@ -19,13 +18,12 @@ struct fn_s {
     char* name;
     node_t* body;
     value_t* (*native)(struct ctx_s*); // call if not NULL
-    struct fn_s* next;
 };
 
 struct ctx_s {
     struct ctx_s* parent;
-    struct var_s* vars;
-    struct fn_s* funcs;
+    vector(struct var_s*) vars;
+    vector(struct fn_s*) funcs;
     vector(value_t*) stack;
     jmp_buf* ret;
 };
@@ -35,7 +33,7 @@ typedef struct fn_s fn_t;
 typedef struct ctx_s ctx_t;
 
 ctx_t* ctx_new(ctx_t* parent);
-void ctx_setvar(ctx_t* ctx, char* name, value_t* value);
+void ctx_free(ctx_t* ctx);
 value_t* ctx_getvar(ctx_t* ctx, char* name);
 void ctx_addvar(ctx_t* ctx, char* name, value_t* val);
 fn_t* ctx_getfn(ctx_t* ctx, char* name);

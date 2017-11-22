@@ -11,11 +11,6 @@
 
 extern FILE* input;
 
-void quit()
-{
-    fclose(input);
-}
-
 value_t* print(ctx_t* ctx)
 {
     int n = vector_pop(ctx->stack)->number;
@@ -36,7 +31,7 @@ value_t* list(ctx_t* ctx)
 {
     int n = vector_pop(ctx->stack)->number; 
     vector(value_t*) arr = NULL;
-    for(int i = vector_size(ctx->stack)-n; i < vector_size(ctx->stack); i++)
+    for(int i = vector_size(ctx->stack) - n; i < vector_size(ctx->stack); i++)
     {
         vector_push(arr, ctx->stack[i]);
     }
@@ -81,8 +76,6 @@ int main(int argc, char ** argv)
         printf("Cannot open file.\n");
         return -2;
     }
-    atexit(quit);
-
 
     try
     {   
@@ -92,12 +85,18 @@ int main(int argc, char ** argv)
         ctx_addfn(global, "print", NULL, print);
         ctx_addfn(global, "list", NULL, list);
         ctx_addfn(global, "len", NULL, len);  
+        
         tree->eval(tree, global);
+        
+        ctx_free(global);
+        node_free(tree);
     }
     catch
     {
         puts(ex_msg);
     }
+
+    fclose(input);
 
     return 0;
 }
