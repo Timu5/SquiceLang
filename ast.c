@@ -246,25 +246,19 @@ static void printtab(int n)
 
 void node_print(node_t* node, int ind)
 {
-    /*printtab(ind);
+    printtab(ind);
     switch(node->type)
     {
     case N_ROOT:
         printf("root\n");
-        node_list_t* n4 = node->root.stmts->block;
-        while(n4)
-        {
-            node_print(n4->el, ind + 1);
-            n4 = n4->next;
-        }
+        node_print(node->root.funcs, ind + 1);
+        node_print(node->root.stmts, ind + 1);
         break;
     case N_BLOCK:
         printf("block\n");
-        node_list_t* n = node->block;
-        while(n)
+        for(int i = 0; i < vector_size(node->block); i++)
         {
-            node_print(n->el, ind + 1);
-            n = n->next;
+            node_print(node->block[i], ind + 1);
         }
         break;
     case N_IDENT:
@@ -284,12 +278,22 @@ void node_print(node_t* node, int ind)
         break;
     case N_CALL:
         printf("call %s\n", node->call.name);
-        node_list_t* n2 = node->call.args->block;
-        while(n2)
+        node_print(node->call.args, ind + 1);
+        break;
+    case N_FUNC:
+        printf("function: %s(", node->func.name);
+        for(int i = 0; i < vector_size(node->func.args); i++)
         {
-            node_print(n2->el, ind + 1);
-            n2 = n2->next;
+            printf("%s", node->func.args[i]);
+            if(i != vector_size(node->func.args) - 1)
+                printf(", ");
         }
+        printf(")\n");
+        node_print(node->func.body, ind + 1);
+    case N_RETURN:
+        printf("return\n");
+       if(node->ret)
+            node_print(node->ret, ind + 1);
         break;
     case N_COND:
         printf("cond\n");
@@ -318,5 +322,9 @@ void node_print(node_t* node, int ind)
         printf("->value:\n");
         node_print(node->decl.value, ind + 1);
         break;
-    }*/
+    case N_INDEX:
+        printf("index\n");
+        node_print(node->index.var, ind + 1);
+        node_print(node->index.expr, ind + 1);
+    }
 }
