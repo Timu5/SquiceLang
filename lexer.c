@@ -112,7 +112,15 @@ int gettoken()
         tmp = T_MINUS;
         break;
     case '/':
-        tmp = T_SLASH;
+        if(nextchar() == '/')
+        {
+            int l = line;
+            while(nextchar() >= 0 && l == line)
+               ;
+            return gettoken();
+        }
+        else
+            return T_SLASH;
         break;
     case '*':
         tmp = T_ASTERISK;
