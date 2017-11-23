@@ -48,6 +48,11 @@ fn fib(x)
     return fib(x - 1) + fib(x - 2);
 }
 
-print("fib(10) = ", fib(10));
+let i = 0;
+while(i < 10)
+{
+    i = i + 1;
+    print("fib(", i, ") = ", fib(i));
+}
 
 

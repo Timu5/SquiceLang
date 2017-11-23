@@ -9,6 +9,7 @@ value_t* value_null()
 {
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_NULL;
+    v->constant = 0;
     return v;
 }
 
@@ -16,6 +17,7 @@ value_t* value_number(double val)
 {
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_NUMBER;
+    v->constant = 0;
     v->number = val;
     return v;
 }
@@ -24,6 +26,7 @@ value_t* value_string(char* val)
 {
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_STRING;
+    v->constant = 0;
     v->string = val;
     return v;
 }
@@ -32,6 +35,7 @@ value_t* value_array(int count, value_t** arr)
 {
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_ARRAY;
+    v->constant = 0;
     v->array.ptr = arr;
     v->array.count = count;
     return v;
@@ -45,6 +49,13 @@ void value_free(value_t* val)
         for(int n = 0; n < val->array.count; n++)
             value_free(val->array.ptr[n]);
     free(val);
+}
+
+void value_assign(value_t* a, value_t* b)
+{
+    if(a->constant)
+        throw("cannot assign to const value");
+    memcpy(a, b, sizeof(value_t));
 }
 
 value_t* value_unary(int op, value_t* a)

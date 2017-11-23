@@ -72,16 +72,15 @@ void eval_call(node_t* node, ctx_t* ctx)
         node_t* n = node->call.args->block[i];
         n->eval(n, c);
     }
-
-    vector_push(c->stack, value_number((double)i));
-    
+       
     if(f->native)
     {
+        vector_push(c->stack, value_number((double)i));
         value_t* v = f->native(c);
     }
     else
     {   
-        int argc = vector_size(c->stack);
+        int argc = i;
         if(argc != vector_size(f->body->func.args))
             throw("Wrong number of arguments");
 

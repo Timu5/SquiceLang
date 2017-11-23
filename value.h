@@ -12,6 +12,7 @@ enum {
 
 typedef struct value_s {
     int type;
+    int constant;
     union {
         double number;
         char* string;
@@ -23,6 +24,8 @@ value_t* value_null();
 value_t* value_number(double val);
 value_t* value_string(char* val);
 value_t* value_array(int count, value_t** arr);
+
+void value_assign(value_t* a, value_t* b);
 
 value_t* value_unary(int op, value_t* a);
 value_t* value_binary(int op, value_t* a, value_t* b);
