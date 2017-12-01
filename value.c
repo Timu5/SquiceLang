@@ -10,6 +10,7 @@ value_t* value_null()
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_NULL;
     v->constant = 0;
+    v->refs = 0;
     return v;
 }
 
@@ -18,6 +19,7 @@ value_t* value_number(double val)
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_NUMBER;
     v->constant = 0;
+    v->refs = 0;
     v->number = val;
     return v;
 }
@@ -27,6 +29,7 @@ value_t* value_string(char* val)
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_STRING;
     v->constant = 0;
+    v->refs = 0;
     v->string = val;
     return v;
 }
@@ -36,30 +39,78 @@ value_t* value_array(int count, value_t** arr)
     value_t* v = (value_t*)malloc(sizeof(value_t));
     v->type = V_ARRAY;
     v->constant = 0;
+    v->refs = 0;
     v->array.ptr = arr;
     v->array.count = count;
     return v;
 }
 
+value_t* value_ref(value_t* val)
+{
+    value_t* v = (value_t*)malloc(sizeof(value_t));
+    v->type = V_REF;
+    v->refs = 0;
+    v->ref = val;
+    val->refs++;
+    return 0;
+}
+
 void value_free(value_t* val)
 {
+    if(val->refs > 0)
+        return;
+
     if(val->type == V_STRING)
+    {
         free(val->string);
+    }
     else if(val->type == V_ARRAY)
+    {
         for(int n = 0; n < val->array.count; n++)
             value_free(val->array.ptr[n]);
+    }
+    else if(val->type == V_REF)
+    {
+        val->ref->refs--;
+        value_free(val->ref);
+    }
     free(val);
 }
 
 void value_assign(value_t* a, value_t* b)
-{
+{  
+    value_t* olda = a;
+
+    if(a->type == V_REF)
+        a = a->ref;
+    if(b->type == V_REF)
+        b = b->ref;
+
     if(a->constant)
         throw("cannot assign to const value");
-    memcpy(a, b, sizeof(value_t));
+    
+    if(b->type == V_ARRAY)
+    {
+        a->ref = b;
+        a->type = V_REF;
+        b->refs++;
+    }
+    else
+    {
+        memcpy(a, b, sizeof(value_t));
+    }
+
+    if(a->type == V_STRING)
+        a->string = strdup(a->string);
+
+    //value_free(olda);
 }
 
 value_t* value_unary(int op, value_t* a)
 {
+    if(a->type == V_REF)
+        a = a->ref;
+
     if(a->type != V_NUMBER)
         throw("Cannot perform unary operation on non numbers");
     
@@ -129,6 +180,11 @@ static value_t* binary_array(int op, value_t* a, value_t* b)
 
 value_t* value_binary(int op, value_t* a, value_t* b)
 {
+    if(a->type == V_REF)
+        a = a->ref;
+    if(b->type == V_REF)
+        b = b->ref;
+
     if(a->type != b->type)
         throw("Type mismatch");
 
@@ -148,6 +204,9 @@ value_t* value_binary(int op, value_t* a, value_t* b)
 
 value_t* value_get(int i, value_t* a)
 {
+    if(a->type == V_REF)
+        a = a->ref;
+
     if(a->type == V_STRING)
     {
         int len = strlen(a->string);
