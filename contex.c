@@ -17,7 +17,7 @@ void ctx_free(ctx_t* ctx)
     for(int i = 0; i < vector_size(ctx->vars); i++)
     {
         free(ctx->vars[i]->name);
-        value_free(ctx->vars[i]->val);
+        value_free(ctx->vars[i]->val, 1);
         free(ctx->vars[i]);
     }
     vector_free(ctx->vars);
@@ -30,7 +30,7 @@ void ctx_free(ctx_t* ctx)
     vector_size(ctx->funcs);
 
     while(vector_size(ctx->stack))
-        value_free(vector_pop(ctx->stack));
+        value_free(vector_pop(ctx->stack), 1);
     free(ctx->ret);
 }
 

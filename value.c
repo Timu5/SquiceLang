@@ -55,7 +55,7 @@ value_t* value_ref(value_t* val)
     return 0;
 }
 
-void value_free(value_t* val)
+void value_free(value_t* val, int self)
 {
     if(val->refs > 0)
         return;
@@ -67,14 +67,15 @@ void value_free(value_t* val)
     else if(val->type == V_ARRAY)
     {
         for(int n = 0; n < val->array.count; n++)
-            value_free(val->array.ptr[n]);
+            value_free(val->array.ptr[n], 1);
     }
     else if(val->type == V_REF)
     {
         val->ref->refs--;
-        value_free(val->ref);
+        value_free(val->ref, 1);
     }
-    free(val);
+    if(self)
+        free(val);
 }
 
 void value_assign(value_t* a, value_t* b)
@@ -88,6 +89,8 @@ void value_assign(value_t* a, value_t* b)
 
     if(a->constant)
         throw("cannot assign to const value");
+
+    value_free(a, 0);
     
     if(b->type == V_ARRAY)
     {
@@ -102,8 +105,6 @@ void value_assign(value_t* a, value_t* b)
 
     if(a->type == V_STRING)
         a->string = strdup(a->string);
-
-    //value_free(olda);
 }
 
 value_t* value_unary(int op, value_t* a)

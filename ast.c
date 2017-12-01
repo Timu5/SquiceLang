@@ -76,7 +76,7 @@ node_t* node_binary(int op, node_t* a, node_t* b)
 
 static void free_value(node_t* node)
 {
-    value_free(node->value);
+    value_free(node->value, 1);
     free(node);
 }
 
