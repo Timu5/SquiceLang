@@ -5,6 +5,8 @@ ctx_t* ctx_new(ctx_t* parent)
 {
     ctx_t* ctx = (ctx_t*)malloc(sizeof(ctx_t));
     ctx->parent = parent;
+    if(parent)
+        parent->child = ctx;
     ctx->vars = NULL;
     ctx->funcs = NULL;
     ctx->stack = NULL;
@@ -14,10 +16,16 @@ ctx_t* ctx_new(ctx_t* parent)
 
 void ctx_free(ctx_t* ctx)
 {
+    if(ctx->child)
+    {
+    //   ctx_free(ctx->child);
+        ctx->child = NULL;
+    }
+
     for(int i = 0; i < vector_size(ctx->vars); i++)
     {
-        free(ctx->vars[i]->name);
-        value_free(ctx->vars[i]->val, 1);
+        //free(ctx->vars[i]->name);
+        //value_free(ctx->vars[i]->val, 1);
         free(ctx->vars[i]);
     }
     vector_free(ctx->vars);
@@ -27,11 +35,17 @@ void ctx_free(ctx_t* ctx)
         free(ctx->funcs[i]->name);
         free(ctx->funcs[i]);
     }
-    vector_size(ctx->funcs);
+    vector_free(ctx->funcs);
 
-    while(vector_size(ctx->stack))
-        value_free(vector_pop(ctx->stack), 1);
+   /* while(vector_size(ctx->stack))
+        value_free(vector_pop(ctx->stack), 1);*/
+    vector_free(ctx->stack);
     free(ctx->ret);
+
+    if(ctx->parent)
+        ctx->parent->child = NULL;
+
+    free(ctx);
 }
 
 value_t* ctx_getvar(ctx_t* ctx, char* name)

@@ -4,78 +4,74 @@
 #include "lexer.h"
 #include "value.h"
 #include "ex.h"
+#include "gc.h"
 
 value_t* value_null()
 {
-    value_t* v = (value_t*)malloc(sizeof(value_t));
+    value_t* v = gc_alloc_value();
     v->type = V_NULL;
     v->constant = 0;
     v->refs = 0;
+    v->markbit = 0;
     return v;
 }
 
 value_t* value_number(double val)
 {
-    value_t* v = (value_t*)malloc(sizeof(value_t));
+    value_t* v = gc_alloc_value();
     v->type = V_NUMBER;
     v->constant = 0;
     v->refs = 0;
     v->number = val;
+    v->markbit = 0;
     return v;
 }
 
 value_t* value_string(char* val)
 {
-    value_t* v = (value_t*)malloc(sizeof(value_t));
+    value_t* v = gc_alloc_value();
     v->type = V_STRING;
     v->constant = 0;
     v->refs = 0;
     v->string = val;
+    v->markbit = 0;
     return v;
 }
 
-value_t* value_array(int count, value_t** arr)
+value_t* value_array(vector(value_t*) arr)
 {
-    value_t* v = (value_t*)malloc(sizeof(value_t));
+    value_t* v = gc_alloc_value();
     v->type = V_ARRAY;
     v->constant = 0;
     v->refs = 0;
-    v->array.ptr = arr;
-    v->array.count = count;
+    v->array = arr;
+    v->markbit = 0;
     return v;
 }
 
 value_t* value_ref(value_t* val)
 {
-    value_t* v = (value_t*)malloc(sizeof(value_t));
+    value_t* v = gc_alloc_value();
     v->type = V_REF;
     v->refs = 0;
     v->ref = val;
     val->refs++;
+    v->markbit = 0;
     return 0;
 }
 
-void value_free(value_t* val, int self)
+void value_free(value_t* val)
 {
-    if(val->refs > 0)
-        return;
-
     if(val->type == V_STRING)
     {
         free(val->string);
     }
     else if(val->type == V_ARRAY)
     {
-        for(int n = 0; n < val->array.count; n++)
-            value_free(val->array.ptr[n], 1);
+        vector_free(val->string);
     }
-    else if(val->type == V_REF)
-    {
-        val->ref->refs--;
-        value_free(val->ref, 1);
-    }
-    if(self)
-        free(val);
+   
+    free(val);
 }
 
 void value_assign(value_t* a, value_t* b)
@@ -89,9 +85,10 @@ void value_assign(value_t* a, value_t* b)
 
     if(a->constant)
         throw("cannot assign to const value");
-
-    value_free(a, 0);
     
+    if(a->type == V_STRING)
+        free(a->string);
+
     if(b->type == V_ARRAY)
     {
         a->ref = b;
@@ -221,9 +218,9 @@ value_t* value_get(int i, value_t* a)
     }
     else if(a->type == V_ARRAY)
     {
-        if(i >= a->array.count)
+        if(i >= vector_size(a->array))
             throw("Index aut of range");
-        return a->array.ptr[i];
+        return a->array[i];
     }
 
     throw("Cannot index value of this type");

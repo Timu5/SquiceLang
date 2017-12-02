@@ -74,19 +74,34 @@ node_t* node_binary(int op, node_t* a, node_t* b)
     return node;
 }
 
-static void free_value(node_t* node)
+static void free_int(node_t* node)
 {
-    value_free(node->value, 1);
     free(node);
 }
 
-node_t* node_value(value_t* value)
+node_t* node_int(int integer)
 {
     node_t* node = (node_t*)malloc(sizeof(node_t));
-    node->type = N_VALUE;
-    node->value = value;
-    node->eval = eval_value;
-    node->free = free_value;
+    node->type = N_INT;
+    node->integer = integer;
+    node->eval = eval_int;
+    node->free = free_int;
+    return node;
+}
+
+static void free_string(node_t* node)
+{
+    free(node->string);
+    free(node);
+}
+
+node_t* node_string(char* string)
+{
+    node_t* node = (node_t*)malloc(sizeof(node_t));
+    node->type = N_STRING;
+    node->string = string;
+    node->eval = eval_string;
+    node->free = free_string;
     return node;
 }
 
@@ -113,6 +128,7 @@ static void free_func(node_t* node)
     node_free(node->func.body);
     for(int i = 0; i < vector_size(node->func.args); i++)
         free(node->func.args[i]);
+    vector_free(node->func.args);
     free(node->func.name);
     free(node);
 }
@@ -224,7 +240,7 @@ static void free_block(node_t* node)
 {
     for(int i = 0; i < vector_size(node->block); i++)
         node_free(node->block[i]);
-
+    vector_free(node->block);
     free(node);
 }
 
@@ -273,8 +289,11 @@ void node_print(node_t* node, int ind)
         node_print(node->binary.a, ind + 1);
         node_print(node->binary.b, ind + 1);
         break;
-    case N_VALUE:
-        printf("value %f\n", node->value->number);
+    case N_INT:
+        printf("int %i\n", node->integer);
+        break;
+    case N_STRING:
+        printf("string \"%s\"", node->string);
         break;
     case N_CALL:
         printf("call %s\n", node->call.name);

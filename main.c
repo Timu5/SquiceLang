@@ -8,6 +8,7 @@
 #include "eval.h"
 #include "contex.h"
 #include "ex.h"
+#include "gc.h"
 
 extern FILE* input;
 
@@ -37,7 +38,7 @@ value_t* list(ctx_t* ctx)
     }
     vector_shrinkby(ctx->stack, n);
 
-    vector_push(ctx->stack, value_array(vector_size(arr), arr));
+    vector_push(ctx->stack, value_array(arr));
 }
 
 value_t* len(ctx_t* ctx)
@@ -54,7 +55,7 @@ value_t* len(ctx_t* ctx)
     }
     else if(v->type == V_ARRAY)
     {
-        vector_push(ctx->stack, value_number(v->array.count));
+        vector_push(ctx->stack, value_number(vector_size(v->array)));
         return NULL;
     }
     
@@ -88,6 +89,8 @@ int main(int argc, char ** argv)
         
         tree->eval(tree, global);
         
+     //   gc_freeall();
+        gc_freeall();
         ctx_free(global);
         node_free(tree);
     }

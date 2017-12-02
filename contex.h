@@ -22,6 +22,7 @@ struct fn_s {
 
 struct ctx_s {
     struct ctx_s* parent;
+    struct ctx_s* child;
     vector(struct var_s*) vars;
     vector(struct fn_s*) funcs;
     vector(value_t*) stack;

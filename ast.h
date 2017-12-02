@@ -9,7 +9,8 @@ enum {
     N_IDENT,
     N_UNARY,
     N_BINARY,
-    N_VALUE,
+    N_INT,
+    N_STRING,
     N_CALL,
     N_FUNC,
     N_RETURN,
@@ -31,7 +32,8 @@ struct node_s {
         char* ident;
         struct { int op; struct node_s* val; } unary;
         struct { int op; struct node_s* a; struct node_s* b; } binary;
-        value_t* value;
+        int integer;
+        char* string;
         struct { char* name; struct node_s* args; } call;
         struct { char* name; vector(char*) args; struct node_s* body; } func;
         struct node_s* ret;
@@ -51,7 +53,8 @@ node_t* node_root(node_t* funcs, node_t* stmts);
 node_t* node_ident(char* name);
 node_t* node_unary(int op, node_t* val);
 node_t* node_binary(int op, node_t* a, node_t* b);
-node_t* node_value(value_t* value);
+node_t* node_int(int integer);
+node_t* node_string(char* string);
 node_t* node_call(char* name, node_t* args);
 node_t* node_func(char*name, vector(char*) args, node_t* body);
 node_t* node_return(node_t* expr);

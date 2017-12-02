@@ -53,9 +53,14 @@ void eval_binary(node_t* node, ctx_t* ctx)
     
 }
 
-void eval_value(node_t* node, ctx_t* ctx)
+void eval_int(node_t* node, ctx_t* ctx)
 {
-    vector_push(ctx->stack, node->value);
+    vector_push(ctx->stack, value_number((double)node->integer));
+}
+
+void eval_string(node_t* node, ctx_t* ctx)
+{
+    vector_push(ctx->stack, value_string(strdup(node->string)));
 }
 
 void eval_call(node_t* node, ctx_t* ctx)
@@ -85,14 +90,17 @@ void eval_call(node_t* node, ctx_t* ctx)
             throw("Wrong number of arguments");
 
         for(int i = vector_size(f->body->func.args) - 1; i >= 0; i--)
-            ctx_addvar(c, f->body->func.args[i], vector_pop(c->stack));
+        {
+            ctx_addvar(c, f->body->func.args[i], value_null());
 
+            value_assign(ctx_getvar(c, f->body->func.args[i]), vector_pop(c->stack));
+        }
         f->body->eval(f->body, c);
     }
 
     value_t* ret = vector_pop(c->stack);
-    vector_push(ctx->stack, ret); 
-    //ctx_free(c);
+    vector_push(ctx->stack, ret);
+    ctx_free(c);
 }
 
 value_t* _ret_value;
@@ -134,6 +142,7 @@ void eval_return(node_t* node, ctx_t* ctx)
         throw("Nothing to return from");
 
     _ret_value = vector_pop(ctx->stack);
+    ctx_free(ctx);
     longjmp(*ret->ret, 1);
 }
 
@@ -186,6 +195,6 @@ void eval_block(node_t* node, ctx_t* ctx)
     for(int i = 0; i < vector_size(node->block); i++)
         node->block[i]->eval(node->block[i], c);
     
-    //ctx_free(c);
+    ctx_free(c);
 }
 

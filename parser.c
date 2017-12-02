@@ -30,11 +30,11 @@ node_t* primary()
     node_t* prim = NULL;
     if(lasttoken == T_NUMBER)
     {
-        prim = node_value(value_number((float)number));
+        prim = node_int(number);
     }
     else if(lasttoken == T_STRING)
     {
-        prim = node_value(value_string(strdup(buffer)));
+        prim = node_string(strdup(buffer));
     }
     else if(lasttoken == T_IDENT)
     {
