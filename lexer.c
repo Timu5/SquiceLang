@@ -60,8 +60,10 @@ int gettoken()
             return T_LET;
         else if(strcmp(buffer, "fn") == 0)
             return T_FN;
-        else if(strcmp(buffer, "return") == 0)
-            return T_RETURN;
+		else if (strcmp(buffer, "return") == 0)
+			return T_RETURN;
+		else if (strcmp(buffer, "break") == 0)
+			return T_BREAK;
 
         return T_IDENT;
     }
@@ -195,6 +197,7 @@ char* tokenstr(int token)
     "T_IF",
     "T_ELSE",
     "T_WHILE",
+	"T_BREAK",
 
     "T_SEMICOLON", // ;
     "T_COMMA",     // ,

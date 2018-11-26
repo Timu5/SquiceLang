@@ -16,6 +16,7 @@ enum {
     N_RETURN,
     N_COND,
     N_LOOP,
+	N_BREAK,
     N_DECL,
     N_INDEX,
     N_BLOCK
@@ -60,6 +61,7 @@ node_t* node_func(char*name, vector(char*) args, node_t* body);
 node_t* node_return(node_t* expr);
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody);
 node_t* node_loop(node_t* arg, node_t* body);
+node_t* node_break();
 node_t* node_decl(node_t* name, node_t* value);
 node_t* node_index(node_t* var, node_t* expr);
 node_t* node_block(vector(node_t*) list);

@@ -158,14 +158,37 @@ void eval_cond(node_t* node, ctx_t* ctx)
 
 void eval_loop(node_t* node, ctx_t* ctx)
 {
-label:
-    node->loop.arg->eval(node->loop.arg, ctx);
-    value_t* arg = vector_pop(ctx->stack);
-    if(arg->number != 0)
-    {
-        node->loop.body->eval(node->loop.body, ctx);
-        goto label;
-    }
+	ctx->retLoop = malloc(sizeof(jmp_buf));
+	if (!setjmp(*ctx->retLoop))
+	{
+	label:
+		node->loop.arg->eval(node->loop.arg, ctx);
+		value_t* arg = vector_pop(ctx->stack);
+		if (arg->number != 0)
+		{
+			node->loop.body->eval(node->loop.body, ctx);
+			goto label;
+		}
+	}
+	free(ctx->retLoop);
+	ctx->retLoop = NULL;
+}
+
+void eval_break(node_t * node, ctx_t * ctx)
+{
+	ctx_t* ret = ctx;
+	while (ret)
+	{
+		if (ret->retLoop != 0)
+			break;
+		ret = ret->parent;
+	}
+
+	if (!ret->retLoop)
+		throw("Nothing to break from");
+
+	ctx_free(ctx);
+	longjmp(*ret->retLoop, 1);
 }
 
 void eval_decl(node_t* node, ctx_t* ctx)

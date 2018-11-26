@@ -28,6 +28,8 @@ while(i < 10)
 {
     print(i);
     i = i + 1;
+	if(i == 8)
+		break;
 }
 
 let array = list(1, 2, 3, 4, 5, 6);

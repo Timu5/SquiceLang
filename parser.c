@@ -22,7 +22,7 @@ void match(int token)
         throw("Unexpexted token, expect %s got %s", tokenstr(token), tokenstr(lasttoken));
 }
 
-node_t* expr();
+node_t* expr(int min);
 
 // primary :=  ident | number | string | call | '(' expr ')' | UNARY_OP primary | primary '[' expr ']'
 node_t* primary()
@@ -133,7 +133,8 @@ node_t* expr(int min)
 // if := 'if' '(' expr ')' statement ['else' statement]
 // while := 'while' '(' expr ')' statement
 // return := 'return' ';' | 'return' expr ';'
-// statement := block | let | if | while | funca | return | expr ';'
+// break := 'break' ';'
+// statement := block | let | if | while | funca | return | break | expr ';'
 node_t* statment()
 {
     switch(lasttoken)
@@ -221,17 +222,23 @@ node_t* statment()
         node_t* fnbody = statment();
 
         return node_func(fnname, args, fnbody);
-    case T_RETURN:
-        nexttoken();
-        
-        node_t* retnode = NULL;     
-        if(lasttoken != T_SEMICOLON)
-            retnode = expr(0);
-        
-        match(T_SEMICOLON);
-        nexttoken();
-        
-        return node_return(retnode);
+	case T_RETURN:
+		nexttoken();
+
+		node_t* retnode = NULL;
+		if (lasttoken != T_SEMICOLON)
+			retnode = expr(0);
+
+		match(T_SEMICOLON);
+		nexttoken();
+
+		return node_return(retnode);
+	case T_BREAK:
+		nexttoken();
+		match(T_SEMICOLON);
+		nexttoken();
+
+		return node_break();
     default:;
         node_t* e = expr(0);
         match(T_SEMICOLON);

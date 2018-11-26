@@ -12,7 +12,8 @@ enum {
     T_LET,
     T_IF,
     T_ELSE,
-    T_WHILE,
+	T_WHILE,
+	T_BREAK,
 
     T_SEMICOLON, // ;
     T_COMMA,     // ,

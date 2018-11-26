@@ -16,6 +16,7 @@ void eval_func(node_t* node, ctx_t* ctx);
 void eval_return(node_t* node, ctx_t* ctx);
 void eval_cond(node_t* node, ctx_t* ctx);
 void eval_loop(node_t* node, ctx_t* ctx);
+void eval_break(node_t* node, ctx_t* ctx);
 void eval_decl(node_t* node, ctx_t* ctx);
 void eval_index(node_t* node, ctx_t* ctx);
 void eval_block(node_t* node, ctx_t* ctx);

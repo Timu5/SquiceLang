@@ -200,6 +200,20 @@ node_t* node_loop(node_t* arg, node_t* body)
     return node;
 }
 
+static void free_break(node_t* node)
+{
+	free(node);
+}
+
+node_t * node_break()
+{
+	node_t* node = (node_t*)malloc(sizeof(node_t));
+	node->type = N_BREAK;
+	node->eval = eval_break;
+	node->free = free_break;
+	return node;
+}
+
 static void free_decl(node_t* node)
 {
     node_free(node->decl.name);
@@ -332,6 +346,9 @@ void node_print(node_t* node, int ind)
         printf("->body:\n");
         node_print(node->loop.body, ind + 1);
         break;
+	case N_BREAK:
+		printf("break\n");
+		break;
     case N_DECL:
         printf("decl\n");
         printtab(ind);
