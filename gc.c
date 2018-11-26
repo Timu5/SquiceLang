@@ -8,6 +8,11 @@
 
 vector(value_t*) values;
 
+size_t maxmem = 128;
+size_t usedmem = 0;
+
+extern ctx_t* global;
+
 void* safe_alloc(int size)
 {
     void* data = malloc(size);
@@ -20,6 +25,16 @@ value_t* gc_alloc_value()
 {
     void* v = safe_alloc(sizeof(value_t));
     vector_push(values, v);
+
+	usedmem += 1;
+	if (usedmem >= maxmem)
+	{
+		gc_collect(global);
+		usedmem = vector_size(values);
+		if (usedmem >= maxmem)
+			maxmem = maxmem * 2;
+	}
+
     return v;
 }
 
@@ -31,6 +46,11 @@ void gc_collect(ctx_t* ctx)
         for(int i = 0; i < vector_size(c->vars); i++)
         {
             c->vars[i]->val->markbit = 1;
+			if (c->vars[i]->val->type == V_ARRAY)
+			{
+				for (int j = vector_size(c->vars[i]->val->array) - 1; j >= 0; j--)
+					c->vars[i]->val->array[j]->markbit = 1;
+			}
         }
         for(int i = 0; i < vector_size(c->stack); i++)
         {
@@ -44,7 +64,7 @@ void gc_collect(ctx_t* ctx)
         if(values[i]->markbit == 0)
         {
             value_free(values[i]);
-            int l = vector_size(values);
+            int l = vector_size(values) - 1;
             if(i != l)
                 values[i] = values[l];
             vector_pop(values);

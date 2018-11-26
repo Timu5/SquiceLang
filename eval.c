@@ -142,7 +142,9 @@ void eval_return(node_t* node, ctx_t* ctx)
         throw("Nothing to return from");
 
     _ret_value = vector_pop(ctx->stack);
-    ctx_free(ctx);
+	ctx_t* parent = ctx->parent;
+	ctx_free(ctx);
+	parent->child = NULL;
     longjmp(*ret->ret, 1);
 }
 
@@ -187,7 +189,9 @@ void eval_break(node_t * node, ctx_t * ctx)
 	if (!ret->retLoop)
 		throw("Nothing to break from");
 
+	ctx_t* parent = ctx->parent;
 	ctx_free(ctx);
+	parent->child = NULL;
 	longjmp(*ret->retLoop, 1);
 }
 

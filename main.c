@@ -62,6 +62,8 @@ value_t* len(ctx_t* ctx)
     throw("Function len need argument of type string or array.");
 }
 
+ctx_t* global = NULL;
+
 int main(int argc, char ** argv)
 {
     if(argc < 2)
@@ -82,14 +84,13 @@ int main(int argc, char ** argv)
     {   
         node_t* tree = parse();
 
-        ctx_t* global = ctx_new(NULL);
+        global = ctx_new(NULL);
         ctx_addfn(global, "print", NULL, print);
         ctx_addfn(global, "list", NULL, list);
         ctx_addfn(global, "len", NULL, len);  
         
         tree->eval(tree, global);
         
-     //   gc_freeall();
         gc_freeall();
         ctx_free(global);
         node_free(tree);
