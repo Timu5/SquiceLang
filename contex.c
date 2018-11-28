@@ -28,13 +28,13 @@ void ctx_free(ctx_t* ctx)
     {
         //free(ctx->vars[i]->name);
         //value_free(ctx->vars[i]->val, 1);
-        //free(ctx->vars[i]);
+        free(ctx->vars[i]);
     }
     vector_free(ctx->vars);
 
     for(int i = 0; i < vector_size(ctx->funcs); i++)
     {
-        free(ctx->funcs[i]->name);
+        //free(ctx->funcs[i]->name);
         free(ctx->funcs[i]);
     }
     vector_free(ctx->funcs);

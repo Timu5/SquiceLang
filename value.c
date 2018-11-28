@@ -120,7 +120,7 @@ void value_assign(value_t* a, value_t* b)
     }
 
     if(a->type == V_STRING)
-        a->string = strdup(a->string);
+        a->string = strdup(b->string);
 }
 
 value_t* value_unary(int op, value_t* a)

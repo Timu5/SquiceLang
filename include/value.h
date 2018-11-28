@@ -31,7 +31,7 @@ value_t* value_null();
 value_t* value_number(double val);
 value_t* value_string(char* val);
 value_t* value_array(vector(value_t*) arr);
-value_t* value_dict(vector(char*) names, vector(struct value_t*) values);
+value_t* value_dict(vector(char*) names, vector(value_t*) values);
 value_t* value_ref(value_t* val);
 
 void value_assign(value_t* a, value_t* b);
