@@ -24,7 +24,7 @@ void match(int token)
 
 node_t* expr(int min);
 
-// primary :=  ident | number | string | call | '(' expr ')' | UNARY_OP primary | primary '[' expr ']'
+// primary :=  ident | number | string | call | '(' expr ')' | UNARY_OP primary | primary '[' expr ']' | primary '.' ident
 node_t* primary()
 {
     node_t* prim = NULL;
@@ -83,7 +83,7 @@ node_t* primary()
     }
     nexttoken();
 lidx:
-    while(lasttoken == T_LBRACK)
+    if(lasttoken == T_LBRACK)
     {
         nexttoken();
         node_t* e = expr(0);
@@ -91,6 +91,16 @@ lidx:
         nexttoken();
         prim = node_index(prim, e);
     }
+	else if (lasttoken == T_DOT)
+	{
+		nexttoken();
+		match(T_IDENT);
+		char* name = strdup(buffer);
+		nexttoken();
+		prim = node_member(prim, name);
+	}
+	if (lasttoken == T_DOT || lasttoken == T_LBRACK)
+		goto lidx;
     return prim;
 }
 

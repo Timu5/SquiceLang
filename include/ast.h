@@ -19,7 +19,8 @@ enum {
 	N_BREAK,
     N_DECL,
     N_INDEX,
-    N_BLOCK
+    N_BLOCK,
+	N_MEMBER
 };
 
 struct ctx_s;
@@ -43,6 +44,7 @@ struct node_s {
         struct { struct node_s* name; struct node_s* value; } decl;
         struct { struct node_s* var; struct node_s* expr; } index;
         vector(struct node_s*) block;
+		struct { struct node_s* parent;  char* name; } member;
     };
 };
 
@@ -65,6 +67,7 @@ node_t* node_break();
 node_t* node_decl(node_t* name, node_t* value);
 node_t* node_index(node_t* var, node_t* expr);
 node_t* node_block(vector(node_t*) list);
+node_t* node_member(node_t* parent, char* name);
 
 void node_print(node_t* node, int ind);
 

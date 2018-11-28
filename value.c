@@ -49,6 +49,18 @@ value_t* value_array(vector(value_t*) arr)
     return v;
 }
 
+value_t* value_dict(vector(char*) names, vector(value_t*) values)
+{
+	value_t* v = gc_alloc_value();
+	v->type = V_DICT;
+	v->constant = 0;
+	v->refs = 0;
+	v->dict.names = names;
+	v->dict.values = values;
+	v->markbit = 0;
+	return v;
+}
+
 value_t* value_ref(value_t* val)
 {
     value_t* v = gc_alloc_value();
@@ -66,10 +78,17 @@ void value_free(value_t* val)
     {
         free(val->string);
     }
-    else if(val->type == V_ARRAY)
-    {
-        vector_free(val->string);
-    }
+	else if(val->type == V_ARRAY)
+	{
+		vector_free(val->string);
+	}
+	else if (val->type == V_DICT)
+	{
+		for (int i = 0; i < vector_size(val->dict.names); i++)
+			free(val->dict.names[i]);
+		vector_free(val->dict.names);
+		vector_free(val->dict.values);
+	}
    
     free(val);
 }
@@ -89,7 +108,7 @@ void value_assign(value_t* a, value_t* b)
     if(a->type == V_STRING)
         free(a->string);
 
-    if(b->type == V_ARRAY)
+    if(b->type == V_ARRAY || b->type == V_DICT)
     {
         a->ref = b;
         a->type = V_REF;
@@ -173,7 +192,12 @@ static value_t* binary_string(int op, value_t* a, value_t* b)
 
 static value_t* binary_array(int op, value_t* a, value_t* b)
 {
-    throw("Cannot perform any binary operation on type array");
+	throw("Cannot perform any binary operation on type array");
+}
+
+static value_t* binary_dict(int op, value_t* a, value_t* b)
+{
+	throw("Cannot perform any binary operation on type dict");
 }
 
 value_t* value_binary(int op, value_t* a, value_t* b)
@@ -194,8 +218,10 @@ value_t* value_binary(int op, value_t* a, value_t* b)
         return binary_number(op, a, b);
     case V_STRING:
         return binary_string(op, a, b);
-    case V_ARRAY:
-        return binary_string(op, a, b);
+	case V_ARRAY:
+		return binary_string(op, a, b);
+	case V_DICT:
+		return binary_dict(op, a, b);
     }
     throw("Unkown value type");
 }
@@ -224,5 +250,20 @@ value_t* value_get(int i, value_t* a)
     }
 
     throw("Cannot index value of this type");
+}
+
+value_t * value_member(char * name, value_t * a)
+{
+	if (a->type == V_DICT)
+	{
+		for (int i = 0; i < vector_size(a->dict.names); i++)
+		{
+			if (strcmp(a->dict.names[i], name) == 0)
+				return a->dict.values[i];
+		}
+		throw("No member with name %s", name);
+	}
+
+	throw("Cannot get member for this type");
 }
 

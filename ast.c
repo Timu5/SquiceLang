@@ -268,6 +268,24 @@ node_t* node_block(vector(node_t*) list)
     return node;
 }
 
+static void free_member(node_t* node)
+{
+	node_free(node->member.parent);
+	free(node->member.name);
+	free(node);
+}
+
+node_t * node_member(node_t * parent, char * name)
+{
+	node_t* node = (node_t*)malloc(sizeof(node_t));
+	node->type = N_BLOCK;
+	node->member.name = name;
+	node->member.parent = parent;
+	node->eval = eval_member;
+	node->free = free_member;
+	return node;
+}
+
 static void printtab(int n)
 {
     for(int i=0; i < n; i++)

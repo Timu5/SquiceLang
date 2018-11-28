@@ -104,9 +104,12 @@ int gettoken()
     case ',':
         tmp =  T_COMMA;
         break;
-    case ';':
-        tmp = T_SEMICOLON;
-        break;
+	case ';':
+		tmp = T_SEMICOLON;
+		break;
+	case '.':
+		tmp = T_DOT;
+		break;
     case  '+':
         tmp = T_PLUS;
         break;
@@ -200,7 +203,8 @@ char* tokenstr(int token)
 	"T_BREAK",
 
     "T_SEMICOLON", // ;
-    "T_COMMA",     // ,
+	"T_COMMA",     // ,
+	"T_DOT",       // .
     
     "T_PLUS",      // +
     "T_MINUS",     // -

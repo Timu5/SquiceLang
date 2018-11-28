@@ -225,3 +225,10 @@ void eval_block(node_t* node, ctx_t* ctx)
     ctx_free(c);
 }
 
+void eval_member(node_t * node, ctx_t * ctx)
+{
+	node->member.parent->eval(node->member.parent, ctx);
+	value_t* parent = vector_pop(ctx->stack);
+	vector_push(ctx->stack, value_member(node->member.name, parent));
+}
+

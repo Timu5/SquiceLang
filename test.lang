@@ -57,4 +57,12 @@ while(i < 10)
     print("fib(", i, ") = ", fib(i));
 }
 
+let d = dict();
+addMember(d, "field", 1);
+addMember(d, "field2", 22);
 
+print("d.field = ", d.field);
+print("d.field2 = ", d.field2);
+
+d.field2 = 100;
+print("d.field2 = ", d.field2);

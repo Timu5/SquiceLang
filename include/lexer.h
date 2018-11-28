@@ -17,6 +17,7 @@ enum {
 
     T_SEMICOLON, // ;
     T_COMMA,     // ,
+	T_DOT,       // .
     
     T_PLUS,      // +
     T_MINUS,     // -

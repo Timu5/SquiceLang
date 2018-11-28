@@ -20,5 +20,6 @@ void eval_break(node_t* node, ctx_t* ctx);
 void eval_decl(node_t* node, ctx_t* ctx);
 void eval_index(node_t* node, ctx_t* ctx);
 void eval_block(node_t* node, ctx_t* ctx);
+void eval_member(node_t* node, ctx_t* ctx);
 
 #endif

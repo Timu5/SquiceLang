@@ -30,22 +30,50 @@ value_t* print(ctx_t* ctx)
 
 value_t* list(ctx_t* ctx)
 {
-    int n = vector_pop(ctx->stack)->number; 
-    vector(value_t*) arr = NULL;
-    for(int i = vector_size(ctx->stack) - n; i < vector_size(ctx->stack); i++)
-    {
-        vector_push(arr, ctx->stack[i]);
-    }
-    vector_shrinkby(ctx->stack, n);
+	int n = vector_pop(ctx->stack)->number;
+	vector(value_t*) arr = NULL;
+	for(int i = vector_size(ctx->stack) - n; i < vector_size(ctx->stack); i++)
+	{
+		vector_push(arr, ctx->stack[i]);
+	}
+	vector_shrinkby(ctx->stack, n);
 
-    vector_push(ctx->stack, value_array(arr));
+	vector_push(ctx->stack, value_array(arr));
+}
+
+value_t* dict(ctx_t* ctx)
+{
+	int n = vector_pop(ctx->stack)->number;
+	if (n != 0)
+		throw("Function dict takes exactly 1 argument");
+
+	vector_push(ctx->stack, value_dict(NULL, NULL));
+}
+
+value_t* addMember(ctx_t* ctx)
+{
+	int n = vector_pop(ctx->stack)->number;
+	if (n != 3)
+		throw("Function addmember takes exactly 3 argument");
+
+	value_t* v = vector_pop(ctx->stack);
+	value_t* k = vector_pop(ctx->stack);
+	value_t* p = vector_pop(ctx->stack);
+
+	if (k->type != V_STRING)
+		throw("Key can only be of type string");
+
+	vector_push(p->dict.names, strdup(k->string));
+	vector_push(p->dict.values, v);
+
+	vector_push(ctx->stack, value_dict(NULL, NULL));
 }
 
 value_t* len(ctx_t* ctx)
 {
     int n = vector_pop(ctx->stack)->number;
     if(n != 1)
-        throw("Function len get exacly 1 argument");
+        throw("Function len takes exactly 1 argument");
 
     value_t* v = vector_pop(ctx->stack);
     if(v->type == V_STRING)
@@ -86,7 +114,9 @@ int main(int argc, char ** argv)
 
         global = ctx_new(NULL);
         ctx_addfn(global, "print", NULL, print);
-        ctx_addfn(global, "list", NULL, list);
+		ctx_addfn(global, "list", NULL, list);
+		ctx_addfn(global, "dict", NULL, dict);
+		ctx_addfn(global, "addmember", NULL, addMember);
         ctx_addfn(global, "len", NULL, len);  
         
         tree->eval(tree, global);
