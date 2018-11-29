@@ -65,9 +65,13 @@ void eval_string(node_t* node, ctx_t* ctx)
 
 void eval_call(node_t* node, ctx_t* ctx)
 {
-    fn_t* f = ctx_getfn(ctx, node->call.name);
-    if(!f)
-        throw("Cannot find function %s", node->call.name);
+    node->call.func->eval(node->call.func, ctx);
+
+    value_t* vf = vector_pop(ctx->stack);
+    if (vf->type != V_FN)
+        throw("Can only call functions!");
+
+    fn_t* f = vf->fn;
     
     ctx_t* c = ctx_new(ctx);
 

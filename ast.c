@@ -107,16 +107,16 @@ node_t* node_string(char* string)
 
 static void free_call(node_t* node)
 {
-    free(node->call.name);
+    node_free(node->call.func);
     node_free(node->call.args);
     free(node);
 }
 
-node_t* node_call(char* name, node_t* args)
+node_t* node_call(node_t* func, node_t* args)
 {
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_CALL;
-    node->call.name = name;
+    node->call.func = func;
     node->call.args = args;
     node->eval = eval_call;
     node->free = free_call;
@@ -328,7 +328,8 @@ void node_print(node_t* node, int ind)
         printf("string \"%s\"", node->string);
         break;
     case N_CALL:
-        printf("call %s\n", node->call.name);
+        printf("call\n");
+        node_print(node->call.func, ind + 1);
         node_print(node->call.args, ind + 1);
         break;
     case N_FUNC:

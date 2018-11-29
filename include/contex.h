@@ -15,7 +15,6 @@ struct var_s {
 struct ctx_s;
 
 struct fn_s {
-    char* name;
     node_t* body;
     value_t* (*native)(struct ctx_s*); // call if not NULL
 };
@@ -24,7 +23,6 @@ struct ctx_s {
     struct ctx_s* parent;
     struct ctx_s* child;
     vector(struct var_s*) vars;
-    vector(struct fn_s*) funcs;
     vector(value_t*) stack;
 	jmp_buf* ret;
 	jmp_buf* retLoop;

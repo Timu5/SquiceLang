@@ -66,3 +66,7 @@ print("d.field2 = ", d.field2);
 
 d.field2 = 100;
 print("d.field2 = ", d.field2);
+
+addMember(d, "fib", fib);
+print("d.fib(8) = ", d.fib(8));
+

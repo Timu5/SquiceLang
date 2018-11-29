@@ -24,55 +24,36 @@ void match(int token)
 
 node_t* expr(int min);
 
-// primary :=  ident | number | string | call | '(' expr ')' | UNARY_OP primary | primary '[' expr ']' | primary '.' ident
+// primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary | 
+//             primary '[' expr ']' | primary '(' expr ')'| primary '.' ident
 node_t* primary()
 {
     node_t* prim = NULL;
     if(lasttoken == T_NUMBER)
     {
         prim = node_int(number);
+        nexttoken();
     }
     else if(lasttoken == T_STRING)
     {
         prim = node_string(strdup(buffer));
+        nexttoken();
     }
     else if(lasttoken == T_IDENT)
     {
-        char* name = strdup(buffer);
-        if(nexttoken() == T_LPAREN)
-        {
-            // parser fn call
-            vector(node_t*) args = NULL;
-            nexttoken();
-            while(lasttoken != T_RPAREN)
-            {
-                node_t* e = expr(0);
-                vector_push(args, e);
-
-                if(lasttoken != T_COMMA)
-                    break;
-                nexttoken();    
-            }
-            match(T_RPAREN);
-            nexttoken();
-            prim = node_call(name, node_block(args));
-            goto lidx;
-        }
-        else
-        {
-            // ident
-            prim = node_ident(name);
-            goto lidx;
-        }
+        prim = node_ident(strdup(buffer));
+        nexttoken();
     }
-    else if(lasttoken == T_LPAREN)
+    else if(lasttoken == T_LPAREN) // '(' expr ')'
     {
         nexttoken();
         prim = expr(0);
         match(T_RPAREN);
+        nexttoken();
     }
-    else if(lasttoken == T_PLUS || lasttoken == T_MINUS || lasttoken == T_EXCLAM)
+    else if(lasttoken == T_PLUS || lasttoken == T_MINUS|| lasttoken == T_EXCLAM) // UNARY_OP primary
     {
+        // UNARY_OP primary
         int op = lasttoken;
         nexttoken();
         return node_unary(op, primary());
@@ -81,26 +62,43 @@ node_t* primary()
     {
         throw("Unexpexted token in primary!");
     }
-    nexttoken();
-lidx:
-    if(lasttoken == T_LBRACK)
-    {
-        nexttoken();
-        node_t* e = expr(0);
-        match(T_RBRACK);
-        nexttoken();
-        prim = node_index(prim, e);
+
+    while (lasttoken == T_DOT || lasttoken == T_LBRACK || lasttoken == T_LPAREN)
+    {     
+        if (lasttoken == T_LPAREN) // primary '(' expr ')'
+        {
+            nexttoken();
+            vector(node_t*) args = NULL;
+            while (lasttoken != T_RPAREN)
+            {
+                node_t* e = expr(0);
+                vector_push(args, e);
+
+                if (lasttoken != T_COMMA)
+                    break;
+                nexttoken();
+            }
+            match(T_RPAREN);
+            nexttoken();
+            prim = node_call(prim, node_block(args));
+        }
+        else if (lasttoken == T_LBRACK) // primary '[' expr ']'
+        {
+            nexttoken();
+            node_t* e = expr(0);
+            match(T_RBRACK);
+            nexttoken();
+            prim = node_index(prim, e);
+        }
+        else if (lasttoken == T_DOT) // primary '.' ident
+        {
+            nexttoken();
+            match(T_IDENT);
+            char* name = strdup(buffer);
+            nexttoken();
+            prim = node_member(prim, name);
+        }
     }
-	else if (lasttoken == T_DOT)
-	{
-		nexttoken();
-		match(T_IDENT);
-		char* name = strdup(buffer);
-		nexttoken();
-		prim = node_member(prim, name);
-	}
-	if (lasttoken == T_DOT || lasttoken == T_LBRACK)
-		goto lidx;
     return prim;
 }
 

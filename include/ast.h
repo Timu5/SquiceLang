@@ -36,7 +36,7 @@ struct node_s {
         struct { int op; struct node_s* a; struct node_s* b; } binary;
         int integer;
         char* string;
-        struct { char* name; struct node_s* args; } call;
+        struct { struct node_s* func; struct node_s* args; } call;
         struct { char* name; vector(char*) args; struct node_s* body; } func;
         struct node_s* ret;
         struct { struct node_s* arg; struct node_s* body; struct node_s* elsebody; } cond;
@@ -58,7 +58,7 @@ node_t* node_unary(int op, node_t* val);
 node_t* node_binary(int op, node_t* a, node_t* b);
 node_t* node_int(int integer);
 node_t* node_string(char* string);
-node_t* node_call(char* name, node_t* args);
+node_t* node_call(node_t* func, node_t* args);
 node_t* node_func(char*name, vector(char*) args, node_t* body);
 node_t* node_return(node_t* expr);
 node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody);

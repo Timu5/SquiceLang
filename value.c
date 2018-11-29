@@ -5,6 +5,7 @@
 #include "value.h"
 #include "ex.h"
 #include "gc.h"
+#include "contex.h"
 
 value_t* value_null()
 {
@@ -59,6 +60,17 @@ value_t* value_dict(vector(char*) names, vector(value_t*) values)
 	v->dict.values = values;
 	v->markbit = 0;
 	return v;
+}
+
+value_t* value_fn(fn_t* fn)
+{
+    value_t* v = gc_alloc_value();
+    v->type = V_FN;
+    v->constant = 0;
+    v->refs = 0;
+    v->fn = fn;
+    v->markbit = 0;
+    return v;
 }
 
 value_t* value_ref(value_t* val)

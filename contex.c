@@ -9,7 +9,6 @@ ctx_t* ctx_new(ctx_t* parent)
         parent->child = ctx;
 	ctx->child = NULL;
     ctx->vars = NULL;
-    ctx->funcs = NULL;
     ctx->stack = NULL;
     ctx->ret = NULL;
 	ctx->retLoop = NULL;
@@ -31,13 +30,6 @@ void ctx_free(ctx_t* ctx)
         free(ctx->vars[i]);
     }
     vector_free(ctx->vars);
-
-    for(int i = 0; i < vector_size(ctx->funcs); i++)
-    {
-        //free(ctx->funcs[i]->name);
-        free(ctx->funcs[i]);
-    }
-    vector_free(ctx->funcs);
 
    /* while(vector_size(ctx->stack))
         value_free(vector_pop(ctx->stack), 1);*/
@@ -79,28 +71,20 @@ void ctx_addvar(ctx_t* ctx, char* name, value_t* val)
 
 fn_t* ctx_getfn(ctx_t* ctx, char* name)
 {
-    ctx_t* c = ctx;
-    while(c)
-    {
-        for(int i = vector_size(c->funcs) - 1; i >= 0; i--)
-        {
-            fn_t* f = c->funcs[i];
-       
-            if(strcmp(f->name, name) == 0)
-                return f;
-        }
-        c = c->parent;
-    }
-    return NULL;
+    value_t* v = ctx_getvar(ctx, name);
+    if(v == NULL || v->type != V_FN)
+        return NULL;
+    return v->fn;
 }
 
 void ctx_addfn(ctx_t* ctx, char* name, node_t* body, value_t* (*fn)(ctx_t*))
 {
     fn_t* func = (fn_t*)malloc(sizeof(fn_t));
-    func->name = strdup(name);
     func->body = body;
     func->native = fn;
+
+    value_t* v = value_fn(func);
     
-    vector_push(ctx->funcs, func);
+    ctx_addvar(ctx, name, v);
 }
 
