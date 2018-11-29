@@ -124,6 +124,18 @@ int gettoken()
                ;
             return gettoken();
         }
+        else if(lastchar == '*')
+        {
+            nextchar();
+            while(!(lastchar == '*' && nextchar() == '/'))
+            {
+                if(lastchar < 0)
+                    throw("Unexpected end of file");
+                nextchar();
+            }
+            nextchar();
+            return gettoken();
+        }
         else
             return T_SLASH;
         break;
