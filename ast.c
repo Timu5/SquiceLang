@@ -278,7 +278,7 @@ static void free_member(node_t* node)
 node_t * node_member(node_t * parent, char * name)
 {
 	node_t* node = (node_t*)malloc(sizeof(node_t));
-	node->type = N_BLOCK;
+	node->type = N_MEMBER;
 	node->member.name = name;
 	node->member.parent = parent;
 	node->eval = eval_member;

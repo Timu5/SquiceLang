@@ -6,6 +6,8 @@
 #include "contex.h"
 #include "ex.h"
 
+value_t* parent; // hack, should go on stack
+
 void eval_root(node_t* node, ctx_t* ctx)
 {
     for(int i = 0; i < vector_size(node->root.funcs->block); i++)
@@ -93,12 +95,19 @@ void eval_call(node_t* node, ctx_t* ctx)
         if(argc != vector_size(f->body->func.args))
             throw("Wrong number of arguments");
 
+        if (node->call.func->type == N_MEMBER)
+        {
+            // method call, add "this" keyword
+            ctx_addvar(c, "this", value_null());
+            value_assign(ctx_getvar(c, "this"), parent);
+        }
+
         for(int i = vector_size(f->body->func.args) - 1; i >= 0; i--)
         {
             ctx_addvar(c, f->body->func.args[i], value_null());
-
             value_assign(ctx_getvar(c, f->body->func.args[i]), vector_pop(c->stack));
         }
+
         f->body->eval(f->body, c);
     }
 
@@ -232,7 +241,7 @@ void eval_block(node_t* node, ctx_t* ctx)
 void eval_member(node_t * node, ctx_t * ctx)
 {
 	node->member.parent->eval(node->member.parent, ctx);
-	value_t* parent = vector_pop(ctx->stack);
+	parent = vector_pop(ctx->stack);
 	vector_push(ctx->stack, value_member(node->member.name, parent));
 }
 

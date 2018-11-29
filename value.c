@@ -266,6 +266,9 @@ value_t* value_get(int i, value_t* a)
 
 value_t * value_member(char * name, value_t * a)
 {
+    if (a->type == V_REF)
+        a = a->ref;
+
 	if (a->type == V_DICT)
 	{
 		for (int i = 0; i < vector_size(a->dict.names); i++)
