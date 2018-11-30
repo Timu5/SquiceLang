@@ -24,39 +24,59 @@ void match(int token)
 
 node_t* expr(int min);
 
-// primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary | 
+// primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary |
+//             array | dict |
 //             primary '[' expr ']' | primary '(' expr ')'| primary '.' ident
 node_t* primary()
 {
     node_t* prim = NULL;
-    if(lasttoken == T_NUMBER)
+    if (lasttoken == T_NUMBER)
     {
         prim = node_int(number);
         nexttoken();
     }
-    else if(lasttoken == T_STRING)
+    else if (lasttoken == T_STRING)
     {
         prim = node_string(strdup(buffer));
         nexttoken();
     }
-    else if(lasttoken == T_IDENT)
+    else if (lasttoken == T_IDENT)
     {
         prim = node_ident(strdup(buffer));
         nexttoken();
     }
-    else if(lasttoken == T_LPAREN) // '(' expr ')'
+    else if (lasttoken == T_LPAREN) // '(' expr ')'
     {
         nexttoken();
         prim = expr(0);
         match(T_RPAREN);
         nexttoken();
     }
-    else if(lasttoken == T_PLUS || lasttoken == T_MINUS|| lasttoken == T_EXCLAM) // UNARY_OP primary
+    else if (lasttoken == T_PLUS || lasttoken == T_MINUS || lasttoken == T_EXCLAM) // UNARY_OP primary
     {
         // UNARY_OP primary
         int op = lasttoken;
         nexttoken();
         return node_unary(op, primary());
+    }
+    else if (lasttoken == T_LBRACK)
+    {
+        // new array
+        nexttoken();
+        vector(node_t*) elements = NULL;
+        while (lasttoken != T_RBRACK)
+        {
+            node_t* e = expr(0);
+            vector_push(elements, e);
+            if (lasttoken != T_COMMA)
+                break;
+            nexttoken();
+        }
+        match(T_RBRACK);
+        nexttoken();
+
+        // syntax sugar, convert [1,2,3] to list(1,2,3)
+        prim = node_call(node_ident(strdup("list")), node_block(elements)); 
     }
     else
     {
