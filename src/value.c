@@ -101,6 +101,10 @@ void value_free(value_t* val)
 		vector_free(val->dict.names);
 		vector_free(val->dict.values);
 	}
+    else if(val->type == V_FN)
+    {
+        free(val->fn);
+    }
    
     free(val);
 }
