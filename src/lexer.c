@@ -104,7 +104,10 @@ int gettoken()
     case ',':
         tmp =  T_COMMA;
         break;
-	case ';':
+    case ':':
+        tmp = T_COLON;
+        break;
+    case ';':
 		tmp = T_SEMICOLON;
 		break;
 	case '.':

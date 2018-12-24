@@ -79,3 +79,8 @@ fn test()
 
 addMember(d, "test", test);
 d.test();
+
+let a = {a:1,b:2};
+
+print(a.a);
+print(a.b);

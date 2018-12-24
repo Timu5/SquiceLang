@@ -43,11 +43,35 @@ value_t* list(ctx_t* ctx)
 
 value_t* dict(ctx_t* ctx)
 {
-	int n = vector_pop(ctx->stack)->number;
-	if (n != 0)
-		throw("Function dict takes exactly 1 argument");
+    int n = vector_pop(ctx->stack)->number;
+    if (n != 0 && n != 2)
+        throw("Function dict takes 0 or 2 arguments");
 
-	vector_push(ctx->stack, value_dict(NULL, NULL));
+    if (n == 0)
+        vector_push(ctx->stack, value_dict(NULL, NULL));
+    else
+    {
+        value_t* v = vector_pop(ctx->stack);
+        value_t* k = vector_pop(ctx->stack);
+        if (v->type != V_ARRAY || k->type != V_ARRAY)
+            throw("Function dict takes arguments of type array");
+        vector(char*) keys = NULL;
+        for (int i = 0; i < vector_size(k->array); i++)
+        {
+            value_t* key = value_get(i, k);
+            if (key->type != V_STRING)
+                throw("Key of dictonary must be a string");
+            vector_push(keys, strdup(key->string));
+        }
+        vector(char*) values = NULL;
+        for (int i = 0; i < vector_size(v->array); i++)
+        {
+            vector_push(values, value_get(i, v));
+        }
+
+        vector_push(ctx->stack, value_dict(keys, values));
+    }
+
 }
 
 value_t* addMember(ctx_t* ctx)

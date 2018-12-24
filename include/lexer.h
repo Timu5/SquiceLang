@@ -15,6 +15,7 @@ enum {
 	T_WHILE,
 	T_BREAK,
 
+    T_COLON,     // :
     T_SEMICOLON, // ;
     T_COMMA,     // ,
 	T_DOT,       // .

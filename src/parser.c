@@ -78,6 +78,38 @@ node_t* primary()
         // syntax sugar, convert [1,2,3] to list(1,2,3)
         prim = node_call(node_ident(strdup("list")), node_block(elements)); 
     }
+    else if (lasttoken == T_LBRACE)
+    {
+        // new dictonary
+        nexttoken();
+        vector(node_t*) keys = NULL;
+        vector(node_t*) values = NULL;
+        while (lasttoken != T_RBRACE)
+        {
+            if (!(lasttoken == T_STRING || lasttoken == T_IDENT))
+                throw("Unexpexted token, expect T_STRING or T_IDENT got %s", lasttoken);
+            vector_push(keys, node_string(strdup(buffer)));
+
+            nexttoken();
+            match(T_COLON);
+            nexttoken();
+
+            node_t* e = expr(0);
+            vector_push(values, e);
+
+            if (lasttoken != T_COMMA)
+                break;
+            nexttoken();
+        }
+        match(T_RBRACE);
+        nexttoken();
+
+        // syntax sugar, convert {a:1, b:2+2} to dict(list('a', 'b'), list(1, 2+2))
+        vector(node_t*) args = NULL;
+        vector_push(args, node_call(node_ident(strdup("list")), node_block(keys)));
+        vector_push(args, node_call(node_ident(strdup("list")), node_block(values)));
+        prim = node_call(node_ident(strdup("dict")), node_block(args));
+    }
     else
     {
         throw("Unexpexted token in primary!");
