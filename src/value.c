@@ -280,7 +280,11 @@ value_t * value_member(char * name, value_t * a)
 			if (strcmp(a->dict.names[i], name) == 0)
 				return a->dict.values[i];
 		}
-		throw("No member with name %s", name);
+
+        vector_push(a->dict.names, strdup(name));
+        vector_push(a->dict.values, value_null());
+
+        return a->dict.values[vector_size(a->dict.values)-1];
 	}
 
 	throw("Cannot get member for this type");

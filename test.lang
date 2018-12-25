@@ -60,8 +60,8 @@ while(i < 10)
 }
 
 let d = dict();
-addMember(d, "field", 1);
-addMember(d, "field2", 22);
+d.field = 1;
+d.field2 = 2;
 
 print("d.field = ", d.field);
 print("d.field2 = ", d.field2);
@@ -69,7 +69,7 @@ print("d.field2 = ", d.field2);
 d.field2 = 100;
 print("d.field2 = ", d.field2);
 
-addMember(d, "fib", fib);
+d.fib = fib;
 print("d.fib(8) = ", d.fib(8));
 
 fn test()
@@ -77,7 +77,7 @@ fn test()
 	print("this.field2 = ", this.field2);
 }
 
-addMember(d, "test", test);
+d.test = test;
 d.test();
 
 let a = {a:1,b:2};

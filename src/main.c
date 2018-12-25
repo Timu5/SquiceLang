@@ -74,25 +74,6 @@ value_t* dict(ctx_t* ctx)
 
 }
 
-value_t* addMember(ctx_t* ctx)
-{
-	int n = vector_pop(ctx->stack)->number;
-	if (n != 3)
-		throw("Function addmember takes exactly 3 argument");
-
-	value_t* v = vector_pop(ctx->stack);
-	value_t* k = vector_pop(ctx->stack);
-	value_t* p = vector_pop(ctx->stack);
-
-	if (k->type != V_STRING)
-		throw("Key can only be of type string");
-
-	vector_push(p->dict.names, strdup(k->string));
-	vector_push(p->dict.values, v);
-
-	vector_push(ctx->stack, value_dict(NULL, NULL));
-}
-
 value_t* len(ctx_t* ctx)
 {
     int n = vector_pop(ctx->stack)->number;
@@ -140,7 +121,6 @@ int main(int argc, char ** argv)
         ctx_addfn(global, "print", NULL, print);
 		ctx_addfn(global, "list", NULL, list);
 		ctx_addfn(global, "dict", NULL, dict);
-		ctx_addfn(global, "addmember", NULL, addMember);
         ctx_addfn(global, "len", NULL, len);  
         
         tree->eval(tree, global);
