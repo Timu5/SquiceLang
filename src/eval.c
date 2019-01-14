@@ -70,6 +70,8 @@ void eval_call(node_t* node, ctx_t* ctx)
     node->call.func->eval(node->call.func, ctx);
 
     value_t* vf = vector_pop(ctx->stack);
+    while (vf->type == V_REF)
+        vf = vf->ref;
     if (vf->type != V_FN)
         throw("Can only call functions!");
 
@@ -155,9 +157,9 @@ void eval_return(node_t* node, ctx_t* ctx)
         throw("Nothing to return from");
 
     _ret_value = vector_pop(ctx->stack);
-	ctx_t* parent = ctx->parent;
-	ctx_free(ctx);
-	parent->child = NULL;
+    ctx_t* parent = ctx->parent;
+    ctx_free(ctx);
+    parent->child = NULL;
     longjmp(*ret->ret, 1);
 }
 
@@ -173,39 +175,39 @@ void eval_cond(node_t* node, ctx_t* ctx)
 
 void eval_loop(node_t* node, ctx_t* ctx)
 {
-	ctx->retLoop = malloc(sizeof(jmp_buf));
-	if (!setjmp(*ctx->retLoop))
-	{
-	label:
-		node->loop.arg->eval(node->loop.arg, ctx);
-		value_t* arg = vector_pop(ctx->stack);
-		if (arg->number != 0)
-		{
-			node->loop.body->eval(node->loop.body, ctx);
-			goto label;
-		}
-	}
-	free(ctx->retLoop);
-	ctx->retLoop = NULL;
+    ctx->retLoop = malloc(sizeof(jmp_buf));
+    if (!setjmp(*ctx->retLoop))
+    {
+    label:
+        node->loop.arg->eval(node->loop.arg, ctx);
+        value_t* arg = vector_pop(ctx->stack);
+        if (arg->number != 0)
+        {
+            node->loop.body->eval(node->loop.body, ctx);
+            goto label;
+        }
+    }
+    free(ctx->retLoop);
+    ctx->retLoop = NULL;
 }
 
 void eval_break(node_t * node, ctx_t * ctx)
 {
-	ctx_t* ret = ctx;
-	while (ret)
-	{
-		if (ret->retLoop != 0)
-			break;
-		ret = ret->parent;
-	}
+    ctx_t* ret = ctx;
+    while (ret)
+    {
+        if (ret->retLoop != 0)
+            break;
+        ret = ret->parent;
+    }
 
-	if (!ret->retLoop)
-		throw("Nothing to break from");
+    if (!ret->retLoop)
+        throw("Nothing to break from");
 
-	ctx_t* parent = ctx->parent;
-	ctx_free(ctx);
-	parent->child = NULL;
-	longjmp(*ret->retLoop, 1);
+    ctx_t* parent = ctx->parent;
+    ctx_free(ctx);
+    parent->child = NULL;
+    longjmp(*ret->retLoop, 1);
 }
 
 void eval_decl(node_t* node, ctx_t* ctx)
@@ -240,8 +242,8 @@ void eval_block(node_t* node, ctx_t* ctx)
 
 void eval_member(node_t * node, ctx_t * ctx)
 {
-	node->member.parent->eval(node->member.parent, ctx);
-	parent = vector_pop(ctx->stack);
-	vector_push(ctx->stack, value_member(node->member.name, parent));
+    node->member.parent->eval(node->member.parent, ctx);
+    parent = vector_pop(ctx->stack);
+    vector_push(ctx->stack, value_member(node->member.name, parent));
 }
 
