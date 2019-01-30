@@ -92,7 +92,7 @@ void value_free(value_t* val)
     }
     else if(val->type == V_ARRAY)
     {
-        vector_free(val->string);
+        vector_free(val->array);
     }
     else if (val->type == V_DICT)
     {
