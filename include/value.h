@@ -24,7 +24,7 @@ typedef struct value_s {
         double number;
         char* string;
         vector(struct value_s*) array;
-		struct { vector(char*) names; vector(struct value_s*) values; } dict;
+        struct { vector(char*) names; vector(struct value_s*) values; } dict;
         struct fn_s* fn;
         struct value_s* ref;
     };

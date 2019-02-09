@@ -27,7 +27,7 @@ typedef struct {
 
 /* Pushes back [VALUE] into [VECTOR] */
 #define vector_push(VECTOR, VALUE) \
-    (vector_try_grow((VECTOR), 1), (VECTOR)[vector_meta(VECTOR)->used++] = (VALUE))
+    (vector_try_grow((VECTOR), 1), (VECTOR)[vector_meta(VECTOR)->used] = (VALUE), vector_meta(VECTOR)->used++)
 
 /* Get the size of [VECTOR] */
 #define vector_size(VECTOR) \

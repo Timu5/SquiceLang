@@ -202,16 +202,16 @@ node_t* node_loop(node_t* arg, node_t* body)
 
 static void free_break(node_t* node)
 {
-	free(node);
+    free(node);
 }
 
 node_t * node_break()
 {
-	node_t* node = (node_t*)malloc(sizeof(node_t));
-	node->type = N_BREAK;
-	node->eval = eval_break;
-	node->free = free_break;
-	return node;
+    node_t* node = (node_t*)malloc(sizeof(node_t));
+    node->type = N_BREAK;
+    node->eval = eval_break;
+    node->free = free_break;
+    return node;
 }
 
 static void free_decl(node_t* node)
@@ -270,20 +270,20 @@ node_t* node_block(vector(node_t*) list)
 
 static void free_member(node_t* node)
 {
-	node_free(node->member.parent);
-	free(node->member.name);
-	free(node);
+    node_free(node->member.parent);
+    free(node->member.name);
+    free(node);
 }
 
 node_t * node_member(node_t * parent, char * name)
 {
-	node_t* node = (node_t*)malloc(sizeof(node_t));
-	node->type = N_MEMBER;
-	node->member.name = name;
-	node->member.parent = parent;
-	node->eval = eval_member;
-	node->free = free_member;
-	return node;
+    node_t* node = (node_t*)malloc(sizeof(node_t));
+    node->type = N_MEMBER;
+    node->member.name = name;
+    node->member.parent = parent;
+    node->eval = eval_member;
+    node->free = free_member;
+    return node;
 }
 
 static void printtab(int n)
@@ -365,9 +365,9 @@ void node_print(node_t* node, int ind)
         printf("->body:\n");
         node_print(node->loop.body, ind + 1);
         break;
-	case N_BREAK:
-		printf("break\n");
-		break;
+    case N_BREAK:
+        printf("break\n");
+        break;
     case N_DECL:
         printf("decl\n");
         printtab(ind);

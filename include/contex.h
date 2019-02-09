@@ -24,8 +24,8 @@ struct ctx_s {
     struct ctx_s* child;
     vector(struct var_s*) vars;
     vector(value_t*) stack;
-	jmp_buf* ret;
-	jmp_buf* retLoop;
+    jmp_buf* ret;
+    jmp_buf* retLoop;
 };
 
 typedef struct var_s var_t;

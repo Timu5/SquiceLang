@@ -282,23 +282,23 @@ node_t* statment()
         node_t* fnbody = statment();
 
         return node_func(fnname, args, fnbody);
-	case T_RETURN:
-		nexttoken();
+    case T_RETURN:
+        nexttoken();
 
-		node_t* retnode = NULL;
-		if (lasttoken != T_SEMICOLON)
-			retnode = expr(0);
+        node_t* retnode = NULL;
+        if (lasttoken != T_SEMICOLON)
+            retnode = expr(0);
 
-		match(T_SEMICOLON);
-		nexttoken();
+        match(T_SEMICOLON);
+        nexttoken();
 
-		return node_return(retnode);
-	case T_BREAK:
-		nexttoken();
-		match(T_SEMICOLON);
-		nexttoken();
+        return node_return(retnode);
+    case T_BREAK:
+        nexttoken();
+        match(T_SEMICOLON);
+        nexttoken();
 
-		return node_break();
+        return node_break();
     default:;
         node_t* e = expr(0);
         match(T_SEMICOLON);

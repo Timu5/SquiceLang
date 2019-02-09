@@ -12,13 +12,13 @@ enum {
     T_LET,
     T_IF,
     T_ELSE,
-	T_WHILE,
-	T_BREAK,
+    T_WHILE,
+    T_BREAK,
 
     T_COLON,     // :
     T_SEMICOLON, // ;
     T_COMMA,     // ,
-	T_DOT,       // .
+    T_DOT,       // .
     
     T_PLUS,      // +
     T_MINUS,     // -
