@@ -44,7 +44,7 @@ void codegen_int(node_t* node, binary_t* binary)
 
 void codegen_string(node_t* node, binary_t* binary)
 {
-        printf("push %s", node->string);
+    printf("push %s", node->string);
 }
 
 void codegen_call(node_t* node, binary_t* binary)
@@ -95,14 +95,44 @@ void codegen_loop(node_t* node, binary_t* binary)
     int i = ic++;
     printf("loops_%d:", i);
     node->loop.arg->codegen(node->loop.arg, binary);
-    printf("brz loope_%d", i);
+    printf("brz loopend_%d", i);
     node->loop.body->codegen(node->loop.body, binary);
     printf("jmp loops_%d", i);
-    printf("loope_%d:", i);
+    printf("loopend_%d:", i);
 }
 
-void codegen_break(node_t* node, binary_t* binary);
-void codegen_decl(node_t* node, binary_t* binary);
-void codegen_index(node_t* node, binary_t* binary);
-void codegen_block(node_t* node, binary_t* binary);
-void codegen_member(node_t* node, binary_t* binary);
+void codegen_break(node_t* node, binary_t* binary)
+{
+    // TODO: break
+}
+
+void codegen_decl(node_t* node, binary_t* binary)
+{
+    if(node->decl.name->type != N_IDENT)
+        throw("Declaration name must be identifier"); // error
+    node->decl.value->codegen(node->decl.value, binary);
+    printf("store %s", node->decl.name->ident);
+}
+
+void codegen_index(node_t* node, binary_t* binary)
+{
+    node->index.var->codegen(node->index.var, binary);
+    node->index.expr->codegen(node->index.expr, binary);
+    printf("index");
+}
+
+void codegen_block(node_t* node, binary_t* binary)
+{
+    printf("block");
+
+    for(int i = 0; i < vector_size(node->block); i++)
+        node->block[i]->codegen(node->block[i], binary);
+    
+    printf("blockend");
+}
+
+void codegen_member(node_t* node, binary_t* binary)
+{
+    node->member.parent->codegen(node->member.parent, binary);
+    printf("member %s", node->member.name);
+}
