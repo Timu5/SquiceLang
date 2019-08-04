@@ -23,12 +23,10 @@ enum {
     N_MEMBER
 };
 
-struct ctx_s;
 struct binary_s;
 
 struct node_s {
     int type;
-    void (*eval)(struct node_s* this, struct ctx_s* ctx);
     void (*codegen)(struct node_s* this, struct binary_s* binary);
     void (*free)(struct node_s* this);
     union {
