@@ -22,6 +22,8 @@ void codegen_root(node_t* node, binary_t* binary)
         n->codegen(n, binary);
     }
 
+    printf("retn\n");
+
     for(int i = 0; i < vector_size(node->root.funcs->block); i++)
     {
         node_t* f = node->root.funcs->block[i];
@@ -54,7 +56,7 @@ void codegen_int(node_t* node, binary_t* binary)
 
 void codegen_string(node_t* node, binary_t* binary)
 {
-    printf("push %s\n", node->string);
+    printf("push \"%s\"\n", node->string);
 }
 
 void codegen_call(node_t* node, binary_t* binary)
@@ -81,12 +83,23 @@ void codegen_call(node_t* node, binary_t* binary)
 
 void codegen_func(node_t* node, binary_t* binary)
 {
+    printf("func_%s:\n", node->func.name);
     node->func.body->codegen(node->func.body, binary);
+    printf("retn\n");
 }
 
 void codegen_return(node_t* node, binary_t* binary)
 {
-    printf("ret\n");
+    if(node->ret != NULL)
+    {
+        node->ret->codegen(node->ret, binary);
+        printf("ret\n");
+    }
+    else
+    {
+        printf("retn\n");
+    }
+    
 }
 
 int ic = 0;
