@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "ast.h"
 #include "eval.h"
+#include "codegen.h"
 #include "lexer.h"
 
 static void free_root(node_t* node)
@@ -18,6 +19,7 @@ node_t* node_root(node_t* funcs, node_t* stmts)
     node->root.funcs = funcs;
     node->root.stmts = stmts;
     node->eval = eval_root;
+    node->codegen = codegen_root;
     node->free = free_root;
     return node;
 }
@@ -34,6 +36,7 @@ node_t* node_ident(char* name)
     node->type = N_IDENT;
     node->ident = name;
     node->eval = eval_ident;
+    node->codegen = codegen_ident;
     node->free = free_ident; 
     return node;
 }
@@ -51,6 +54,7 @@ node_t* node_unary(int op, node_t* val)
     node->unary.op = op;
     node->unary.val = val;
     node->eval = eval_unary;
+    node->codegen = codegen_unary;
     node->free = free_unary;
     return node;
 }
@@ -70,6 +74,7 @@ node_t* node_binary(int op, node_t* a, node_t* b)
     node->binary.a = a;
     node->binary.b = b;
     node->eval = eval_binary;
+    node->codegen = codegen_binary;
     node->free = free_binary;
     return node;
 }
@@ -85,6 +90,7 @@ node_t* node_int(int integer)
     node->type = N_INT;
     node->integer = integer;
     node->eval = eval_int;
+    node->codegen = codegen_int;
     node->free = free_int;
     return node;
 }
@@ -101,6 +107,7 @@ node_t* node_string(char* string)
     node->type = N_STRING;
     node->string = string;
     node->eval = eval_string;
+    node->codegen = codegen_string;
     node->free = free_string;
     return node;
 }
@@ -119,6 +126,7 @@ node_t* node_call(node_t* func, node_t* args)
     node->call.func = func;
     node->call.args = args;
     node->eval = eval_call;
+    node->codegen = codegen_call;
     node->free = free_call;
     return node;
 }
@@ -141,6 +149,7 @@ node_t* node_func(char* name, vector(char*) args, node_t* body)
     node->func.args = args;
     node->func.body = body;
     node->eval = eval_func;
+    node->codegen = codegen_func;
     node->free = free_func;
     return node;
 }
@@ -157,6 +166,7 @@ node_t* node_return(node_t* expr)
     node->type = N_RETURN;
     node->ret = expr;
     node->eval = eval_return;
+    node->codegen = codegen_return;
     node->free = free_return;
     return node;
 }
@@ -178,6 +188,7 @@ node_t* node_cond(node_t* arg, node_t* body, node_t* elsebody)
     node->cond.body = body;
     node->cond.elsebody = elsebody;
     node->eval = eval_cond;
+    node->codegen = codegen_cond;
     node->free = free_cond;
     return node;
 }
@@ -196,6 +207,7 @@ node_t* node_loop(node_t* arg, node_t* body)
     node->loop.arg = arg;
     node->loop.body = body;
     node->eval = eval_loop;
+    node->codegen = codegen_loop;
     node->free = free_loop;
     return node;
 }
@@ -210,6 +222,7 @@ node_t * node_break()
     node_t* node = (node_t*)malloc(sizeof(node_t));
     node->type = N_BREAK;
     node->eval = eval_break;
+    node->codegen = codegen_break;
     node->free = free_break;
     return node;
 }
@@ -228,6 +241,7 @@ node_t* node_decl(node_t* name, node_t* value)
     node->decl.name = name;
     node->decl.value = value;
     node->eval = eval_decl;
+    node->codegen = codegen_decl;
     node->free = free_decl;
     return node;
 }
@@ -246,6 +260,7 @@ node_t* node_index(node_t* var, node_t* expr)
     node->index.var = var;
     node->index.expr = expr;
     node->eval = eval_index;
+    node->codegen = codegen_index;
     node->free = free_index;
     return node;
 }
@@ -264,6 +279,7 @@ node_t* node_block(vector(node_t*) list)
     node->type = N_BLOCK;
     node->block = list;
     node->eval = eval_block;
+    node->codegen = codegen_block;
     node->free = free_block;
     return node;
 }
@@ -282,6 +298,7 @@ node_t * node_member(node_t * parent, char * name)
     node->member.name = name;
     node->member.parent = parent;
     node->eval = eval_member;
+    node->codegen = codegen_member;
     node->free = free_member;
     return node;
 }
