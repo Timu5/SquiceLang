@@ -10,6 +10,7 @@ binary_t* binary_new()
     bin->adresses = NULL;
     bin->symbols = NULL;
     bin->block = NULL;
+    bin->index = 0;
     bin->loop = -1;
     return bin;
 }
@@ -83,7 +84,7 @@ void codegen_call(node_t* node, binary_t* binary)
 
 void codegen_func(node_t* node, binary_t* binary)
 {
-    printf("func_%s:\n", node->func.name);
+    printf("\nfunc_%s:\n", node->func.name);
     node->func.body->codegen(node->func.body, binary);
     printf("retn\n");
 }
@@ -99,17 +100,14 @@ void codegen_return(node_t* node, binary_t* binary)
     {
         printf("retn\n");
     }
-    
 }
-
-int ic = 0;
 
 void codegen_cond(node_t* node, binary_t* binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
-    printf("brz cond_%d\n", ic); // branch if zero
+    printf("brz cond_%d\n", binary->index); // branch if zero
     node->cond.body->codegen(node->cond.body, binary);
-    printf("cond_%d:\n", ic++);
+    printf("cond_%d:\n", binary->index++);
     if(node->cond.elsebody != NULL)
         node->cond.elsebody->codegen(node->cond.elsebody, binary);
 }
@@ -117,7 +115,7 @@ void codegen_cond(node_t* node, binary_t* binary)
 void codegen_loop(node_t* node, binary_t* binary)
 {
     int old = binary->loop;
-    int i = ic++;
+    int i = binary->index++;
     binary->loop = i;
 
     printf("loops_%d:\n", i);
@@ -155,12 +153,12 @@ void codegen_index(node_t* node, binary_t* binary)
 
 void codegen_block(node_t* node, binary_t* binary)
 {
-    printf("block\n");
+    //printf("block\n");
 
     for(int i = 0; i < vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
     
-    printf("blockend\n");
+    //printf("blockend\n");
 }
 
 void codegen_member(node_t* node, binary_t* binary)

@@ -8,6 +8,7 @@ struct binary_s {
     vector(int) adresses;
     vector(char*) symbols;
     char* block;
+    int index; // free label index
     int loop; // hold current loop index, needed by break
 };
 
