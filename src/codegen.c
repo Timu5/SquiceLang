@@ -4,6 +4,16 @@
 #include "ast.h"
 #include "ex.h"
 
+binary_t* binary_new()
+{
+    binary_t* bin = (binary_t*)malloc(sizeof(binary_t));
+    bin->adresses = NULL;
+    bin->symbols = NULL;
+    bin->block = NULL;
+    bin->loop = -1;
+    return bin;
+}
+
 void codegen_root(node_t* node, binary_t* binary)
 {
     for(int i = 0; i < vector_size(node->root.stmts->block); i++)
@@ -21,30 +31,30 @@ void codegen_root(node_t* node, binary_t* binary)
 }
 void codegen_ident(node_t* node, binary_t* binary)
 {
-    printf("push [%s]", node->ident);
+    printf("push [%s]\n", node->ident);
 }
 
 void codegen_unary(node_t* node, binary_t* binary)
 {
     node->unary.val->codegen(node->unary.val, binary);
-    printf("unary %d", node->unary.op);
+    printf("unary %d\n", node->unary.op);
 }
 
 void codegen_binary(node_t* node, binary_t* binary)
 {
     node->binary.a->codegen(node->binary.a, binary);
     node->binary.b->codegen(node->binary.b, binary);
-    printf("binary %d", node->binary.op);
+    printf("binary %d\n", node->binary.op);
 }
 
 void codegen_int(node_t* node, binary_t* binary)
 {
-    printf("push %d", node->integer);
+    printf("push %d\n", node->integer);
 }
 
 void codegen_string(node_t* node, binary_t* binary)
 {
-    printf("push %s", node->string);
+    printf("push %s\n", node->string);
 }
 
 void codegen_call(node_t* node, binary_t* binary)
@@ -58,14 +68,14 @@ void codegen_call(node_t* node, binary_t* binary)
         n->codegen(n, binary);
     }
 
-    printf("push %d", i);
+    printf("push %d\n", i);
     if (node->call.func->type == N_MEMBER)
     {
-        printf("callm"); // !!! TODO: add parent
+        printf("callm\n"); // !!! TODO: add parent
     }
     else
     {
-        printf("call");
+        printf("call\n");
     }
 }
 
@@ -76,7 +86,7 @@ void codegen_func(node_t* node, binary_t* binary)
 
 void codegen_return(node_t* node, binary_t* binary)
 {
-    printf("ret");
+    printf("ret\n");
 }
 
 int ic = 0;
@@ -84,10 +94,11 @@ int ic = 0;
 void codegen_cond(node_t* node, binary_t* binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
-    printf("brz cond_%d", ic); // branch if zero
+    printf("brz cond_%d\n", ic); // branch if zero
     node->cond.body->codegen(node->cond.body, binary);
-    printf("cond_%d:", ic++);
-    node->cond.elsebody->codegen(node->cond.elsebody, binary);
+    printf("cond_%d:\n", ic++);
+    if(node->cond.elsebody != NULL)
+        node->cond.elsebody->codegen(node->cond.elsebody, binary);
 }
 
 void codegen_loop(node_t* node, binary_t* binary)
@@ -96,12 +107,12 @@ void codegen_loop(node_t* node, binary_t* binary)
     int i = ic++;
     binary->loop = i;
 
-    printf("loops_%d:", i);
+    printf("loops_%d:\n", i);
     node->loop.arg->codegen(node->loop.arg, binary);
-    printf("brz loopend_%d", i);
+    printf("brz loopend_%d\n", i);
     node->loop.body->codegen(node->loop.body, binary);
-    printf("jmp loops_%d", i);
-    printf("loopend_%d:", i);
+    printf("jmp loops_%d\n", i);
+    printf("loopend_%d:\n", i);
 
     binary->loop = old;
 }
@@ -111,7 +122,7 @@ void codegen_break(node_t* node, binary_t* binary)
     if(binary->loop < 0)
         throw("No loop to break from");
 
-    printf("jmp loopend_%d", binary->loop);
+    printf("jmp loopend_%d\n", binary->loop);
 }
 
 void codegen_decl(node_t* node, binary_t* binary)
@@ -119,28 +130,28 @@ void codegen_decl(node_t* node, binary_t* binary)
     if(node->decl.name->type != N_IDENT)
         throw("Declaration name must be identifier"); // error
     node->decl.value->codegen(node->decl.value, binary);
-    printf("store %s", node->decl.name->ident);
+    printf("store %s\n", node->decl.name->ident);
 }
 
 void codegen_index(node_t* node, binary_t* binary)
 {
     node->index.var->codegen(node->index.var, binary);
     node->index.expr->codegen(node->index.expr, binary);
-    printf("index");
+    printf("index\n");
 }
 
 void codegen_block(node_t* node, binary_t* binary)
 {
-    printf("block");
+    printf("block\n");
 
     for(int i = 0; i < vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
     
-    printf("blockend");
+    printf("blockend\n");
 }
 
 void codegen_member(node_t* node, binary_t* binary)
 {
     node->member.parent->codegen(node->member.parent, binary);
-    printf("member %s", node->member.name);
+    printf("member %s\n", node->member.name);
 }

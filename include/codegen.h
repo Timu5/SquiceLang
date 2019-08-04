@@ -13,6 +13,8 @@ struct binary_s {
 
 typedef struct binary_s binary_t;
 
+binary_t* binary_new();
+
 void codegen_root(node_t* node, binary_t* binary);
 void codegen_ident(node_t* node, binary_t* binary);
 void codegen_unary(node_t* node, binary_t* binary);
