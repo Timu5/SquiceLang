@@ -92,18 +92,26 @@ void codegen_cond(node_t* node, binary_t* binary)
 
 void codegen_loop(node_t* node, binary_t* binary)
 {
+    int old = binary->loop;
     int i = ic++;
+    binary->loop = i;
+
     printf("loops_%d:", i);
     node->loop.arg->codegen(node->loop.arg, binary);
     printf("brz loopend_%d", i);
     node->loop.body->codegen(node->loop.body, binary);
     printf("jmp loops_%d", i);
     printf("loopend_%d:", i);
+
+    binary->loop = old;
 }
 
 void codegen_break(node_t* node, binary_t* binary)
 {
-    // TODO: break
+    if(binary->loop < 0)
+        throw("No loop to break from");
+
+    printf("jmp loopend_%d", binary->loop);
 }
 
 void codegen_decl(node_t* node, binary_t* binary)
