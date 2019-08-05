@@ -3,6 +3,7 @@
 #include "codegen.h"
 #include "ast.h"
 #include "ex.h"
+#include "bytecode.h"
 
 void codegen_root(node_t* node, binary_t* binary)
 {
@@ -12,7 +13,7 @@ void codegen_root(node_t* node, binary_t* binary)
         n->codegen(n, binary);
     }
 
-    printf("retn\n");
+    bytecode_emit(binary, O_RETN);
 
     for(int i = 0; i < vector_size(node->root.funcs->block); i++)
     {
@@ -23,30 +24,30 @@ void codegen_root(node_t* node, binary_t* binary)
 }
 void codegen_ident(node_t* node, binary_t* binary)
 {
-    printf("push [%s]\n", node->ident);
+    bytecode_emitstr(binary, O_PUSHV, node->ident);
 }
 
 void codegen_unary(node_t* node, binary_t* binary)
 {
     node->unary.val->codegen(node->unary.val, binary);
-    printf("unary %d\n", node->unary.op);
+    bytecode_emitint(binary, O_UNARY, node->unary.op);
 }
 
 void codegen_binary(node_t* node, binary_t* binary)
 {
     node->binary.a->codegen(node->binary.a, binary);
     node->binary.b->codegen(node->binary.b, binary);
-    printf("binary %d\n", node->binary.op);
+    bytecode_emitint(binary, O_BINARY, node->binary.op);
 }
 
 void codegen_int(node_t* node, binary_t* binary)
 {
-    printf("push %d\n", node->integer);
+    bytecode_emitint(binary, O_PUSHN, node->integer);
 }
 
 void codegen_string(node_t* node, binary_t* binary)
 {
-    printf("push \"%s\"\n", node->string);
+    bytecode_emitstr(binary, O_PUSHS, node->string);
 }
 
 void codegen_call(node_t* node, binary_t* binary)
@@ -60,22 +61,25 @@ void codegen_call(node_t* node, binary_t* binary)
         n->codegen(n, binary);
     }
 
-    printf("push %d\n", i);
+    bytecode_emitdouble(binary, O_PUSHN, i);
     if (node->call.func->type == N_MEMBER)
     {
-        printf("call\n"); // !!! TODO: add parent
+        bytecode_emit(binary, O_CALL); // !!! TODO: add parent
     }
     else
     {
-        printf("call\n");
+        bytecode_emit(binary, O_CALL);
     }
 }
 
 void codegen_func(node_t* node, binary_t* binary)
 {
-    printf("\nfunc_%s:\n", node->func.name);
+    //printf("\nfunc_%s:\n", node->func.name); // hmm, label !!!!
+    char* name;
+    asprintf(name, "func_%s", node->func.name);
+    bytecode_addlabel(binary, name, binary->size);
     node->func.body->codegen(node->func.body, binary);
-    printf("retn\n");
+    bytecode_emit(binary, O_RETN);
 }
 
 void codegen_return(node_t* node, binary_t* binary)
@@ -83,20 +87,25 @@ void codegen_return(node_t* node, binary_t* binary)
     if(node->ret != NULL)
     {
         node->ret->codegen(node->ret, binary);
-        printf("ret\n");
+        bytecode_emit(binary, O_RET);
     }
     else
     {
-        printf("retn\n");
+        bytecode_emit(binary, O_RETN);
     }
 }
 
 void codegen_cond(node_t* node, binary_t* binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
-    printf("brz cond_%d\n", binary->index); // branch if zero
+    //printf("brz cond_%d\n", binary->index); // branch if zero
+    int adr = bytecode_emitint(binary, O_BRZ, 0); // fill it later with adress!!!
+    char* name;
+    asprintf(name, "cond_%d", binary->index);
+    bytecode_addtofill(binary, name, adr - 4);
     node->cond.body->codegen(node->cond.body, binary);
-    printf("cond_%d:\n", binary->index++);
+    //printf("cond_%d:\n", binary->index++);
+    bytecode_addlabel(binary, name, binary->size);
     if(node->cond.elsebody != NULL)
         node->cond.elsebody->codegen(node->cond.elsebody, binary);
 }
@@ -107,12 +116,18 @@ void codegen_loop(node_t* node, binary_t* binary)
     int i = binary->index++;
     binary->loop = i;
 
-    printf("loops_%d:\n", i);
+    char* lname; char *lename;
+    asprintf(lname, "loops_%d", i);
+    asprintf(lename, "loopend_%d", i);
+
+    bytecode_addlabel(binary, lname, binary->size);
     node->loop.arg->codegen(node->loop.arg, binary);
-    printf("brz loopend_%d\n", i);
+    int adr = bytecode_emitint(binary, O_BRZ, 0);
+    bytecode_addtofill(binary, lename, adr + 1);
     node->loop.body->codegen(node->loop.body, binary);
-    printf("jmp loops_%d\n", i);
-    printf("loopend_%d:\n", i);
+    adr = bytecode_emitint(binary, O_JMP, 0);
+    bytecode_addtofill(binary, lname, adr + 1);
+    bytecode_addlabel(binary, lename, binary->size);
 
     binary->loop = old;
 }
@@ -122,7 +137,11 @@ void codegen_break(node_t* node, binary_t* binary)
     if(binary->loop < 0)
         throw("No loop to break from");
 
-    printf("jmp loopend_%d\n", binary->loop);
+    char *lename;
+    asprintf(lename, "loopend_%d", binary->loop);
+
+    bytecode_emitint(binary, O_JMP, 0);
+    bytecode_addlabel(binary, lename, binary->size);
 }
 
 void codegen_decl(node_t* node, binary_t* binary)
@@ -130,7 +149,7 @@ void codegen_decl(node_t* node, binary_t* binary)
     if(node->decl.name->type != N_IDENT)
         throw("Declaration name must be identifier"); // error
     node->decl.value->codegen(node->decl.value, binary);
-    printf("store %s\n", node->decl.name->ident);
+    bytecode_emitstr(binary, O_STORE, node->decl.name->ident);
 }
 
 void codegen_index(node_t* node, binary_t* binary)
@@ -138,6 +157,7 @@ void codegen_index(node_t* node, binary_t* binary)
     node->index.var->codegen(node->index.var, binary);
     node->index.expr->codegen(node->index.expr, binary);
     printf("index\n");
+    bytecode_emit(binary, O_INDEX);
 }
 
 void codegen_block(node_t* node, binary_t* binary)
@@ -153,5 +173,5 @@ void codegen_block(node_t* node, binary_t* binary)
 void codegen_member(node_t* node, binary_t* binary)
 {
     node->member.parent->codegen(node->member.parent, binary);
-    printf("member %s\n", node->member.name);
+    bytecode_emitstr(binary, O_MEMBER, node->member.name);
 }

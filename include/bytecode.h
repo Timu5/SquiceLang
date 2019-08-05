@@ -4,6 +4,7 @@
 #include "vector.h"
 
 enum {
+    O_NOP,
     O_PUSHN, // push number
     O_PUSHS, // push string
     O_PUSHV, // push value
@@ -23,6 +24,8 @@ enum {
 struct binary_s {
     vector(int) adresses;
     vector(char*) symbols;
+    vector(int) fadresses;
+    vector(char*) fsymbols;
     char* block;
     int size;
     int index; // free label index
@@ -37,5 +40,9 @@ int bytecode_emit(binary_t* bin, int opcode);
 int bytecode_emitstr(binary_t* bin, int opcode, char* string);
 int bytecode_emitint(binary_t* bin, int opcode, int number);
 int bytecode_emitdouble(binary_t* bin, int opcode, double number);
+
+int bytecode_addlabel(binary_t* bin, char* name, int adress);
+int bytecode_addtofill(binary_t* bin, char* name, int adress);
+int bytecode_filllabels(binary_t* bin);
 
 #endif

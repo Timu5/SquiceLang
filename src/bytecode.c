@@ -7,6 +7,8 @@ binary_t* binary_new()
     binary_t* bin = (binary_t*)malloc(sizeof(binary_t));
     bin->adresses = NULL;
     bin->symbols = NULL;
+    bin->fadresses = NULL;
+    bin->fsymbols = NULL;
     bin->size = 0;
     bin->block = NULL;
     bin->index = 0;
@@ -49,4 +51,20 @@ int bytecode_emitdouble(binary_t* bin, int opcode, double number)
     bin->block[bin->size - 1 - 8] = (char)opcode;
     *(double*)(&(bin->block[bin->size - 8])) = number;
     return bin->size - 1 - 8;
+}
+
+int bytecode_addsymbol(binary_t* bin, char* name, int adress)
+{
+    vector_push(bin->adresses, adress);
+    vector_push(bin->symbols, name);
+}
+
+int bytecode_addtofill(binary_t* bin, char* name, int adress)
+{
+    vector_push(bin->fadresses, adress);
+    vector_push(bin->fsymbols, name);
+}
+
+int bytecode_fill(binary_t* bin)
+{
 }
