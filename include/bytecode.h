@@ -35,6 +35,7 @@ struct binary_s {
 typedef struct binary_s binary_t;
 
 binary_t* binary_new();
+void binary_save(binary_t* bin, char* filename);
 
 int bytecode_emit(binary_t* bin, int opcode);
 int bytecode_emitstr(binary_t* bin, int opcode, char* string);
@@ -43,6 +44,6 @@ int bytecode_emitdouble(binary_t* bin, int opcode, double number);
 
 int bytecode_addlabel(binary_t* bin, char* name, int adress);
 int bytecode_addtofill(binary_t* bin, char* name, int adress);
-int bytecode_filllabels(binary_t* bin);
+int bytecode_fill(binary_t* bin);
 
 #endif

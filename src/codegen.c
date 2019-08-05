@@ -2,7 +2,7 @@
 
 #include "codegen.h"
 #include "ast.h"
-#include "ex.h"
+#include "utils.h"
 #include "bytecode.h"
 
 void codegen_root(node_t* node, binary_t* binary)
@@ -75,8 +75,7 @@ void codegen_call(node_t* node, binary_t* binary)
 void codegen_func(node_t* node, binary_t* binary)
 {
     //printf("\nfunc_%s:\n", node->func.name); // hmm, label !!!!
-    char* name;
-    asprintf(name, "func_%s", node->func.name);
+    char* name = mprintf("func_%s", node->func.name);
     bytecode_addlabel(binary, name, binary->size);
     node->func.body->codegen(node->func.body, binary);
     bytecode_emit(binary, O_RETN);
@@ -100,8 +99,7 @@ void codegen_cond(node_t* node, binary_t* binary)
     node->cond.arg->codegen(node->cond.arg, binary);
     //printf("brz cond_%d\n", binary->index); // branch if zero
     int adr = bytecode_emitint(binary, O_BRZ, 0); // fill it later with adress!!!
-    char* name;
-    asprintf(name, "cond_%d", binary->index);
+    char* name = mprintf("cond_%d", binary->index);
     bytecode_addtofill(binary, name, adr - 4);
     node->cond.body->codegen(node->cond.body, binary);
     //printf("cond_%d:\n", binary->index++);
@@ -116,9 +114,8 @@ void codegen_loop(node_t* node, binary_t* binary)
     int i = binary->index++;
     binary->loop = i;
 
-    char* lname; char *lename;
-    asprintf(lname, "loops_%d", i);
-    asprintf(lename, "loopend_%d", i);
+    char* lname = mprintf("loops_%d", i);
+    char *lename = mprintf("loopend_%d", i);
 
     bytecode_addlabel(binary, lname, binary->size);
     node->loop.arg->codegen(node->loop.arg, binary);
@@ -137,8 +134,7 @@ void codegen_break(node_t* node, binary_t* binary)
     if(binary->loop < 0)
         throw("No loop to break from");
 
-    char *lename;
-    asprintf(lename, "loopend_%d", binary->loop);
+    char *lename = mprintf("loopend_%d", binary->loop);
 
     bytecode_emitint(binary, O_JMP, 0);
     bytecode_addlabel(binary, lename, binary->size);

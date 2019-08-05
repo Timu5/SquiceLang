@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "bytecode.h"
 
@@ -14,6 +15,15 @@ binary_t* binary_new()
     bin->index = 0;
     bin->loop = -1;
     return bin;
+}
+
+void binary_save(binary_t* bin, char* filename)
+{
+    FILE* file = fopen(filename, "w");
+
+    fwrite(bin->block, 1, bin->size, file);
+
+    fclose(file);
 }
 
 int bytecode_emit(binary_t* bin, int opcode)
@@ -53,7 +63,7 @@ int bytecode_emitdouble(binary_t* bin, int opcode, double number)
     return bin->size - 1 - 8;
 }
 
-int bytecode_addsymbol(binary_t* bin, char* name, int adress)
+int bytecode_addlabel(binary_t* bin, char* name, int adress)
 {
     vector_push(bin->adresses, adress);
     vector_push(bin->symbols, name);
