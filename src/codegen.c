@@ -4,17 +4,6 @@
 #include "ast.h"
 #include "ex.h"
 
-binary_t* binary_new()
-{
-    binary_t* bin = (binary_t*)malloc(sizeof(binary_t));
-    bin->adresses = NULL;
-    bin->symbols = NULL;
-    bin->block = NULL;
-    bin->index = 0;
-    bin->loop = -1;
-    return bin;
-}
-
 void codegen_root(node_t* node, binary_t* binary)
 {
     for(int i = 0; i < vector_size(node->root.stmts->block); i++)
@@ -74,7 +63,7 @@ void codegen_call(node_t* node, binary_t* binary)
     printf("push %d\n", i);
     if (node->call.func->type == N_MEMBER)
     {
-        printf("callm\n"); // !!! TODO: add parent
+        printf("call\n"); // !!! TODO: add parent
     }
     else
     {

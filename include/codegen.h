@@ -3,18 +3,7 @@
 
 #include "ast.h"
 #include "vector.h"
-
-struct binary_s {
-    vector(int) adresses;
-    vector(char*) symbols;
-    char* block;
-    int index; // free label index
-    int loop; // hold current loop index, needed by break
-};
-
-typedef struct binary_s binary_t;
-
-binary_t* binary_new();
+#include "bytecode.h"
 
 void codegen_root(node_t* node, binary_t* binary);
 void codegen_ident(node_t* node, binary_t* binary);
