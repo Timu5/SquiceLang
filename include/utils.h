@@ -1,5 +1,5 @@
-#ifndef _EX_H_
-#define _EX_H_
+#ifndef _UTILS_H_
+#define _UTILS_H_
 
 #include <setjmp.h>
 
@@ -10,5 +10,7 @@ extern char ex_msg[256];
 #define catch else
 
 void throw(char* msg, ...);
+
+char* mprintf(char *fmt, ...);
 
 #endif

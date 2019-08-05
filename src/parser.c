@@ -7,7 +7,7 @@
 #include "lexer.h"
 #include "ast.h"
 #include "vector.h"
-#include "ex.h"
+#include "utils.h"
 
 extern char buffer[255];
 extern int number;

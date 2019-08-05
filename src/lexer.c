@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "lexer.h"
-#include "ex.h"
+#include "utils.h"
 
 FILE* input;
 
