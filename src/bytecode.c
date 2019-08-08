@@ -77,4 +77,17 @@ int bytecode_addtofill(binary_t* bin, char* name, int adress)
 
 int bytecode_fill(binary_t* bin)
 {
+    for(int i = 0; i < vector_size(bin->fadresses); i++)
+    {
+        bin->fadresses[i];
+        bin->fsymbols[i];
+        for(int j = 0; j < vector_size(bin->adresses); j++)
+        {
+            if(strcmp(bin->fsymbols[i], bin->symbols[j]) == 0)
+            {
+                *(int*)(&(bin->block[bin->fadresses[i]])) = bin->adresses[j];
+                break;
+            }
+        }
+    }
 }
