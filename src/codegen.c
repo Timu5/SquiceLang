@@ -98,9 +98,9 @@ void codegen_cond(node_t* node, binary_t* binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
     //printf("brz cond_%d\n", binary->index); // branch if zero
-    int adr = bytecode_emitint(binary, O_BRZ, 0); // fill it later with adress!!!
+    int adr = bytecode_emitint(binary, O_BRZ, 0x22222222); // fill it later with adress!!!
     char* name = mprintf("cond_%d", binary->index);
-    bytecode_addtofill(binary, name, adr - 4);
+    bytecode_addtofill(binary, name, adr + 1);
     node->cond.body->codegen(node->cond.body, binary);
     //printf("cond_%d:\n", binary->index++);
     bytecode_addlabel(binary, name, binary->size);
@@ -119,10 +119,10 @@ void codegen_loop(node_t* node, binary_t* binary)
 
     bytecode_addlabel(binary, lname, binary->size);
     node->loop.arg->codegen(node->loop.arg, binary);
-    int adr = bytecode_emitint(binary, O_BRZ, 0);
+    int adr = bytecode_emitint(binary, O_BRZ, 0x22222222);
     bytecode_addtofill(binary, lename, adr + 1);
     node->loop.body->codegen(node->loop.body, binary);
-    adr = bytecode_emitint(binary, O_JMP, 0);
+    adr = bytecode_emitint(binary, O_JMP, 0x22222222);
     bytecode_addtofill(binary, lname, adr + 1);
     bytecode_addlabel(binary, lename, binary->size);
 
@@ -136,8 +136,9 @@ void codegen_break(node_t* node, binary_t* binary)
 
     char *lename = mprintf("loopend_%d", binary->loop);
 
-    bytecode_emitint(binary, O_JMP, 0);
-    bytecode_addlabel(binary, lename, binary->size);
+    int adr = bytecode_emitint(binary, O_JMP, 0x22222222);
+    bytecode_addtofill(binary, lename, adr + 1);
+    //bytecode_addlabel(binary, lename, binary->size);
 }
 
 void codegen_decl(node_t* node, binary_t* binary)

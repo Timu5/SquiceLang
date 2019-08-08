@@ -1,7 +1,6 @@
 #ifndef _AST_H_
 #define _AST_H_
 
-#include "value.h"
 #include "vector.h"
 
 enum {
