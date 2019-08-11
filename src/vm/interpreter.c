@@ -38,23 +38,23 @@ int main()
 
     while (1)
     {
-        int byte = fgetc(file);
-        if (byte == EOF)
+        if (ip >= fsize)
             break;
+        int byte = opcodes[ip];
+        ip += 1;
 
         switch (byte)
         {
         case O_NOP:
             break;
         case O_PUSHN:
-            // get number
+            vector_push(global->stack, value_number(getdouble()));
             break;
         case O_PUSHS:
-            //getstring
+            vector_push(global->stack, value_string(getstr()));
             break;
         case O_PUSHV:
-            //getstring
-            vector_push(global->stack, ctx_getvar(global, ""));
+            vector_push(global->stack, ctx_getvar(global, getstr()));
             break;
         case O_STORE:
             break;
@@ -68,10 +68,10 @@ int main()
             vector_push(global->stack, value_binary(0, a, b));
             break;
         case O_CALL:
-            vector_push(call_stack, ip + 1);
+            vector_push(call_stack, ip);
             ip = getint();
             break;
-            case O_RETN:
+        case O_RETN:
             vector_push(global->stack, value_null());
         case O_RET:
             if (vector_size(call_stack) == 0)
@@ -87,18 +87,19 @@ int main()
             break;
         case O_BRZ:
             value_t *v = vector_pop(global->stack);
+            int nip = getint();
             if (v->number == 0)
-                ip = getint();
-            else
-                getint();
+                ip = nip;
             break;
         case O_INDEX:
-            value_t *v = vector_pop(global->stack);
-            // call index
+            value_t *expr = vector_pop(global->stack);
+            value_t *var = vector_pop(global->stack);
+            vector_push(global->stack, value_get((int)expr->number, var));
             break;
         case O_MEMBER:
-            value_t *v = vector_pop(global->stack);
-            // call member
+            value_t *var = vector_pop(global->stack);
+            char *name = getstr();
+            vector_push(global->stack, value_member(name, var));
             break;
         }
     }

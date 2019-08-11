@@ -5,25 +5,27 @@
 #include "ast.h"
 #include "parser.h"
 #include "vector.h"
-#include "eval.h"
-#include "contex.h"
-#include "ex.h"
-#include "gc.h"
-#include "builtin.h"
+#include "bytecode.h"
+//#include "contex.h"
+#include "utils.h"
+//#include "gc.h"
+//#include "builtin.h"
+#include "codegen.h"
 
 extern FILE* input;
 
-ctx_t* global = NULL;
+//ctx_t* global = NULL;
 
 int main(int argc, char ** argv)
 {
-    if(argc < 2)
+    /*if(argc < 2)
     {
         printf("Usage: lang input\n");
         return -1;
-    }
+    }*/
 
-    input = fopen(argv[1], "r");
+    //input = fopen(argv[1], "r");
+    input = fopen("test.lang", "r");
 
     if(!input)
     {
@@ -35,13 +37,15 @@ int main(int argc, char ** argv)
     {   
         node_t* tree = parse();
 
-        global = ctx_new(NULL);
-        builtin_install(global);
+        binary_t* bin = binary_new();
+        tree->codegen(tree, bin);
+
+        binary_save(bin, "test1.bin");
+
+        bytecode_fill(bin);
+
+        binary_save(bin, "test2.bin");
         
-        tree->eval(tree, global);
-        
-        gc_freeall();
-        ctx_free(global);
         node_free(tree);
     }
     catch

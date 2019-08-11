@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include "bytecode.h"
 
 binary_t* binary_new()
@@ -86,8 +87,12 @@ int bytecode_fill(binary_t* bin)
             if(strcmp(bin->fsymbols[i], bin->symbols[j]) == 0)
             {
                 *(int*)(&(bin->block[bin->fadresses[i]])) = bin->adresses[j];
-                break;
+                goto end;
             }
         }
+        printf("Symbol not found: %s\n", bin->fsymbols[i]);
+        end:
+        1;
     }
+    return 0;
 }
