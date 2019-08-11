@@ -7,6 +7,7 @@
 int ip = 0;
 char *opcodes = NULL;
 vector(int) call_stack = NULL;
+ctx_t *global;
 
 static char *getstr()
 {
@@ -24,7 +25,7 @@ static double getdouble()
 
 int main()
 {
-    ctx_t *global = ctx_new(NULL);
+    global = ctx_new(NULL);
     builtin_install(global);
 
     FILE *file = fopen("test.bin", "rb");
@@ -59,14 +60,18 @@ int main()
         case O_STORE:
             break;
         case O_UNARY:
+        {
             value_t *a = vector_pop(global->stack);
             vector_push(global->stack, value_unary(0, a));
             break;
+        }
         case O_BINARY:
+        {
             value_t *a = vector_pop(global->stack);
             value_t *b = vector_pop(global->stack);
             vector_push(global->stack, value_binary(0, a, b));
             break;
+        }
         case O_CALL:
             vector_push(call_stack, ip);
             ip = getint();
@@ -92,15 +97,19 @@ int main()
                 ip = nip;
             break;
         case O_INDEX:
+        {
             value_t *expr = vector_pop(global->stack);
             value_t *var = vector_pop(global->stack);
             vector_push(global->stack, value_get((int)expr->number, var));
             break;
+        }
         case O_MEMBER:
+        {
             value_t *var = vector_pop(global->stack);
             char *name = getstr();
             vector_push(global->stack, value_member(name, var));
             break;
+        }
         }
     }
 
