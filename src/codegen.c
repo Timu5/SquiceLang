@@ -52,8 +52,6 @@ void codegen_string(node_t* node, binary_t* binary)
 
 void codegen_call(node_t* node, binary_t* binary)
 {
-    node->call.func->codegen(node->call.func, binary);
-
     int i = 0;
     for(; i < vector_size(node->call.args->block); i++)
     {
@@ -62,6 +60,9 @@ void codegen_call(node_t* node, binary_t* binary)
     }
 
     bytecode_emitdouble(binary, O_PUSHN, i);
+
+    node->call.func->codegen(node->call.func, binary);
+    
     if (node->call.func->type == N_MEMBER)
     {
         bytecode_emit(binary, O_CALL); // !!! TODO: add parent
