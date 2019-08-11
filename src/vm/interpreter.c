@@ -12,15 +12,27 @@ ctx_t *global;
 static char *getstr()
 {
     char buffer[512];
+    int i = 0;
+    while(opcodes[ip + i] != NULL)
+    {
+        buffer[i] = opcodes[ip + i];
+        i++;
+    }
+    buffer[i] = 0;
+    ip += i;
     return strdup(buffer);
 }
 
 static int getint()
 {
+    ip += 4;
+    return *(int*)&opcodes[ip];
 }
 
 static double getdouble()
 {
+    ip += 8;
+    return *(double*)&opcodes[ip];
 }
 
 int main()
@@ -49,7 +61,7 @@ int main()
         case O_NOP:
             break;
         case O_PUSHN:
-            vector_push(global->stack, value_number(getdouble()));
+            vector_push(global->stack, value_number(getint()));
             break;
         case O_PUSHS:
             vector_push(global->stack, value_string(getstr()));
@@ -58,6 +70,7 @@ int main()
             vector_push(global->stack, ctx_getvar(global, getstr()));
             break;
         case O_STORE:
+            ctx_addvar(global, getstr(), vector_pop(global->stack));
             break;
         case O_UNARY:
         {
@@ -69,10 +82,18 @@ int main()
         {
             value_t *a = vector_pop(global->stack);
             value_t *b = vector_pop(global->stack);
-            vector_push(global->stack, value_binary(0, a, b));
+            vector_push(global->stack, value_binary(getint(), a, b));
             break;
         }
         case O_CALL:
+            value_t *fn = vector_pop(global->stack);
+            while (fn->type == V_REF)
+                fn = fn->ref;
+            if (fn->type != V_FN)
+            {
+                printf("Can only call functions!");
+                return;
+            }
             vector_push(call_stack, ip);
             ip = getint();
             break;
