@@ -183,7 +183,7 @@ static value_t* binary_number(int op, value_t* a, value_t* b)
     case T_RCHEVR:
         return value_number(a->number > b->number); 
     }
-    throw("Unkown binary operation");
+    throw("Unkown binary operation %d", op);
 }
 
 static value_t* binary_string(int op, value_t* a, value_t* b)

@@ -29,7 +29,7 @@ value_t* gc_alloc_value()
     usedmem += 1;
     if (usedmem >= maxmem)
     {
-        gc_collect(global);
+        //gc_collect(global);
         usedmem = vector_size(values);
         if (usedmem >= maxmem)
             maxmem = maxmem * 2;
