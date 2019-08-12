@@ -7,6 +7,7 @@
 
 int ip = 0;
 char *opcodes = NULL;
+long fsize = 0;
 vector(int) call_stack = NULL;
 ctx_t *global;
 
@@ -38,6 +39,68 @@ static double getdouble()
     return value;
 }
 
+void dis()
+{
+    ip = 0;
+    while (1)
+    {
+        if (ip >= fsize)
+            break;
+        int byte = opcodes[ip];
+        printf("%d:\t\t\t\t", ip);
+        ip += 1;
+
+        switch (byte)
+        {
+        case O_NOP:
+            printf("NOP");
+            break;
+        case O_PUSHN:
+            printf("pushn %d", getint());
+            break;
+        case O_PUSHS:
+            printf("pushs \"%s\"", getstr());
+            break;
+        case O_PUSHV:
+            printf("pushv \"%s\"", getstr());
+            break;
+        case O_STORE:
+            printf("store \"%s\"", getstr());
+            break;
+        case O_UNARY:
+            printf("unary %d", getint());
+            break;
+        case O_BINARY:
+            printf("binary %d", getint());
+            break;
+        case O_CALL:
+            printf("call");
+            break;
+        case O_RETN:
+            printf("retn");
+            break;
+        case O_RET:
+            printf("ret");
+            break;
+        case O_JMP:
+            printf("jmp %d", getint());
+            break;
+        case O_BRZ:
+            printf("brz %d", getint());
+            break;
+        case O_INDEX:
+            printf("index");
+        case O_MEMBER:
+            printf("member %s", getstr());
+            break;
+        }
+
+        putchar('\n');
+    }
+
+    ip = 0;
+}
+
 int main()
 {
     global = ctx_new(NULL);
@@ -45,7 +108,7 @@ int main()
 
     FILE *file = fopen("test.bin", "rb");
     fseek(file, 0, SEEK_END);
-    long fsize = ftell(file);
+    fsize = ftell(file);
     fseek(file, 0, SEEK_SET);
 
     opcodes = (char *)malloc(fsize);
@@ -99,7 +162,7 @@ int main()
                     printf("Can only call functions!");
                     return;
                 }
-                if(fn->fn->native != NULL)
+                if (fn->fn->native != NULL)
                 {
                     fn->fn->native(global);
                 }
