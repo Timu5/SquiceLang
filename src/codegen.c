@@ -59,7 +59,7 @@ void codegen_call(node_t* node, binary_t* binary)
         n->codegen(n, binary);
     }
 
-    bytecode_emitdouble(binary, O_PUSHN, i);
+    bytecode_emitint(binary, O_PUSHN, i);
 
     node->call.func->codegen(node->call.func, binary);
     
