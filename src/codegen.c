@@ -98,15 +98,25 @@ void codegen_return(node_t* node, binary_t* binary)
 void codegen_cond(node_t* node, binary_t* binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
-    //printf("brz cond_%d\n", binary->index); // branch if zero
     int adr = bytecode_emitint(binary, O_BRZ, 0x22222222); // fill it later with adress!!!
     char* name = mprintf("cond_%d", binary->index);
+    char* ename = mprintf("condend_%d", binary->index++);
     bytecode_addtofill(binary, name, adr + 1);
     node->cond.body->codegen(node->cond.body, binary);
-    //printf("cond_%d:\n", binary->index++);
-    bytecode_addlabel(binary, name, binary->size);
+    
     if(node->cond.elsebody != NULL)
+    {
+        adr = bytecode_emitint(binary, O_JMP, 0x22222222);
+        bytecode_addlabel(binary, name, binary->size);
+        bytecode_addtofill(binary, ename, adr + 1);
         node->cond.elsebody->codegen(node->cond.elsebody, binary);
+        bytecode_addlabel(binary, ename, binary->size);
+    }
+    else
+    {
+        bytecode_addlabel(binary, name, binary->size);
+    }
+    
 }
 
 void codegen_loop(node_t* node, binary_t* binary)
@@ -172,4 +182,5 @@ void codegen_member(node_t* node, binary_t* binary)
 {
     node->member.parent->codegen(node->member.parent, binary);
     bytecode_emitstr(binary, O_MEMBER, node->member.name);
+    printf("member %s\n", node->member.name);
 }

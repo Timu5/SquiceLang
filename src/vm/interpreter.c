@@ -90,8 +90,12 @@ void dis()
             break;
         case O_INDEX:
             printf("index");
+            break;
         case O_MEMBER:
-            printf("member %s", getstr());
+            printf("member \"%s\"", getstr());
+            break;
+        default:
+            printf("data %x", byte);
             break;
         }
 
@@ -114,6 +118,9 @@ int main()
     opcodes = (char *)malloc(fsize);
     fread(opcodes, 1, fsize, file);
     fclose(file);
+
+    //dis();
+    //return 1;
 
     try
     {
@@ -168,8 +175,9 @@ int main()
                 }
                 else
                 {
-                    vector_push(call_stack, ip);
-                    ip = getint();
+                    //vector_push(call_stack, ip);
+                    //ip = getint();
+                    printf("Calling not implemented!");
                 }
                 break;
             case O_RETN:
@@ -189,7 +197,7 @@ int main()
             case O_BRZ:
                 value_t *v = vector_pop(global->stack);
                 int nip = getint();
-                if (v->number == 0)
+                if (v->number != 0)
                     ip = nip;
                 break;
             case O_INDEX:

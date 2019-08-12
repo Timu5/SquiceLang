@@ -20,7 +20,7 @@ binary_t* binary_new()
 
 void binary_save(binary_t* bin, char* filename)
 {
-    FILE* file = fopen(filename, "w");
+    FILE* file = fopen(filename, "wb");
 
     fwrite(bin->block, 1, bin->size, file);
 
