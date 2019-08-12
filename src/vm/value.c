@@ -218,6 +218,12 @@ static value_t* binary_dict(int op, value_t* a, value_t* b)
 
 value_t* value_binary(int op, value_t* a, value_t* b)
 {
+    if(op == T_ASSIGN)
+    {
+        value_assign(b, a);
+        return b;
+    }
+
     if(a->type == V_REF)
         a = a->ref;
     if(b->type == V_REF)
