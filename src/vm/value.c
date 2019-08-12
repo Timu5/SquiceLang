@@ -220,8 +220,8 @@ value_t* value_binary(int op, value_t* a, value_t* b)
 {
     if(op == T_ASSIGN)
     {
-        value_assign(b, a);
-        return b;
+        value_assign(a, b);
+        return a;
     }
 
     if(a->type == V_REF)

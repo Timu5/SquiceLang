@@ -155,8 +155,8 @@ int main()
             }
             case O_BINARY:
             {
-                value_t *a = vector_pop(global->stack);
                 value_t *b = vector_pop(global->stack);
+                value_t *a = vector_pop(global->stack);
                 vector_push(global->stack, value_binary(getint(), a, b));
                 break;
             }
@@ -197,7 +197,7 @@ int main()
             case O_BRZ:
                 value_t *v = vector_pop(global->stack);
                 int nip = getint();
-                if (v->number != 0)
+                if (v->number == 0)
                     ip = nip;
                 break;
             case O_INDEX:
