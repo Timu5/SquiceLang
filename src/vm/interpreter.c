@@ -45,7 +45,7 @@ int main()
     long fsize = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    opcodes = malloc(fsize);
+    opcodes = (char*)malloc(fsize);
     fread(opcodes, 1, fsize, file);
     fclose(file);
 
@@ -75,7 +75,7 @@ int main()
         case O_UNARY:
         {
             value_t *a = vector_pop(global->stack);
-            vector_push(global->stack, value_unary(0, a));
+            vector_push(global->stack, value_unary(getint(), a));
             break;
         }
         case O_BINARY:
