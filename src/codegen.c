@@ -74,6 +74,8 @@ void codegen_call(node_t *node, binary_t *binary)
 
     if (node->call.func->type == N_MEMBER)
     {
+        int adr = binary->size - strlen(node->call.func->member.name) - 1 - 1;
+        binary->block[adr] = O_MEMBERD;
         bytecode_emit(binary, O_CALLM);
     }
     else

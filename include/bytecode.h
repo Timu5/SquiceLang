@@ -20,7 +20,8 @@ enum {
     O_JMP,
     O_BRZ, // brach if zero
     O_INDEX,
-    O_MEMBER
+    O_MEMBER,
+    O_MEMBERD // member with parent duplicate
 };
 
 // Structure to store bytecode in binary format

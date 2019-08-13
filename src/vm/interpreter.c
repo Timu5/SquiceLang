@@ -103,6 +103,9 @@ void dis()
         case O_MEMBER:
             printf("member \"%s\"", getstr());
             break;
+        case O_MEMBERD:
+            printf("memberd \"%s\"", getstr());
+            break;
         default:
             printf("data %x", byte);
             break;
@@ -193,9 +196,9 @@ int main()
                 else
                 {
                     context = ctx_new(context);
-                    if(byte == O_CALLM)
+                    if (byte == O_CALLM)
                     {
-                       ctx_addvar(context, "this", vector_pop(global->stack)); // add "this" variable 
+                        ctx_addvar(context, "this", vector_pop(global->stack)); // add "this" variable
                     }
                     vector_push(call_stack, ip);
                     //vector_pop(global->stack);
@@ -232,6 +235,13 @@ int main()
                 break;
             }
             case O_MEMBER:
+            {
+                value_t *var = vector_pop(global->stack);
+                char *name = getstr();
+                vector_push(global->stack, value_member(name, var));
+                break;
+            }
+            case O_MEMBERD:
             {
                 value_t *var = vector_pop(global->stack);
                 char *name = getstr();
