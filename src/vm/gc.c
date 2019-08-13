@@ -2,34 +2,34 @@
 
 #include "vector.h"
 #include "value.h"
-#include "ex.h"
+#include "utils.h"
 #include "contex.h"
 #include "gc.h"
 
-vector(value_t*) values;
+vector(value_t *) values;
 
 size_t maxmem = 128;
 size_t usedmem = 0;
 
-extern ctx_t* global;
+extern ctx_t *global;
 
-void* safe_alloc(int size)
+void *safe_alloc(int size)
 {
-    void* data = malloc(size);
-    if(!data)
+    void *data = malloc(size);
+    if (!data)
         throw("Cannot alloc memory!");
     return data;
 }
 
-value_t* gc_alloc_value()
+value_t *gc_alloc_value()
 {
-    void* v = safe_alloc(sizeof(value_t));
+    void *v = safe_alloc(sizeof(value_t));
     vector_push(values, v);
 
     usedmem += 1;
     if (usedmem >= maxmem)
     {
-        gc_collect(global);
+        //gc_collect(global);
         usedmem = vector_size(values);
         if (usedmem >= maxmem)
             maxmem = maxmem * 2;
@@ -38,14 +38,14 @@ value_t* gc_alloc_value()
     return v;
 }
 
-static void gc_mark(value_t* val)
+static void gc_mark(value_t *val)
 {
     val->markbit = 1;
     if (val->type == V_REF)
     {
         val->markbit = 1;
         gc_mark(val->ref);
-    } 
+    }
     else if (val->type == V_ARRAY)
     {
         for (int j = vector_size(val->array) - 1; j >= 0; j--)
@@ -58,29 +58,29 @@ static void gc_mark(value_t* val)
     }
 }
 
-void gc_collect(ctx_t* ctx)
+void gc_collect(ctx_t *ctx)
 {
-    ctx_t* c = ctx;
-    while(c)
+    ctx_t *c = ctx;
+    while (c)
     {
-        for(int i = 0; i < vector_size(c->vars); i++)
+        for (int i = 0; i < vector_size(c->vars); i++)
         {
             gc_mark(c->vars[i]->val);
         }
-        for(int i = 0; i < vector_size(c->stack); i++)
+        for (int i = 0; i < vector_size(c->stack); i++)
         {
             gc_mark(c->stack[i]);
         }
         c = c->child;
     }
 
-    for(int i = vector_size(values) - 1; i >= 0; i--)
+    for (int i = vector_size(values) - 1; i >= 0; i--)
     {
-        if(values[i]->markbit == 0)
+        if (values[i]->markbit == 0)
         {
             value_free(values[i]);
             int l = vector_size(values) - 1;
-            if(i != l)
+            if (i != l)
                 values[i] = values[l];
             vector_pop(values);
         }
@@ -91,10 +91,9 @@ void gc_collect(ctx_t* ctx)
 
 void gc_freeall()
 {
-    for(int i = 0; i < vector_size(values); i++)
+    for (int i = 0; i < vector_size(values); i++)
     {
         value_free(values[i]);
     }
     vector_free(values);
 }
-

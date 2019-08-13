@@ -3,8 +3,10 @@
 #include <string.h>
 
 #include "parser.h"
+#include "lexer.h"
+#include "ast.h"
 #include "vector.h"
-#include "ex.h"
+#include "utils.h"
 
 extern char buffer[255];
 extern int number;
@@ -18,18 +20,18 @@ int nexttoken()
 
 void match(int token)
 {
-    if(lasttoken != token)
+    if (lasttoken != token)
         throw("Unexpexted token, expect %s got %s", tokenstr(token), tokenstr(lasttoken));
 }
 
-node_t* expr(int min);
+node_t *expr(int min);
 
 // primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary |
 //             array | dict |
 //             primary '[' expr ']' | primary '(' expr ')'| primary '.' ident
-node_t* primary()
+node_t *primary()
 {
-    node_t* prim = NULL;
+    node_t *prim = NULL;
     if (lasttoken == T_NUMBER)
     {
         prim = node_int(number);
@@ -63,10 +65,10 @@ node_t* primary()
     {
         // new array
         nexttoken();
-        vector(node_t*) elements = NULL;
+        vector(node_t *) elements = NULL;
         while (lasttoken != T_RBRACK)
         {
-            node_t* e = expr(0);
+            node_t *e = expr(0);
             vector_push(elements, e);
             if (lasttoken != T_COMMA)
                 break;
@@ -76,14 +78,14 @@ node_t* primary()
         nexttoken();
 
         // syntax sugar, convert [1,2,3] to list(1,2,3)
-        prim = node_call(node_ident(strdup("list")), node_block(elements)); 
+        prim = node_call(node_ident(strdup("list")), node_block(elements));
     }
     else if (lasttoken == T_LBRACE)
     {
         // new dictonary
         nexttoken();
-        vector(node_t*) keys = NULL;
-        vector(node_t*) values = NULL;
+        vector(node_t *) keys = NULL;
+        vector(node_t *) values = NULL;
         while (lasttoken != T_RBRACE)
         {
             if (!(lasttoken == T_STRING || lasttoken == T_IDENT))
@@ -94,7 +96,7 @@ node_t* primary()
             match(T_COLON);
             nexttoken();
 
-            node_t* e = expr(0);
+            node_t *e = expr(0);
             vector_push(values, e);
 
             if (lasttoken != T_COMMA)
@@ -105,7 +107,7 @@ node_t* primary()
         nexttoken();
 
         // syntax sugar, convert {a:1, b:2+2} to dict(list('a', 'b'), list(1, 2+2))
-        vector(node_t*) args = NULL;
+        vector(node_t *) args = NULL;
         vector_push(args, node_call(node_ident(strdup("list")), node_block(keys)));
         vector_push(args, node_call(node_ident(strdup("list")), node_block(values)));
         prim = node_call(node_ident(strdup("dict")), node_block(args));
@@ -116,14 +118,14 @@ node_t* primary()
     }
 
     while (lasttoken == T_DOT || lasttoken == T_LBRACK || lasttoken == T_LPAREN)
-    {     
+    {
         if (lasttoken == T_LPAREN) // primary '(' expr ')'
         {
             nexttoken();
-            vector(node_t*) args = NULL;
+            vector(node_t *) args = NULL;
             while (lasttoken != T_RPAREN)
             {
-                node_t* e = expr(0);
+                node_t *e = expr(0);
                 vector_push(args, e);
 
                 if (lasttoken != T_COMMA)
@@ -137,7 +139,7 @@ node_t* primary()
         else if (lasttoken == T_LBRACK) // primary '[' expr ']'
         {
             nexttoken();
-            node_t* e = expr(0);
+            node_t *e = expr(0);
             match(T_RBRACK);
             nexttoken();
             prim = node_index(prim, e);
@@ -146,7 +148,7 @@ node_t* primary()
         {
             nexttoken();
             match(T_IDENT);
-            char* name = strdup(buffer);
+            char *name = strdup(buffer);
             nexttoken();
             prim = node_member(prim, name);
         }
@@ -155,25 +157,25 @@ node_t* primary()
 }
 
 // expr := primary |  expr OP expr
-node_t* expr(int min)
+node_t *expr(int min)
 {
     int pre[] = {
-            4, // +
-            4, // -
-            5, // /
-            5, // *
-            1, // =
-            2, // ==
-            2, // != 
-            3, // <=
-            3, // >=
-            3, // <
-            3, // >
+        4, // +
+        4, // -
+        5, // /
+        5, // *
+        1, // =
+        2, // ==
+        2, // !=
+        3, // <=
+        3, // >=
+        3, // <
+        3, // >
     };
-    node_t* lhs = primary();
-    while(1)
+    node_t *lhs = primary();
+    while (1)
     {
-        if(lasttoken < T_PLUS || lasttoken > T_RCHEVR || pre[lasttoken - T_PLUS] < min)
+        if (lasttoken < T_PLUS || lasttoken > T_RCHEVR || pre[lasttoken - T_PLUS] < min)
             break;
 
         int op = lasttoken;
@@ -181,12 +183,11 @@ node_t* expr(int min)
         int assoc = 0; // 0 left, 1 right
         int nextmin = assoc ? prec : prec + 1;
         nexttoken();
-        node_t* rhs = expr(nextmin);
+        node_t *rhs = expr(nextmin);
         lhs = node_binary(op, lhs, rhs);
     }
     return lhs;
 }
-
 
 // block := '{' statement '}'
 // let := 'let' ident '=' expr ';'
@@ -195,33 +196,33 @@ node_t* expr(int min)
 // return := 'return' ';' | 'return' expr ';'
 // break := 'break' ';'
 // statement := block | let | if | while | funca | return | break | expr ';'
-node_t* statment()
+node_t *statment()
 {
-    switch(lasttoken)
+    switch (lasttoken)
     {
     case T_LBRACE:
         nexttoken();
-        
-        vector(node_t*) list = NULL;
-        while(lasttoken != T_RBRACE)
+
+        vector(node_t *) list = NULL;
+        while (lasttoken != T_RBRACE)
         {
-            node_t* node = statment();
+            node_t *node = statment();
             vector_push(list, node);
         }
         match(T_RBRACE);
-        
+
         nexttoken();
         return node_block(list);
     case T_LET:
         nexttoken();
-        match(T_IDENT); 
-        char* name = strdup(buffer);
-        
+        match(T_IDENT);
+        char *name = strdup(buffer);
+
         nexttoken();
         match(T_ASSIGN);
         nexttoken();
-        
-        node_t* exp = expr(0);
+
+        node_t *exp = expr(0);
         match(T_SEMICOLON);
 
         nexttoken();
@@ -231,14 +232,14 @@ node_t* statment()
         match(T_LPAREN);
 
         nexttoken();
-        node_t* arg = expr(0);
+        node_t *arg = expr(0);
         match(T_RPAREN);
 
         nexttoken();
-        node_t* body = statment();
-        node_t* elsebody = NULL;
+        node_t *body = statment();
+        node_t *elsebody = NULL;
 
-        if(lasttoken == T_ELSE)
+        if (lasttoken == T_ELSE)
         {
             nexttoken();
             elsebody = statment();
@@ -250,42 +251,42 @@ node_t* statment()
         match(T_LPAREN);
 
         nexttoken();
-        node_t* arg2 = expr(0);
+        node_t *arg2 = expr(0);
         match(T_RPAREN);
 
         nexttoken();
-        node_t* body2 = statment();
-        
+        node_t *body2 = statment();
+
         return node_loop(arg2, body2);
     case T_FN:
         nexttoken();
         match(T_IDENT);
-        
-        char* fnname = strdup(buffer);
-        
+
+        char *fnname = strdup(buffer);
+
         nexttoken();
         match(T_LPAREN);
-    
-        vector(char*) args = NULL;
-        
-        while(nexttoken() != T_RPAREN)
+
+        vector(char *) args = NULL;
+
+        while (nexttoken() != T_RPAREN)
         {
             match(T_IDENT);
             vector_push(args, strdup(buffer));
-            if(nexttoken() != T_COMMA)
+            if (nexttoken() != T_COMMA)
                 break;
         }
-        
+
         match(T_RPAREN);
         nexttoken();
 
-        node_t* fnbody = statment();
+        node_t *fnbody = statment();
 
         return node_func(fnname, args, fnbody);
     case T_RETURN:
         nexttoken();
 
-        node_t* retnode = NULL;
+        node_t *retnode = NULL;
         if (lasttoken != T_SEMICOLON)
             retnode = expr(0);
 
@@ -300,26 +301,26 @@ node_t* statment()
 
         return node_break();
     default:;
-        node_t* e = expr(0);
+        node_t *e = expr(0);
         match(T_SEMICOLON);
         nexttoken();
         return e;
     }
 }
 
-node_t* parse()
+node_t *parse()
 {
     nexttoken();
-    vector(node_t*) funcs = NULL;
-    vector(node_t*) stmts = NULL;
-    while(lasttoken != T_EOF)
+    vector(node_t *) funcs = NULL;
+    vector(node_t *) stmts = NULL;
+    while (lasttoken != T_EOF)
     {
-        node_t* n = statment();
+        node_t *n = statment();
 
-        if(n->type == N_FUNC)
+        if (n->type == N_FUNC)
             vector_push(funcs, n);
         else
-            vector_push(stmts, n); 
+            vector_push(stmts, n);
     }
     return node_root(node_block(funcs), node_block(stmts));
 }

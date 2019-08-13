@@ -3,6 +3,6 @@
 
 #include "contex.h"
 
-void builtin_install(ctx_t* ctx);
+void builtin_install(ctx_t *ctx);
 
 #endif

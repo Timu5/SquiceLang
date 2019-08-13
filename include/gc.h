@@ -5,9 +5,9 @@
 
 #define ALLOC(type) safe_alloc(sizeof(type))
 
-void* safe_alloc(int size);
-value_t* gc_alloc_value();
-void gc_collect(ctx_t* ctx);
+void *safe_alloc(int size);
+value_t *gc_alloc_value();
+void gc_collect(ctx_t *ctx);
 void gc_freeall();
 
 #endif
