@@ -64,6 +64,9 @@ void dis()
         case O_PUSHV:
             printf("pushv \"%s\"", getstr());
             break;
+        case O_STOREFN:
+            printf("storefn \"%s\"", getstr());
+            break;
         case O_STORE:
             printf("store \"%s\"", getstr());
             break;
@@ -109,6 +112,7 @@ int main()
 {
     global = ctx_new(NULL);
     builtin_install(global);
+    ctx_t *context = global;
 
     FILE *file = fopen("test.bin", "rb");
     fseek(file, 0, SEEK_END);
@@ -142,10 +146,13 @@ int main()
                 vector_push(global->stack, value_string(getstr()));
                 break;
             case O_PUSHV:
-                vector_push(global->stack, ctx_getvar(global, getstr()));
+                vector_push(global->stack, ctx_getvar(context, getstr()));
+                break;
+            case O_STOREFN:
+                ctx_addfn(context, getstr(), vector_pop(global->stack)->number, NULL);
                 break;
             case O_STORE:
-                ctx_addvar(global, getstr(), vector_pop(global->stack));
+                ctx_addvar(context, getstr(), vector_pop(global->stack));
                 break;
             case O_UNARY:
             {
@@ -171,13 +178,14 @@ int main()
                 }
                 if (fn->fn->native != NULL)
                 {
-                    fn->fn->native(global);
+                    fn->fn->native(context);
                 }
                 else
                 {
-                    //vector_push(call_stack, ip);
-                    //ip = getint();
-                    printf("Calling not implemented!");
+                    context = ctx_new(context);
+                    vector_push(call_stack, ip);
+                    //vector_pop(global->stack);
+                    ip = fn->fn->address;
                 }
                 break;
             case O_RETN:
@@ -190,6 +198,8 @@ int main()
                 }
                 int ret_adr = vector_pop(call_stack);
                 ip = ret_adr;
+                if (context->parent != NULL)
+                    context = context->parent;
                 break;
             case O_JMP:
                 ip = getint();

@@ -9,6 +9,7 @@ enum {
     O_PUSHS, // push string
     O_PUSHV, // push value
     O_STORE,
+    O_STOREFN, // store function
     O_UNARY,
     O_BINARY,
     O_CALL,
