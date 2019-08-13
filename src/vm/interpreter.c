@@ -132,9 +132,6 @@ int main()
     fread(opcodes, 1, fsize, file);
     fclose(file);
 
-    //dis();
-    //return 1;
-
     try
     {
         while (1)

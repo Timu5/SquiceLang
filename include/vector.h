@@ -5,17 +5,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct {
+typedef struct
+{
     size_t allocated;
     size_t used;
 } vector_t;
 
-#define vector(x) x*
+#define vector(x) x *
 
 /* Attempts to grow [VECTOR] by [MORE]*/
 #define vector_try_grow(VECTOR, MORE) \
-    (((!(VECTOR) || vector_meta(VECTOR)->used + (MORE) >= vector_meta(VECTOR)->allocated)) ? \
-        (void)vec_grow(((void **)&(VECTOR)), (MORE), sizeof(*(VECTOR))) : (void)0)
+    (((!(VECTOR) || vector_meta(VECTOR)->used + (MORE) >= vector_meta(VECTOR)->allocated)) ? (void)vec_grow(((void **)&(VECTOR)), (MORE), sizeof(*(VECTOR))) : (void)0)
 
 /* Get the metadata block for [VECTOR] */
 #define vector_meta(VECTOR) \
@@ -38,9 +38,9 @@ typedef struct {
     ((VECTOR) ? vector_meta(VECTOR)->allocated : 0)
 
 /* Resize [VECTOR] to accomodate [SIZE] more elements */
-#define vector_resize(VECTOR, SIZE) \
+#define vector_resize(VECTOR, SIZE)                                          \
     (vector_try_grow((VECTOR), (SIZE)), vector_meta(VECTOR)->used += (SIZE), \
-        &(VECTOR)[vector_meta(VECTOR)->used - (SIZE)])
+     &(VECTOR)[vector_meta(VECTOR)->used - (SIZE)])
 
 /* Get the last element in [VECTOR] */
 #define vector_last(VECTOR) \
@@ -67,20 +67,24 @@ typedef struct {
     ((void)(memcpy(vector_resize((VECTOR), (COUNT)), (POINTER), (COUNT) * sizeof(*(POINTER)))))
 
 /* Remove from [VECTOR], [COUNT] elements starting from [INDEX] */
-#define vector_remove(VECTOR, INDEX, COUNT) \
-    ((void)(memmove((VECTOR) + (INDEX), (VECTOR) + (INDEX) + (COUNT), \
-        sizeof(*(VECTOR)) * (vector_meta(VECTOR)->used - (INDEX) - (COUNT))), \
+#define vector_remove(VECTOR, INDEX, COUNT)                                               \
+    ((void)(memmove((VECTOR) + (INDEX), (VECTOR) + (INDEX) + (COUNT),                     \
+                    sizeof(*(VECTOR)) * (vector_meta(VECTOR)->used - (INDEX) - (COUNT))), \
             vector_meta(VECTOR)->used -= (COUNT)))
 
-static inline void vec_grow(void **vector, size_t more, size_t type_size) {
+static inline void vec_grow(void **vector, size_t more, size_t type_size)
+{
     vector_t *meta = vector_meta(*vector);
     size_t count = 0;
     void *data = NULL;
 
-    if (*vector) {
+    if (*vector)
+    {
         count = 2 * meta->allocated + more;
         data = realloc(meta, type_size * count + sizeof *meta);
-    } else {
+    }
+    else
+    {
         count = more + 1;
         data = malloc(type_size * count + sizeof *meta);
         ((vector_t *)data)->used = 0;
@@ -91,7 +95,8 @@ static inline void vec_grow(void **vector, size_t more, size_t type_size) {
     *vector = meta + 1;
 }
 
-static inline void vec_delete(void *vector) {
+static inline void vec_delete(void *vector)
+{
     free(vector_meta(vector));
 }
 

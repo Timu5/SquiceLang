@@ -28,7 +28,6 @@ void codegen_root(node_t *node, binary_t *binary)
     {
         node_t *f = node->root.funcs->block[i];
         f->codegen(f, binary);
-        // save adress and symbol name to binary
     }
 }
 void codegen_ident(node_t *node, binary_t *binary)
@@ -86,7 +85,6 @@ void codegen_call(node_t *node, binary_t *binary)
 
 void codegen_func(node_t *node, binary_t *binary)
 {
-    //printf("\nfunc_%s:\n", node->func.name); // hmm, label !!!!
     char *name = mprintf("func_%s", node->func.name);
     bytecode_addlabel(binary, name, binary->size);
 
@@ -166,7 +164,6 @@ void codegen_break(node_t *node, binary_t *binary)
 
     int adr = bytecode_emitint(binary, O_JMP, 0x22222222);
     bytecode_addtofill(binary, lename, adr + 1);
-    //bytecode_addlabel(binary, lename, binary->size);
 }
 
 void codegen_decl(node_t *node, binary_t *binary)
@@ -187,12 +184,8 @@ void codegen_index(node_t *node, binary_t *binary)
 
 void codegen_block(node_t *node, binary_t *binary)
 {
-    //printf("block\n");
-
     for (int i = 0; i < vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
-
-    //printf("blockend\n");
 }
 
 void codegen_member(node_t *node, binary_t *binary)
