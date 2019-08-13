@@ -8,11 +8,13 @@ enum {
     O_PUSHN, // push number
     O_PUSHS, // push string
     O_PUSHV, // push value
+    O_POP, // remove element from stack
     O_STORE,
     O_STOREFN, // store function
     O_UNARY,
     O_BINARY,
     O_CALL,
+    O_CALLM, // call member
     O_RET,
     O_RETN, // return null
     O_JMP,

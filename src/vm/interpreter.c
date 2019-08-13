@@ -64,6 +64,9 @@ void dis()
         case O_PUSHV:
             printf("pushv \"%s\"", getstr());
             break;
+        case O_POP:
+            printf("pop");
+            break;
         case O_STOREFN:
             printf("storefn \"%s\"", getstr());
             break;
@@ -78,6 +81,9 @@ void dis()
             break;
         case O_CALL:
             printf("call");
+            break;
+        case O_CALLM:
+            printf("callm");
             break;
         case O_RETN:
             printf("retn");
@@ -148,6 +154,9 @@ int main()
             case O_PUSHV:
                 vector_push(global->stack, ctx_getvar(context, getstr()));
                 break;
+            case O_POP:
+                vector_pop(global->stack);
+                break;
             case O_STOREFN:
                 ctx_addfn(context, getstr(), vector_pop(global->stack)->number, NULL);
                 break;
@@ -168,6 +177,7 @@ int main()
                 break;
             }
             case O_CALL:
+            case O_CALLM:
                 value_t *fn = vector_pop(global->stack);
                 while (fn->type == V_REF)
                     fn = fn->ref;
@@ -178,11 +188,15 @@ int main()
                 }
                 if (fn->fn->native != NULL)
                 {
-                    fn->fn->native(context);
+                    fn->fn->native(global);
                 }
                 else
                 {
                     context = ctx_new(context);
+                    if(byte == O_CALLM)
+                    {
+                       ctx_addvar(context, "this", vector_pop(global->stack)); // add "this" variable 
+                    }
                     vector_push(call_stack, ip);
                     //vector_pop(global->stack);
                     ip = fn->fn->address;
@@ -221,6 +235,7 @@ int main()
             {
                 value_t *var = vector_pop(global->stack);
                 char *name = getstr();
+                vector_push(global->stack, var);
                 vector_push(global->stack, value_member(name, var));
                 break;
             }

@@ -74,7 +74,7 @@ void codegen_call(node_t *node, binary_t *binary)
 
     if (node->call.func->type == N_MEMBER)
     {
-        bytecode_emit(binary, O_CALL); // !!! TODO: add parent
+        bytecode_emit(binary, O_CALLM);
     }
     else
     {
