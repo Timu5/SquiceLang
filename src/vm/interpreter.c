@@ -117,13 +117,15 @@ void dis()
     ip = 0;
 }
 
-int main()
+int main(int argc, char ** argv)
 {
-    global = ctx_new(NULL);
-    builtin_install(global);
-    ctx_t *context = global;
+    if (argc < 2)
+    {
+        printf("Usage: vm input\n");
+        return -1;
+    }
 
-    FILE *file = fopen("test.bin", "rb");
+    FILE *file = fopen(argv[1], "rb");
     fseek(file, 0, SEEK_END);
     fsize = ftell(file);
     fseek(file, 0, SEEK_SET);
@@ -131,6 +133,10 @@ int main()
     opcodes = (char *)malloc(fsize);
     fread(opcodes, 1, fsize, file);
     fclose(file);
+
+    global = ctx_new(NULL);
+    builtin_install(global);
+    ctx_t *context = global;
 
     try
     {
