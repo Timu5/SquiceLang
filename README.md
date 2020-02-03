@@ -1,6 +1,8 @@
 # SquiceLang
 
-SquiceLang is simple programing language. It was meant to be something new but at the end it's more like fetureless js cousine. It's main advantage is extreme source code simplicity.
+SquiceLang is simple dynamically typed programing language. It was meant to be something new but at the end it's more like featureless JS cousine. It's main advantage is engine source code simplicity.
+
+Code consist of two parts: compiler and virtual machine. Compiler parse input and emit bytecode. VM interpret bytecode and take care of memory menagment using simple GC implementation.
 
 ## Example
 
