@@ -178,7 +178,6 @@ void codegen_index(node_t *node, binary_t *binary)
 {
     node->index.var->codegen(node->index.var, binary);
     node->index.expr->codegen(node->index.expr, binary);
-    printf("index\n");
     bytecode_emit(binary, O_INDEX);
 }
 
@@ -192,5 +191,4 @@ void codegen_member(node_t *node, binary_t *binary)
 {
     node->member.parent->codegen(node->member.parent, binary);
     bytecode_emitstr(binary, O_MEMBER, node->member.name);
-    printf("member %s\n", node->member.name);
 }

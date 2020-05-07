@@ -14,7 +14,7 @@ static value_t *print(ctx_t *ctx)
         else if (v->type == V_STRING)
             printf("%s", v->string);
     }
-    putchar('\n');
+    printf("\n");
     fflush(stdout);
 }
 

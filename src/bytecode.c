@@ -90,7 +90,7 @@ int bytecode_fill(binary_t *bin)
                 goto end;
             }
         }
-        printf("Symbol not found: %s\n", bin->fsymbols[i]);
+        throw("Symbol not found: %s\n", bin->fsymbols[i]);
     end:
         1;
     }
