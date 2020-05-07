@@ -73,7 +73,7 @@ void codegen_call(node_t *node, binary_t *binary)
 
     if (node->call.func->type == N_MEMBER)
     {
-        int adr = binary->size - strlen(node->call.func->member.name) - 1 - 1;
+        int adr = binary->size - (int)strlen(node->call.func->member.name) - 1 - 1;
         binary->block[adr] = O_MEMBERD;
         bytecode_emit(binary, O_CALLM);
     }
@@ -89,7 +89,7 @@ void codegen_func(node_t *node, binary_t *binary)
     bytecode_addlabel(binary, name, binary->size);
 
     bytecode_emitstr(binary, O_STORE, "argc");
-    for (int i = vector_size(node->func.args) - 1; i >= 0; i--)
+    for (int i = (int)vector_size(node->func.args) - 1; i >= 0; i--)
     {
         bytecode_emitstr(binary, O_STORE, node->func.args[i]);
     }

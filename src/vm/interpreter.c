@@ -15,7 +15,7 @@ static char *getstr()
 {
     char buffer[512];
     int i = 0;
-    while (opcodes[ip + i] != NULL)
+    while (opcodes[ip + i] != '\0')
     {
         buffer[i] = opcodes[ip + i];
         i++;
@@ -164,7 +164,7 @@ int main(int argc, char ** argv)
                 vector_pop(global->stack);
                 break;
             case O_STOREFN:
-                ctx_addfn(context, getstr(), vector_pop(global->stack)->number, NULL);
+                ctx_addfn(context, getstr(), (int)vector_pop(global->stack)->number, NULL);
                 break;
             case O_STORE:
                 ctx_addvar(context, getstr(), vector_pop(global->stack));
@@ -184,17 +184,16 @@ int main(int argc, char ** argv)
             }
             case O_CALL:
             case O_CALLM:
-                value_t *fn = vector_pop(global->stack);
-                while (fn->type == V_REF)
-                    fn = fn->ref;
-                if (fn->type != V_FN)
+                value_t *fn_value = vector_pop(global->stack);
+                while (fn_value->type == V_REF)
+                    fn_value = fn_value->ref;
+                if (fn_value->type != V_FN)
                 {
-                    printf("Can only call functions!");
-                    return;
+                    throw("Can only call functions!");
                 }
-                if (fn->fn->native != NULL)
+                if (fn_value->fn->native != NULL)
                 {
-                    fn->fn->native(global);
+                    fn_value->fn->native(global);
                 }
                 else
                 {
@@ -205,7 +204,7 @@ int main(int argc, char ** argv)
                     }
                     vector_push(call_stack, ip);
                     //vector_pop(global->stack);
-                    ip = fn->fn->address;
+                    ip = fn_value->fn->address;
                 }
                 break;
             case O_RETN:
@@ -213,7 +212,7 @@ int main(int argc, char ** argv)
             case O_RET:
                 if (vector_size(call_stack) == 0)
                 {
-                    printf("Nothing to return from!");
+                    throw("Nothing to return from!");
                     return;
                 }
                 int ret_adr = vector_pop(call_stack);

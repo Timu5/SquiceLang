@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdio.h>
+
 #include "bytecode.h"
+#include "utils.h"
 
 binary_t *binary_new()
 {
@@ -37,7 +39,7 @@ int bytecode_emit(binary_t *bin, int opcode)
 
 int bytecode_emitstr(binary_t *bin, int opcode, char *string)
 {
-    int len = strlen(string);
+    int len = (int)strlen(string);
     bin->size += 1 + len + 1;
     bin->block = (char *)realloc(bin->block, bin->size);
     bin->block[bin->size - 1 - len - 1] = (char)opcode;
@@ -68,12 +70,14 @@ int bytecode_addlabel(binary_t *bin, char *name, int adress)
 {
     vector_push(bin->adresses, adress);
     vector_push(bin->symbols, name);
+    return 0;
 }
 
 int bytecode_addtofill(binary_t *bin, char *name, int adress)
 {
     vector_push(bin->fadresses, adress);
     vector_push(bin->fsymbols, name);
+    return 0;
 }
 
 int bytecode_fill(binary_t *bin)

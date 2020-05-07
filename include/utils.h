@@ -13,4 +13,12 @@ void throw(char *msg, ...);
 
 char *mprintf(char *fmt, ...);
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
+#pragma warning( disable : 4100)
+#pragma warning( disable : 4996)
+#endif
+
 #endif

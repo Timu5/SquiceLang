@@ -18,7 +18,7 @@ struct ctx_s;
 struct fn_s
 {
     int address;
-    value_t *(*native)(struct ctx_s *); // call if not NULL
+    void (*native)(struct ctx_s *); // call if not NULL
 };
 
 struct ctx_s
@@ -40,6 +40,6 @@ void ctx_free(ctx_t *ctx);
 value_t *ctx_getvar(ctx_t *ctx, char *name);
 void ctx_addvar(ctx_t *ctx, char *name, value_t *val);
 fn_t *ctx_getfn(ctx_t *ctx, char *name);
-void ctx_addfn(ctx_t *ctx, char *name, int address, value_t *(*fn)(ctx_t *));
+void ctx_addfn(ctx_t *ctx, char *name, int address, void (*fn)(ctx_t *));
 
 #endif

@@ -48,12 +48,12 @@ static void gc_mark(value_t *val)
     }
     else if (val->type == V_ARRAY)
     {
-        for (int j = vector_size(val->array) - 1; j >= 0; j--)
+        for (int j = (int)vector_size(val->array) - 1; j >= 0; j--)
             val->array[j]->markbit = 1;
     }
     else if (val->type == V_DICT)
     {
-        for (int j = vector_size(val->dict.values) - 1; j >= 0; j--)
+        for (int j = (int)vector_size(val->dict.values) - 1; j >= 0; j--)
             val->dict.values[j]->markbit = 1;
     }
 }
@@ -74,12 +74,12 @@ void gc_collect(ctx_t *ctx)
         c = c->child;
     }
 
-    for (int i = vector_size(values) - 1; i >= 0; i--)
+    for (int i = (int)vector_size(values) - 1; i >= 0; i--)
     {
         if (values[i]->markbit == 0)
         {
             value_free(values[i]);
-            int l = vector_size(values) - 1;
+            int l = (int)vector_size(values) - 1;
             if (i != l)
                 values[i] = values[l];
             vector_pop(values);

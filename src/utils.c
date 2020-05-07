@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "vector.h"
 
 jmp_buf __ex_buf__;
 char ex_msg[256];
@@ -26,4 +27,27 @@ char *mprintf(char *fmt, ...)
     vsprintf(buffer, fmt, va);
     va_end(va);
     return buffer;
+}
+
+void vec_grow(void **vector, size_t more, size_t type_size)
+{
+    vector_t *meta = vector_meta(*vector);
+    size_t count = 0;
+    void *data = NULL;
+
+    if (*vector)
+    {
+        count = 2 * meta->allocated + more;
+        data = realloc(meta, type_size * count + sizeof *meta);
+    }
+    else
+    {
+        count = more + 1;
+        data = malloc(type_size * count + sizeof *meta);
+        ((vector_t *)data)->used = 0;
+    }
+
+    meta = (vector_t *)data;
+    meta->allocated = count;
+    *vector = meta + 1;
 }

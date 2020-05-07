@@ -1,10 +1,12 @@
 #include "builtin.h"
 #include <stdio.h>
 
-static value_t *print(ctx_t *ctx)
+#include "utils.h"
+
+static void print(ctx_t *ctx)
 {
-    int n = vector_pop(ctx->stack)->number;
-    int end = vector_size(ctx->stack);
+    int n = (int)vector_pop(ctx->stack)->number;
+    int end = (int)vector_size(ctx->stack);
     int start = end - n;
     for (int i = start; i < end; i++)
     {
@@ -18,11 +20,11 @@ static value_t *print(ctx_t *ctx)
     fflush(stdout);
 }
 
-static value_t *list(ctx_t *ctx)
+static void list(ctx_t *ctx)
 {
-    int n = vector_pop(ctx->stack)->number;
+    int n = (int)vector_pop(ctx->stack)->number;
     vector(value_t *) arr = NULL;
-    for (int i = vector_size(ctx->stack) - n; i < vector_size(ctx->stack); i++)
+    for (int i = (int)vector_size(ctx->stack) - n; i < (int)vector_size(ctx->stack); i++)
     {
         vector_push(arr, ctx->stack[i]);
     }
@@ -31,9 +33,9 @@ static value_t *list(ctx_t *ctx)
     vector_push(ctx->stack, value_array(arr));
 }
 
-static value_t *dict(ctx_t *ctx)
+static void dict(ctx_t *ctx)
 {
-    int n = vector_pop(ctx->stack)->number;
+    int n = (int)vector_pop(ctx->stack)->number;
     if (n != 0 && n != 2)
         throw("Function dict takes 0 or 2 arguments");
 
@@ -53,7 +55,7 @@ static value_t *dict(ctx_t *ctx)
                 throw("Key of dictonary must be a string");
             vector_push(keys, strdup(key->string));
         }
-        vector(char *) values = NULL;
+        vector(value_t *) values = NULL;
         for (int i = 0; i < vector_size(v->array); i++)
         {
             vector_push(values, value_get(i, v));
@@ -63,22 +65,22 @@ static value_t *dict(ctx_t *ctx)
     }
 }
 
-static value_t *len(ctx_t *ctx)
+static void len(ctx_t *ctx)
 {
-    int n = vector_pop(ctx->stack)->number;
+    int n = (int)vector_pop(ctx->stack)->number;
     if (n != 1)
         throw("Function len takes exactly 1 argument");
 
     value_t *v = vector_pop(ctx->stack);
     if (v->type == V_STRING)
     {
-        vector_push(ctx->stack, value_number(strlen(v->string)));
-        return NULL;
+        vector_push(ctx->stack, value_number((double)strlen(v->string)));
+        return;
     }
     else if (v->type == V_ARRAY)
     {
-        vector_push(ctx->stack, value_number(vector_size(v->array)));
-        return NULL;
+        vector_push(ctx->stack, value_number((double)vector_size(v->array)));
+        return;
     }
 
     throw("Function len need argument of type string or array.");
@@ -86,8 +88,8 @@ static value_t *len(ctx_t *ctx)
 
 void builtin_install(ctx_t *ctx)
 {
-    ctx_addfn(ctx, "print", NULL, print);
-    ctx_addfn(ctx, "list", NULL, list);
-    ctx_addfn(ctx, "dict", NULL, dict);
-    ctx_addfn(ctx, "len", NULL, len);
+    ctx_addfn(ctx, "print", 0, print);
+    ctx_addfn(ctx, "list", 0, list);
+    ctx_addfn(ctx, "dict", 0, dict);
+    ctx_addfn(ctx, "len", 0, len);
 }

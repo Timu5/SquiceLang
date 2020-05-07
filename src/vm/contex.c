@@ -48,7 +48,7 @@ value_t *ctx_getvar(ctx_t *ctx, char *name)
     ctx_t *c = ctx;
     while (c)
     {
-        for (int i = vector_size(c->vars) - 1; i >= 0; i--)
+        for (int i = (int)vector_size(c->vars) - 1; i >= 0; i--)
         {
             var_t *v = c->vars[i];
 
@@ -77,7 +77,7 @@ fn_t *ctx_getfn(ctx_t *ctx, char *name)
     return v->fn;
 }
 
-void ctx_addfn(ctx_t *ctx, char *name, int address, value_t *(*fn)(ctx_t *))
+void ctx_addfn(ctx_t *ctx, char *name, int address, void (*fn)(ctx_t *))
 {
     fn_t *func = (fn_t *)malloc(sizeof(fn_t));
     func->address = address;

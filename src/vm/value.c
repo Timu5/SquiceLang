@@ -156,6 +156,8 @@ value_t *value_unary(int op, value_t *a)
     case T_EXCLAM:
         return value_number(!a->number);
     }
+    throw("Unkown unary operation %d", op);
+    return value_null();
 }
 
 static value_t *binary_number(int op, value_t *a, value_t *b)
@@ -184,6 +186,7 @@ static value_t *binary_number(int op, value_t *a, value_t *b)
         return value_number(a->number > b->number);
     }
     throw("Unkown binary operation %d", op);
+    return value_null();
 }
 
 static value_t *binary_string(int op, value_t *a, value_t *b)
@@ -191,8 +194,8 @@ static value_t *binary_string(int op, value_t *a, value_t *b)
     switch (op)
     {
     case T_PLUS:;
-        int len1 = strlen(a->string);
-        int len2 = strlen(b->string);
+        int len1 = (int)strlen(a->string);
+        int len2 = (int)strlen(b->string);
         char *str = (char *)malloc(sizeof(char) * (len1 + len2 + 1));
         str[0] = 0;
         strcat(str, a->string);
@@ -204,16 +207,19 @@ static value_t *binary_string(int op, value_t *a, value_t *b)
         return value_number(strcmp(a->string, b->string) != 0);
     }
     throw("Unkown binary operation");
+    return value_null();
 }
 
 static value_t *binary_array(int op, value_t *a, value_t *b)
 {
     throw("Cannot perform any binary operation on type array");
+    return value_null();
 }
 
 static value_t *binary_dict(int op, value_t *a, value_t *b)
 {
     throw("Cannot perform any binary operation on type dict");
+    return value_null();
 }
 
 value_t *value_binary(int op, value_t *a, value_t *b)
@@ -246,6 +252,7 @@ value_t *value_binary(int op, value_t *a, value_t *b)
         return binary_dict(op, a, b);
     }
     throw("Unkown value type");
+    return value_null();
 }
 
 value_t *value_get(int i, value_t *a)
@@ -255,7 +262,7 @@ value_t *value_get(int i, value_t *a)
 
     if (a->type == V_STRING)
     {
-        int len = strlen(a->string);
+        int len = (int)strlen(a->string);
         if (i >= len)
             throw("Index out of range");
 
@@ -272,6 +279,7 @@ value_t *value_get(int i, value_t *a)
     }
 
     throw("Cannot index value of this type");
+    return value_null();
 }
 
 value_t *value_member(char *name, value_t *a)
@@ -294,4 +302,5 @@ value_t *value_member(char *name, value_t *a)
     }
 
     throw("Cannot get member for this type");
+    return value_null();
 }
