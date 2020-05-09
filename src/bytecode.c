@@ -6,9 +6,9 @@
 #include "bytecode.h"
 #include "utils.h"
 
-binary_t *binary_new()
+sl_binary_t *sl_binary_new()
 {
-    binary_t *bin = (binary_t *)malloc(sizeof(binary_t));
+    sl_binary_t *bin = (sl_binary_t *)malloc(sizeof(sl_binary_t));
     bin->adresses = NULL;
     bin->symbols = NULL;
     bin->fadresses = NULL;
@@ -20,7 +20,7 @@ binary_t *binary_new()
     return bin;
 }
 
-void binary_save(binary_t *bin, char *filename)
+void sl_binary_save(sl_binary_t *bin, char *filename)
 {
     FILE *file = fopen(filename, "wb");
 
@@ -29,7 +29,7 @@ void binary_save(binary_t *bin, char *filename)
     fclose(file);
 }
 
-int bytecode_emit(binary_t *bin, int opcode)
+int sl_bytecode_emit(sl_binary_t *bin, int opcode)
 {
     bin->size += 1;
     bin->block = (char *)realloc(bin->block, bin->size);
@@ -37,7 +37,7 @@ int bytecode_emit(binary_t *bin, int opcode)
     return bin->size - 1;
 }
 
-int bytecode_emitstr(binary_t *bin, int opcode, char *string)
+int sl_bytecode_emitstr(sl_binary_t *bin, int opcode, char *string)
 {
     int len = (int)strlen(string);
     bin->size += 1 + len + 1;
@@ -48,7 +48,7 @@ int bytecode_emitstr(binary_t *bin, int opcode, char *string)
     return bin->size - 1 - len - 1;
 }
 
-int bytecode_emitint(binary_t *bin, int opcode, int number)
+int sl_bytecode_emitint(sl_binary_t *bin, int opcode, int number)
 {
     bin->size += 1 + 4;
     bin->block = (char *)realloc(bin->block, bin->size);
@@ -57,7 +57,7 @@ int bytecode_emitint(binary_t *bin, int opcode, int number)
     return bin->size - 1 - 4;
 }
 
-int bytecode_emitdouble(binary_t *bin, int opcode, double number)
+int sl_bytecode_emitdouble(sl_binary_t *bin, int opcode, double number)
 {
     bin->size += 1 + 8;
     bin->block = (char *)realloc(bin->block, bin->size);
@@ -66,21 +66,21 @@ int bytecode_emitdouble(binary_t *bin, int opcode, double number)
     return bin->size - 1 - 8;
 }
 
-int bytecode_addlabel(binary_t *bin, char *name, int adress)
+int sl_bytecode_addlabel(sl_binary_t *bin, char *name, int adress)
 {
     vector_push(bin->adresses, adress);
     vector_push(bin->symbols, name);
     return 0;
 }
 
-int bytecode_addtofill(binary_t *bin, char *name, int adress)
+int sl_bytecode_addtofill(sl_binary_t *bin, char *name, int adress)
 {
     vector_push(bin->fadresses, adress);
     vector_push(bin->fsymbols, name);
     return 0;
 }
 
-int bytecode_fill(binary_t *bin)
+int sl_bytecode_fill(sl_binary_t *bin)
 {
     for (int i = 0; i < vector_size(bin->fadresses); i++)
     {

@@ -4,17 +4,17 @@
 #include "codegen.h"
 #include "lexer.h"
 
-static void free_root(node_t *node)
+static void free_root(sl_node_t *node)
 {
-    node_free(node->root.funcs);
-    node_free(node->root.stmts);
+    sl_node_free(node->root.funcs);
+    sl_node_free(node->root.stmts);
     free(node);
 }
 
-node_t *node_root(node_t *funcs, node_t *stmts)
+sl_node_t *node_root(sl_node_t *funcs, sl_node_t *stmts)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_ROOT;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_ROOT;
     node->root.funcs = funcs;
     node->root.stmts = stmts;
     node->codegen = codegen_root;
@@ -22,32 +22,32 @@ node_t *node_root(node_t *funcs, node_t *stmts)
     return node;
 }
 
-static void free_ident(node_t *node)
+static void free_ident(sl_node_t *node)
 {
     free(node->ident);
     free(node);
 }
 
-node_t *node_ident(char *name)
+sl_node_t *node_ident(char *name)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_IDENT;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_IDENT;
     node->ident = name;
     node->codegen = codegen_ident;
     node->free = free_ident;
     return node;
 }
 
-static void free_unary(node_t *node)
+static void free_unary(sl_node_t *node)
 {
-    node_free(node->unary.val);
+    sl_node_free(node->unary.val);
     free(node);
 }
 
-node_t *node_unary(int op, node_t *val)
+sl_node_t *node_unary(int op, sl_node_t *val)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_UNARY;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_UNARY;
     node->unary.op = op;
     node->unary.val = val;
     node->codegen = codegen_unary;
@@ -55,17 +55,17 @@ node_t *node_unary(int op, node_t *val)
     return node;
 }
 
-static void free_binary(node_t *node)
+static void free_binary(sl_node_t *node)
 {
-    node_free(node->binary.a);
-    node_free(node->binary.b);
+    sl_node_free(node->binary.a);
+    sl_node_free(node->binary.b);
     free(node);
 }
 
-node_t *node_binary(int op, node_t *a, node_t *b)
+sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_BINARY;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_BINARY;
     node->binary.op = op;
     node->binary.a = a;
     node->binary.b = b;
@@ -74,48 +74,48 @@ node_t *node_binary(int op, node_t *a, node_t *b)
     return node;
 }
 
-static void free_int(node_t *node)
+static void free_int(sl_node_t *node)
 {
     free(node);
 }
 
-node_t *node_int(int integer)
+sl_node_t *node_int(int integer)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_INT;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_INT;
     node->integer = integer;
     node->codegen = codegen_int;
     node->free = free_int;
     return node;
 }
 
-static void free_string(node_t *node)
+static void free_string(sl_node_t *node)
 {
     free(node->string);
     free(node);
 }
 
-node_t *node_string(char *string)
+sl_node_t *node_string(char *string)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_STRING;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_STRING;
     node->string = string;
     node->codegen = codegen_string;
     node->free = free_string;
     return node;
 }
 
-static void free_call(node_t *node)
+static void free_call(sl_node_t *node)
 {
-    node_free(node->call.func);
-    node_free(node->call.args);
+    sl_node_free(node->call.func);
+    sl_node_free(node->call.args);
     free(node);
 }
 
-node_t *node_call(node_t *func, node_t *args)
+sl_node_t *node_call(sl_node_t *func, sl_node_t *args)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_CALL;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_CALL;
     node->call.func = func;
     node->call.args = args;
     node->codegen = codegen_call;
@@ -123,9 +123,9 @@ node_t *node_call(node_t *func, node_t *args)
     return node;
 }
 
-static void free_func(node_t *node)
+static void free_func(sl_node_t *node)
 {
-    node_free(node->func.body);
+    sl_node_free(node->func.body);
     for (int i = 0; i < vector_size(node->func.args); i++)
         free(node->func.args[i]);
     vector_free(node->func.args);
@@ -133,10 +133,10 @@ static void free_func(node_t *node)
     free(node);
 }
 
-node_t *node_func(char *name, vector(char *) args, node_t *body)
+sl_node_t *node_func(char *name, vector(char *) args, sl_node_t *body)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_FUNC;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_FUNC;
     node->func.name = name;
     node->func.args = args;
     node->func.body = body;
@@ -145,35 +145,35 @@ node_t *node_func(char *name, vector(char *) args, node_t *body)
     return node;
 }
 
-static void free_return(node_t *node)
+static void free_return(sl_node_t *node)
 {
-    node_free(node->ret);
+    sl_node_free(node->ret);
     free(node);
 }
 
-node_t *node_return(node_t *expr)
+sl_node_t *node_return(sl_node_t *expr)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_RETURN;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_RETURN;
     node->ret = expr;
     node->codegen = codegen_return;
     node->free = free_return;
     return node;
 }
 
-static void free_cond(node_t *node)
+static void free_cond(sl_node_t *node)
 {
-    node_free(node->cond.arg);
-    node_free(node->cond.body);
+    sl_node_free(node->cond.arg);
+    sl_node_free(node->cond.body);
     if (node->cond.elsebody)
-        node_free(node->cond.elsebody);
+        sl_node_free(node->cond.elsebody);
     free(node);
 }
 
-node_t *node_cond(node_t *arg, node_t *body, node_t *elsebody)
+sl_node_t *node_cond(sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_COND;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_COND;
     node->cond.arg = arg;
     node->cond.body = body;
     node->cond.elsebody = elsebody;
@@ -182,17 +182,17 @@ node_t *node_cond(node_t *arg, node_t *body, node_t *elsebody)
     return node;
 }
 
-static void free_loop(node_t *node)
+static void free_loop(sl_node_t *node)
 {
-    node_free(node->loop.arg);
-    node_free(node->loop.body);
+    sl_node_free(node->loop.arg);
+    sl_node_free(node->loop.body);
     free(node);
 }
 
-node_t *node_loop(node_t *arg, node_t *body)
+sl_node_t *node_loop(sl_node_t *arg, sl_node_t *body)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_LOOP;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_LOOP;
     node->loop.arg = arg;
     node->loop.body = body;
     node->codegen = codegen_loop;
@@ -200,31 +200,31 @@ node_t *node_loop(node_t *arg, node_t *body)
     return node;
 }
 
-static void free_break(node_t *node)
+static void free_break(sl_node_t *node)
 {
     free(node);
 }
 
-node_t *node_break()
+sl_node_t *node_break()
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_BREAK;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_BREAK;
     node->codegen = codegen_break;
     node->free = free_break;
     return node;
 }
 
-static void free_decl(node_t *node)
+static void free_decl(sl_node_t *node)
 {
-    node_free(node->decl.name);
-    node_free(node->decl.value);
+    sl_node_free(node->decl.name);
+    sl_node_free(node->decl.value);
     free(node);
 }
 
-node_t *node_decl(node_t *name, node_t *value)
+sl_node_t *node_decl(sl_node_t *name, sl_node_t *value)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_DECL;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_DECL;
     node->decl.name = name;
     node->decl.value = value;
     node->codegen = codegen_decl;
@@ -232,17 +232,17 @@ node_t *node_decl(node_t *name, node_t *value)
     return node;
 }
 
-static void free_index(node_t *node)
+static void free_index(sl_node_t *node)
 {
-    node_free(node->index.var);
-    node_free(node->index.expr);
+    sl_node_free(node->index.var);
+    sl_node_free(node->index.expr);
     free(node);
 }
 
-node_t *node_index(node_t *var, node_t *expr)
+sl_node_t *node_index(sl_node_t *var, sl_node_t *expr)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_INDEX;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_INDEX;
     node->index.var = var;
     node->index.expr = expr;
     node->codegen = codegen_index;
@@ -250,35 +250,35 @@ node_t *node_index(node_t *var, node_t *expr)
     return node;
 }
 
-static void free_block(node_t *node)
+static void free_block(sl_node_t *node)
 {
     for (int i = 0; i < vector_size(node->block); i++)
-        node_free(node->block[i]);
+        sl_node_free(node->block[i]);
     vector_free(node->block);
     free(node);
 }
 
-node_t *node_block(vector(node_t *) list)
+sl_node_t *node_block(vector(sl_node_t *) list)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_BLOCK;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_BLOCK;
     node->block = list;
     node->codegen = codegen_block;
     node->free = free_block;
     return node;
 }
 
-static void free_member(node_t *node)
+static void free_member(sl_node_t *node)
 {
-    node_free(node->member.parent);
+    sl_node_free(node->member.parent);
     free(node->member.name);
     free(node);
 }
 
-node_t *node_member(node_t *parent, char *name)
+sl_node_t *node_member(sl_node_t *parent, char *name)
 {
-    node_t *node = (node_t *)malloc(sizeof(node_t));
-    node->type = N_MEMBER;
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_MEMBER;
     node->member.name = name;
     node->member.parent = parent;
     node->codegen = codegen_member;
@@ -292,47 +292,47 @@ static void printtab(int n)
         putchar('\t');
 }
 
-void node_print(node_t *node, int ind)
+void sl_node_print(sl_node_t *node, int ind)
 {
     printtab(ind);
     switch (node->type)
     {
-    case N_ROOT:
+    case SL_NODETYPE_ROOT:
         printf("root\n");
-        node_print(node->root.funcs, ind + 1);
-        node_print(node->root.stmts, ind + 1);
+        sl_node_print(node->root.funcs, ind + 1);
+        sl_node_print(node->root.stmts, ind + 1);
         break;
-    case N_BLOCK:
+    case SL_NODETYPE_BLOCK:
         printf("block\n");
         for (int i = 0; i < vector_size(node->block); i++)
         {
-            node_print(node->block[i], ind + 1);
+            sl_node_print(node->block[i], ind + 1);
         }
         break;
-    case N_IDENT:
+    case SL_NODETYPE_IDENT:
         printf("ident: %s\n", node->ident);
         break;
-    case N_UNARY:
-        printf("unary: %s\n", tokenstr(node->unary.op));
-        node_print(node->unary.val, ind + 1);
+    case SL_NODETYPE_UNARY:
+        printf("unary: %s\n", sl_tokenstr(node->unary.op));
+        sl_node_print(node->unary.val, ind + 1);
         break;
-    case N_BINARY:
-        printf("binary: %s\n", tokenstr(node->binary.op));
-        node_print(node->binary.a, ind + 1);
-        node_print(node->binary.b, ind + 1);
+    case SL_NODETYPE_BINARY:
+        printf("binary: %s\n", sl_tokenstr(node->binary.op));
+        sl_node_print(node->binary.a, ind + 1);
+        sl_node_print(node->binary.b, ind + 1);
         break;
-    case N_INT:
+    case SL_NODETYPE_INT:
         printf("int %i\n", node->integer);
         break;
-    case N_STRING:
+    case SL_NODETYPE_STRING:
         printf("string \"%s\"", node->string);
         break;
-    case N_CALL:
+    case SL_NODETYPE_CALL:
         printf("call\n");
-        node_print(node->call.func, ind + 1);
-        node_print(node->call.args, ind + 1);
+        sl_node_print(node->call.func, ind + 1);
+        sl_node_print(node->call.args, ind + 1);
         break;
-    case N_FUNC:
+    case SL_NODETYPE_FUNC:
         printf("function: %s(", node->func.name);
         for (int i = 0; i < vector_size(node->func.args); i++)
         {
@@ -341,45 +341,45 @@ void node_print(node_t *node, int ind)
                 printf(", ");
         }
         printf(")\n");
-        node_print(node->func.body, ind + 1);
-    case N_RETURN:
+        sl_node_print(node->func.body, ind + 1);
+    case SL_NODETYPE_RETURN:
         printf("return\n");
         if (node->ret)
-            node_print(node->ret, ind + 1);
+            sl_node_print(node->ret, ind + 1);
         break;
-    case N_COND:
+    case SL_NODETYPE_COND:
         printf("cond\n");
         printtab(ind);
         printf("->arg:\n");
-        node_print(node->cond.arg, ind + 1);
+        sl_node_print(node->cond.arg, ind + 1);
         printtab(ind);
         printf("->body:\n");
-        node_print(node->cond.body, ind + 1);
+        sl_node_print(node->cond.body, ind + 1);
         break;
-    case N_LOOP:
+    case SL_NODETYPE_LOOP:
         printf("loop\n");
         printtab(ind);
         printf("->arg:\n");
-        node_print(node->loop.arg, ind + 1);
+        sl_node_print(node->loop.arg, ind + 1);
         printtab(ind);
         printf("->body:\n");
-        node_print(node->loop.body, ind + 1);
+        sl_node_print(node->loop.body, ind + 1);
         break;
-    case N_BREAK:
+    case SL_NODETYPE_BREAK:
         printf("break\n");
         break;
-    case N_DECL:
+    case SL_NODETYPE_DECL:
         printf("decl\n");
         printtab(ind);
         printf("->name:\n");
-        node_print(node->decl.name, ind + 1);
+        sl_node_print(node->decl.name, ind + 1);
         printtab(ind);
         printf("->value:\n");
-        node_print(node->decl.value, ind + 1);
+        sl_node_print(node->decl.value, ind + 1);
         break;
-    case N_INDEX:
+    case SL_NODETYPE_INDEX:
         printf("index\n");
-        node_print(node->index.var, ind + 1);
-        node_print(node->index.expr, ind + 1);
+        sl_node_print(node->index.var, ind + 1);
+        sl_node_print(node->index.expr, ind + 1);
     }
 }

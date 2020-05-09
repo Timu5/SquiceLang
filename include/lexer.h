@@ -1,51 +1,51 @@
 #ifndef _LEXER_H_
 #define _LEXER_H_
 
-enum
+enum SL_TOKEN
 {
-    T_IDENT,
-    T_NUMBER,
-    T_STRING,
+    SL_TOKEN_IDENT,
+    SL_TOKEN_NUMBER,
+    SL_TOKEN_STRING,
 
     //keyword
-    T_FN,
-    T_RETURN,
-    T_LET,
-    T_IF,
-    T_ELSE,
-    T_WHILE,
-    T_BREAK,
+    SL_TOKEN__FN,
+    SL_TOKEN_RETURN,
+    SL_TOKEN_LET,
+    SL_TOKEN_IF,
+    SL_TOKEN_ELSE,
+    SL_TOKEN_WHILE,
+    SL_TOKEN_BREAK,
 
-    T_COLON,     // :
-    T_SEMICOLON, // ;
-    T_COMMA,     // ,
-    T_DOT,       // .
+    SL_TOKEN_COLON,     // :
+    SL_TOKEN_SEMICOLON, // ;
+    SL_TOKEN_COMMA,     // ,
+    SL_TOKEN_DOT,       // .
 
-    T_PLUS,     // +
-    T_MINUS,    // -
-    T_SLASH,    // /
-    T_ASTERISK, // *
+    SL_TOKEN_PLUS,     // +
+    SL_TOKEN_MINUS,    // -
+    SL_TOKEN_SLASH,    // /
+    SL_TOKEN_ASTERISK, // *
 
-    T_ASSIGN,    // =
-    T_EQUAL,     // ==
-    T_NOTEQUAL,  // !=
-    T_LESSEQUAL, // <=
-    T_MOREEQUAL, // >=
-    T_LCHEVR,    // <
-    T_RCHEVR,    // >
+    SL_TOKEN_ASSIGN,    // =
+    SL_TOKEN_EQUAL,     // ==
+    SL_TOKEN_NOTEQUAL,  // !=
+    SL_TOKEN_LESSEQUAL, // <=
+    SL_TOKEN_MOREEQUAL, // >=
+    SL_TOKEN_LCHEVR,    // <
+    SL_TOKEN_RCHEVR,    // >
 
-    T_LPAREN, // (
-    T_RPAREN, // )
-    T_LBRACE, // {
-    T_RBRACE, // }
-    T_LBRACK, // [
-    T_RBRACK, // ]
-    T_EXCLAM, // !
+    SL_TOKEN_LPAREN, // (
+    SL_TOKEN_RPAREN, // )
+    SL_TOKEN_LBRACE,        // {
+    SL_TOKEN_RBRACE,        // }
+    SL_TOKEN_LBRACK,        // [
+    SL_TOKEN_RBRACK,        // ]
+    SL_TOKEN_EXCLAM,        // !
 
-    T_EOF,
-    T_UNKOWN
+    SL_TOKEN_EOF,
+    SL_TOKEN_UNKOWN
 };
 
-int gettoken();
-char *tokenstr(int token);
+int sl_gettoken();
+char *sl_tokenstr(int token);
 #endif

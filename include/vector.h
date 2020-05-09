@@ -9,7 +9,7 @@ typedef struct
 {
     size_t allocated;
     size_t used;
-} vector_t;
+} sl_vector_t;
 
 #define vector(x) x *
 
@@ -19,7 +19,7 @@ typedef struct
 
 /* Get the metadata block for [VECTOR] */
 #define vector_meta(VECTOR) \
-    ((vector_t *)(((unsigned char *)(VECTOR)) - sizeof(vector_t)))
+    ((sl_vector_t *)(((unsigned char *)(VECTOR)) - sizeof(sl_vector_t)))
 
 /* Deletes [VECTOR] and sets it to NULL */
 #define vector_free(VECTOR) \

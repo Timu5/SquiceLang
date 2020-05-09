@@ -19,7 +19,7 @@ void throw(char *msg, ...)
     longjmp(__ex_buf__, 1);
 }
 
-char *mprintf(char *fmt, ...)
+char *sl_mprintf(char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
@@ -31,7 +31,7 @@ char *mprintf(char *fmt, ...)
 
 void vec_grow(void **vector, size_t more, size_t type_size)
 {
-    vector_t *meta = vector_meta(*vector);
+    sl_vector_t *meta = vector_meta(*vector);
     size_t count = 0;
     void *data = NULL;
 
@@ -44,10 +44,10 @@ void vec_grow(void **vector, size_t more, size_t type_size)
     {
         count = more + 1;
         data = malloc(type_size * count + sizeof *meta);
-        ((vector_t *)data)->used = 0;
+        ((sl_vector_t *)data)->used = 0;
     }
 
-    meta = (vector_t *)data;
+    meta = (sl_vector_t *)data;
     meta->allocated = count;
     *vector = meta + 1;
 }

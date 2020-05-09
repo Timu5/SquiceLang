@@ -3,30 +3,30 @@
 
 #include "vector.h"
 
-enum
+enum SL_OPCODE
 {
-    O_NOP,
-    O_PUSHN, // push number
-    O_PUSHS, // push string
-    O_PUSHV, // push value
-    O_POP,   // remove element from stack
-    O_STORE,
-    O_STOREFN, // store function
-    O_UNARY,
-    O_BINARY,
-    O_CALL,
-    O_CALLM, // call member
-    O_RET,
-    O_RETN, // return null
-    O_JMP,
-    O_BRZ, // brach if zero
-    O_INDEX,
-    O_MEMBER,
-    O_MEMBERD // member with parent duplicate
+    SL_OPCODE_NOP,
+    SL_OPCODE_PUSHN, // push number
+    SL_OPCODE_PUSHS, // push string
+    SL_OPCODE_PUSHV, // push value
+    SL_OPCODE_POP,   // remove element from stack
+    SL_OPCODE_STORE,
+    SL_OPCODE_STOREFN, // store function
+    SL_OPCODE_UNARY,
+    SL_OPCODE_BINARY,
+    SL_OPCODE_CALL,
+    SL_OPCODE_CALLM, // call member
+    SL_OPCODE_RET,
+    SL_OPCODE_RETN, // return null
+    SL_OPCODE_JMP,
+    SL_OPCODE_BRZ, // brach if zero
+    SL_OPCODE_INDEX,
+    SL_OPCODE_MEMBER,
+    SL_OPCODE_MEMBERD // member with parent duplicate
 };
 
 // Structure to store bytecode in binary format
-struct binary_s
+struct sl_binary_s
 {
     vector(int) adresses;
     vector(char *) symbols;
@@ -38,18 +38,18 @@ struct binary_s
     int loop;  // hold current loop index, needed by break
 };
 
-typedef struct binary_s binary_t;
+typedef struct sl_binary_s sl_binary_t;
 
-binary_t *binary_new();
-void binary_save(binary_t *bin, char *filename);
+sl_binary_t *sl_binary_new();
+void sl_binary_save(sl_binary_t *bin, char *filename);
 
-int bytecode_emit(binary_t *bin, int opcode);
-int bytecode_emitstr(binary_t *bin, int opcode, char *string);
-int bytecode_emitint(binary_t *bin, int opcode, int number);
-int bytecode_emitdouble(binary_t *bin, int opcode, double number);
+int sl_bytecode_emit(sl_binary_t *bin, int opcode);
+int sl_bytecode_emitstr(sl_binary_t *bin, int opcode, char *string);
+int sl_bytecode_emitint(sl_binary_t *bin, int opcode, int number);
+int sl_bytecode_emitdouble(sl_binary_t *bin, int opcode, double number);
 
-int bytecode_addlabel(binary_t *bin, char *name, int adress);
-int bytecode_addtofill(binary_t *bin, char *name, int adress);
-int bytecode_fill(binary_t *bin);
+int sl_bytecode_addlabel(sl_binary_t *bin, char *name, int adress);
+int sl_bytecode_addtofill(sl_binary_t *bin, char *name, int adress);
+int sl_bytecode_fill(sl_binary_t *bin);
 
 #endif

@@ -5,21 +5,21 @@
 #include "vector.h"
 #include "bytecode.h"
 
-void codegen_root(node_t *node, binary_t *binary);
-void codegen_ident(node_t *node, binary_t *binary);
-void codegen_unary(node_t *node, binary_t *binary);
-void codegen_binary(node_t *node, binary_t *binary);
-void codegen_int(node_t *node, binary_t *binary);
-void codegen_string(node_t *node, binary_t *binary);
-void codegen_call(node_t *node, binary_t *binary);
-void codegen_func(node_t *node, binary_t *binary);
-void codegen_return(node_t *node, binary_t *binary);
-void codegen_cond(node_t *node, binary_t *binary);
-void codegen_loop(node_t *node, binary_t *binary);
-void codegen_break(node_t *node, binary_t *binary);
-void codegen_decl(node_t *node, binary_t *binary);
-void codegen_index(node_t *node, binary_t *binary);
-void codegen_block(node_t *node, binary_t *binary);
-void codegen_member(node_t *node, binary_t *binary);
+void codegen_root(sl_node_t *node, sl_binary_t *binary);
+void codegen_ident(sl_node_t *node, sl_binary_t *binary);
+void codegen_unary(sl_node_t *node, sl_binary_t *binary);
+void codegen_binary(sl_node_t *node, sl_binary_t *binary);
+void codegen_int(sl_node_t *node, sl_binary_t *binary);
+void codegen_string(sl_node_t *node, sl_binary_t *binary);
+void codegen_call(sl_node_t *node, sl_binary_t *binary);
+void codegen_func(sl_node_t *node, sl_binary_t *binary);
+void codegen_return(sl_node_t *node, sl_binary_t *binary);
+void codegen_cond(sl_node_t *node, sl_binary_t *binary);
+void codegen_loop(sl_node_t *node, sl_binary_t *binary);
+void codegen_break(sl_node_t *node, sl_binary_t *binary);
+void codegen_decl(sl_node_t *node, sl_binary_t *binary);
+void codegen_index(sl_node_t *node, sl_binary_t *binary);
+void codegen_block(sl_node_t *node, sl_binary_t *binary);
+void codegen_member(sl_node_t *node, sl_binary_t *binary);
 
 #endif

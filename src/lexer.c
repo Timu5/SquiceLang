@@ -30,14 +30,14 @@ int nextchar()
     return lastchar;
 }
 
-int gettoken()
+int sl_gettoken()
 {
     while (isspace(lastchar))
         nextchar(); // eaat white space
 
     if (lastchar < 0)
     {
-        return T_EOF;
+        return SL_TOKEN_EOF;
     }
     else if (isalpha(lastchar))
     {
@@ -51,21 +51,21 @@ int gettoken()
         buffer[ptr] = 0;
 
         if (strcmp(buffer, "if") == 0)
-            return T_IF;
+            return SL_TOKEN_IF;
         else if (strcmp(buffer, "else") == 0)
-            return T_ELSE;
+            return SL_TOKEN_ELSE;
         else if (strcmp(buffer, "while") == 0)
-            return T_WHILE;
+            return SL_TOKEN_WHILE;
         else if (strcmp(buffer, "let") == 0)
-            return T_LET;
+            return SL_TOKEN_LET;
         else if (strcmp(buffer, "fn") == 0)
-            return T_FN;
+            return SL_TOKEN__FN;
         else if (strcmp(buffer, "return") == 0)
-            return T_RETURN;
+            return SL_TOKEN_RETURN;
         else if (strcmp(buffer, "break") == 0)
-            return T_BREAK;
+            return SL_TOKEN_BREAK;
 
-        return T_IDENT;
+        return SL_TOKEN_IDENT;
     }
     else if (isdigit(lastchar))
     {
@@ -79,7 +79,7 @@ int gettoken()
 
         number = (int)strtol(buffer, NULL, 0);
 
-        return T_NUMBER;
+        return SL_TOKEN_NUMBER;
     }
     else if (lastchar == '"')
     {
@@ -95,29 +95,29 @@ int gettoken()
 
         buffer[ptr] = 0;
         nextchar();
-        return T_STRING;
+        return SL_TOKEN_STRING;
     }
 
-    int tmp = T_UNKOWN;
+    int tmp = SL_TOKEN_UNKOWN;
     switch (lastchar)
     {
     case ',':
-        tmp = T_COMMA;
+        tmp = SL_TOKEN_COMMA;
         break;
     case ':':
-        tmp = T_COLON;
+        tmp = SL_TOKEN_COLON;
         break;
     case ';':
-        tmp = T_SEMICOLON;
+        tmp = SL_TOKEN_SEMICOLON;
         break;
     case '.':
-        tmp = T_DOT;
+        tmp = SL_TOKEN_DOT;
         break;
     case '+':
-        tmp = T_PLUS;
+        tmp = SL_TOKEN_PLUS;
         break;
     case '-':
-        tmp = T_MINUS;
+        tmp = SL_TOKEN_MINUS;
         break;
     case '/':
         if (nextchar() == '/')
@@ -125,7 +125,7 @@ int gettoken()
             int l = line;
             while (nextchar() >= 0 && l == line)
                 ;
-            return gettoken();
+            return sl_gettoken();
         }
         else if (lastchar == '*')
         {
@@ -137,61 +137,61 @@ int gettoken()
                 nextchar();
             }
             nextchar();
-            return gettoken();
+            return sl_gettoken();
         }
         else
-            return T_SLASH;
+            return SL_TOKEN_SLASH;
         break;
     case '*':
-        tmp = T_ASTERISK;
+        tmp = SL_TOKEN_ASTERISK;
         break;
     case '!':
     {
         if (nextchar() == '=')
-            tmp = T_NOTEQUAL;
+            tmp = SL_TOKEN_NOTEQUAL;
         else
-            return T_EXCLAM;
+            return SL_TOKEN_EXCLAM;
         break;
     }
     case '=':
     {
         if (nextchar() == '=')
-            tmp = T_EQUAL;
+            tmp = SL_TOKEN_EQUAL;
         else
-            return T_ASSIGN;
+            return SL_TOKEN_ASSIGN;
         break;
     }
     case '(':
-        tmp = T_LPAREN;
+        tmp = SL_TOKEN_LPAREN;
         break;
     case ')':
-        tmp = T_RPAREN;
+        tmp = SL_TOKEN_RPAREN;
         break;
     case '{':
-        tmp = T_LBRACE;
+        tmp = SL_TOKEN_LBRACE;
         break;
     case '}':
-        tmp = T_RBRACE;
+        tmp = SL_TOKEN_RBRACE;
         break;
     case '[':
-        tmp = T_LBRACK;
+        tmp = SL_TOKEN_LBRACK;
         break;
     case ']':
-        tmp = T_RBRACK;
+        tmp = SL_TOKEN_RBRACK;
         break;
     case '<':
     {
         if (nextchar() == '=')
-            tmp = T_LESSEQUAL;
+            tmp = SL_TOKEN_LESSEQUAL;
         else
-            return T_LCHEVR;
+            return SL_TOKEN_LCHEVR;
     }
     case '>':
     {
         if (nextchar() == '=')
-            tmp = T_MOREEQUAL;
+            tmp = SL_TOKEN_MOREEQUAL;
         else
-            return T_RCHEVR;
+            return SL_TOKEN_RCHEVR;
     }
     }
 
@@ -199,49 +199,49 @@ int gettoken()
     return tmp;
 }
 
-char *tokenstr(int token)
+char *sl_tokenstr(int token)
 {
-    if (token < T_IDENT || token > T_UNKOWN)
+    if (token < SL_TOKEN_IDENT || token > SL_TOKEN_UNKOWN)
         return "WRONG TOKEN!";
     char *names[] = {
-        "T_IDENT",
-        "T_NUMBER",
-        "T_STRING",
+        "SL_TOKEN_IDENT",
+        "SL_TOKEN_NUMBER",
+        "SL_TOKEN_STRING",
 
-        "T_FN",
-        "T_RETURN",
-        "T_LET",
-        "T_IF",
-        "T_ELSE",
-        "T_WHILE",
-        "T_BREAK",
+        "SL_TOKEN__FN",
+        "SL_TOKEN_RETURN",
+        "SL_TOKEN_LET",
+        "SL_TOKEN_IF",
+        "SL_TOKEN_ELSE",
+        "SL_TOKEN_WHILE",
+        "SL_TOKEN_BREAK",
 
-        "T_SEMICOLON", // ;
-        "T_COMMA",     // ,
-        "T_DOT",       // .
+        "SL_TOKEN_SEMICOLON", // ;
+        "SL_TOKEN_COMMA",     // ,
+        "SL_TOKEN_DOT",       // .
 
-        "T_PLUS",     // +
-        "T_MINUS",    // -
-        "T_SLASH",    // /
-        "T_ASTERISK", // *
+        "SL_TOKEN_PLUS",     // +
+        "SL_TOKEN_MINUS",    // -
+        "SL_TOKEN_SLASH",    // /
+        "SL_TOKEN_ASTERISK", // *
 
-        "T_ASSIGN",    // =
-        "T_EQUAL",     // ==
+        "SL_TOKEN_ASSIGN",    // =
+        "SL_TOKEN_EQUAL",     // ==
         "T_NOTEQUAL",  // !=
-        "T_LESSEQUAL", // <=
-        "T_MOREEQUAL", // >=
-        "T_LCHEVR",    // <
-        "T_RCHEVR",    // >
+        "SL_TOKEN_LESSEQUAL", // <=
+        "SL_TOKEN_MOREEQUAL", // >=
+        "SL_TOKEN_LCHEVR",    // <
+        "SL_TOKEN_RCHEVR",    // >
 
-        "T_LPAREN", // (
-        "T_RPAREN", // )
-        "T_LBRACE", // {
-        "T_RBRACE", // }
-        "T_LBRACK", // [
-        "T_RBRACK", // ]
-        "T_EXCLAM", // !
+        "SL_TOKEN_LPAREN", // (
+        "SL_TOKEN_RPAREN", // )
+        "SL_TOKEN_LBRACE", // {
+        "SL_TOKEN_RBRACE", // }
+        "SL_TOKEN_LBRACK", // [
+        "SL_TOKEN_RBRACK", // ]
+        "SL_TOKEN_EXCLAM", // !
 
-        "T_EOF",
-        "T_UNKOWN"};
-    return names[token - T_IDENT];
+        "SL_TOKEN_EOF",
+        "SL_TOKEN_UNKOWN"};
+    return names[token - SL_TOKEN_IDENT];
 }

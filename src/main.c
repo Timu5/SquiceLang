@@ -13,13 +13,13 @@ extern FILE *input;
 
 int main(int argc, char **argv)
 {
-    if (argc < 2)
+    /*if (argc < 2)
     {
         printf("Usage: lang input\n");
         return -1;
-    }
+    }*/
 
-    input = fopen(argv[1], "r");
+    input = fopen("test.lang", "r");
 
     if (!input)
     {
@@ -29,16 +29,16 @@ int main(int argc, char **argv)
 
     try
     {
-        node_t *tree = parse();
+        sl_node_t *tree = parse();
 
-        binary_t *bin = binary_new();
+        sl_binary_t *bin = sl_binary_new();
         tree->codegen(tree, bin);
 
-        bytecode_fill(bin);
+        sl_bytecode_fill(bin);
 
-        binary_save(bin, "test.bin");
+        sl_binary_save(bin, "test.bin");
 
-        node_free(tree);
+        sl_node_free(tree);
     }
     catch
     {

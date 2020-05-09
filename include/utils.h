@@ -11,7 +11,7 @@ extern char ex_msg[256];
 
 void throw(char *msg, ...);
 
-char *mprintf(char *fmt, ...);
+char *sl_mprintf(char *fmt, ...);
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS

@@ -43,7 +43,7 @@ void ctx_free(ctx_t *ctx)
     free(ctx);
 }
 
-value_t *ctx_getvar(ctx_t *ctx, char *name)
+sl_value_t *ctx_getvar(ctx_t *ctx, char *name)
 {
     ctx_t *c = ctx;
     while (c)
@@ -60,7 +60,7 @@ value_t *ctx_getvar(ctx_t *ctx, char *name)
     return NULL;
 }
 
-void ctx_addvar(ctx_t *ctx, char *name, value_t *val)
+void ctx_addvar(ctx_t *ctx, char *name, sl_value_t *val)
 {
     var_t *var = (var_t *)malloc(sizeof(var_t));
     var->name = name;
@@ -71,8 +71,8 @@ void ctx_addvar(ctx_t *ctx, char *name, value_t *val)
 
 fn_t *ctx_getfn(ctx_t *ctx, char *name)
 {
-    value_t *v = ctx_getvar(ctx, name);
-    if (v == NULL || v->type != V_FN)
+    sl_value_t *v = ctx_getvar(ctx, name);
+    if (v == NULL || v->type != SL_VALUE_FN)
         return NULL;
     return v->fn;
 }
@@ -83,7 +83,7 @@ void ctx_addfn(ctx_t *ctx, char *name, int address, void (*fn)(ctx_t *))
     func->address = address;
     func->native = fn;
 
-    value_t *v = value_fn(func);
+    sl_value_t *v = value_fn(func);
 
     ctx_addvar(ctx, name, v);
 }

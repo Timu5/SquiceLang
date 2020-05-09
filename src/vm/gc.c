@@ -6,14 +6,14 @@
 #include "contex.h"
 #include "gc.h"
 
-vector(value_t *) values;
+vector(sl_value_t *) values;
 
 size_t maxmem = 128;
 size_t usedmem = 0;
 
 extern ctx_t *global;
 
-void *safe_alloc(int size)
+void *sl_safe_alloc(int size)
 {
     void *data = malloc(size);
     if (!data)
@@ -21,15 +21,15 @@ void *safe_alloc(int size)
     return data;
 }
 
-value_t *gc_alloc_value()
+sl_value_t *sl_gc_alloc_value()
 {
-    void *v = safe_alloc(sizeof(value_t));
+    void *v = sl_safe_alloc(sizeof(sl_value_t));
     vector_push(values, v);
 
     usedmem += 1;
     if (usedmem >= maxmem)
     {
-        //gc_collect(global);
+        //sl_gc_collect(global);
         usedmem = vector_size(values);
         if (usedmem >= maxmem)
             maxmem = maxmem * 2;
@@ -38,27 +38,27 @@ value_t *gc_alloc_value()
     return v;
 }
 
-static void gc_mark(value_t *val)
+static void gc_mark(sl_value_t *val)
 {
     val->markbit = 1;
-    if (val->type == V_REF)
+    if (val->type == SL_VALUE_REF)
     {
         val->markbit = 1;
         gc_mark(val->ref);
     }
-    else if (val->type == V_ARRAY)
+    else if (val->type == SL_VALUE_ARRAY)
     {
         for (int j = (int)vector_size(val->array) - 1; j >= 0; j--)
             val->array[j]->markbit = 1;
     }
-    else if (val->type == V_DICT)
+    else if (val->type == SL_VALUE_DICT)
     {
         for (int j = (int)vector_size(val->dict.values) - 1; j >= 0; j--)
             val->dict.values[j]->markbit = 1;
     }
 }
 
-void gc_collect(ctx_t *ctx)
+void sl_gc_collect(ctx_t *ctx)
 {
     ctx_t *c = ctx;
     while (c)
@@ -89,7 +89,7 @@ void gc_collect(ctx_t *ctx)
     }
 }
 
-void gc_freeall()
+void sl_gc_freeall()
 {
     for (int i = 0; i < vector_size(values); i++)
     {

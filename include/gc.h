@@ -3,11 +3,11 @@
 
 #include "contex.h"
 
-#define ALLOC(type) safe_alloc(sizeof(type))
+#define SL_ALLOC(type) sl_safe_alloc(sizeof(type))
 
-void *safe_alloc(int size);
-value_t *gc_alloc_value();
-void gc_collect(ctx_t *ctx);
-void gc_freeall();
+void *sl_safe_alloc(int size);
+sl_value_t *sl_gc_alloc_value();
+void sl_gc_collect(ctx_t *ctx);
+void sl_gc_freeall();
 
 #endif
