@@ -4,6 +4,6 @@
 #include "lexer.h"
 #include "ast.h"
 
-sl_node_t *parse();
+sl_node_t *sl_parse();
 
 #endif

@@ -7,7 +7,7 @@
 #include "gc.h"
 #include "contex.h"
 
-sl_value_t *value_null()
+sl_value_t *sl_value_null()
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_NULL;
@@ -17,7 +17,7 @@ sl_value_t *value_null()
     return v;
 }
 
-sl_value_t *value_number(double val)
+sl_value_t *sl_value_number(double val)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_NUMBER;
@@ -28,7 +28,7 @@ sl_value_t *value_number(double val)
     return v;
 }
 
-sl_value_t *value_string(char *val)
+sl_value_t *sl_value_string(char *val)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_STRING;
@@ -39,7 +39,7 @@ sl_value_t *value_string(char *val)
     return v;
 }
 
-sl_value_t *value_array(vector(sl_value_t *) arr)
+sl_value_t *sl_value_array(vector(sl_value_t *) arr)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_ARRAY;
@@ -50,7 +50,7 @@ sl_value_t *value_array(vector(sl_value_t *) arr)
     return v;
 }
 
-sl_value_t *value_dict(vector(char *) names, vector(sl_value_t *) values)
+sl_value_t *sl_value_dict(vector(char *) names, vector(sl_value_t *) values)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_DICT;
@@ -62,7 +62,7 @@ sl_value_t *value_dict(vector(char *) names, vector(sl_value_t *) values)
     return v;
 }
 
-sl_value_t *value_fn(fn_t *fn)
+sl_value_t *sl_value_fn(sl_fn_t *fn)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_FN;
@@ -73,7 +73,7 @@ sl_value_t *value_fn(fn_t *fn)
     return v;
 }
 
-sl_value_t *value_ref(sl_value_t *val)
+sl_value_t *sl_value_ref(sl_value_t *val)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_REF;
@@ -84,7 +84,7 @@ sl_value_t *value_ref(sl_value_t *val)
     return v;
 }
 
-void value_free(sl_value_t *val)
+void sl_value_free(sl_value_t *val)
 {
     if (val->type == SL_VALUE_STRING)
     {
@@ -109,7 +109,7 @@ void value_free(sl_value_t *val)
     free(val);
 }
 
-void value_assign(sl_value_t *a, sl_value_t *b)
+void sl_value_assign(sl_value_t *a, sl_value_t *b)
 {
     sl_value_t *olda = a;
 
@@ -139,7 +139,7 @@ void value_assign(sl_value_t *a, sl_value_t *b)
         a->string = strdup(b->string);
 }
 
-sl_value_t *value_unary(int op, sl_value_t *a)
+sl_value_t *sl_value_unary(int op, sl_value_t *a)
 {
     while (a->type == SL_VALUE_REF)
         a = a->ref;
@@ -150,14 +150,14 @@ sl_value_t *value_unary(int op, sl_value_t *a)
     switch (op)
     {
     case SL_TOKEN_PLUS:
-        return value_number(a->number);
+        return sl_value_number(a->number);
     case SL_TOKEN_MINUS:
-        return value_number(-a->number);
+        return sl_value_number(-a->number);
     case SL_TOKEN_EXCLAM:
-        return value_number(!a->number);
+        return sl_value_number(!a->number);
     }
     throw("Unkown unary operation %d", op);
-    return value_null();
+    return sl_value_null();
 }
 
 static sl_value_t *binary_number(int op, sl_value_t *a, sl_value_t *b)
@@ -165,28 +165,28 @@ static sl_value_t *binary_number(int op, sl_value_t *a, sl_value_t *b)
     switch (op)
     {
     case SL_TOKEN_PLUS:
-        return value_number(a->number + b->number);
+        return sl_value_number(a->number + b->number);
     case SL_TOKEN_MINUS:
-        return value_number(a->number - b->number);
+        return sl_value_number(a->number - b->number);
     case SL_TOKEN_ASTERISK:
-        return value_number(a->number * b->number);
+        return sl_value_number(a->number * b->number);
     case SL_TOKEN_SLASH:
-        return value_number(a->number / b->number);
+        return sl_value_number(a->number / b->number);
     case SL_TOKEN_EQUAL:
-        return value_number(a->number == b->number);
+        return sl_value_number(a->number == b->number);
     case SL_TOKEN_NOTEQUAL:
-        return value_number(a->number != b->number);
+        return sl_value_number(a->number != b->number);
     case SL_TOKEN_LESSEQUAL:
-        return value_number(a->number <= b->number);
+        return sl_value_number(a->number <= b->number);
     case SL_TOKEN_MOREEQUAL:
-        return value_number(a->number >= b->number);
+        return sl_value_number(a->number >= b->number);
     case SL_TOKEN_LCHEVR:
-        return value_number(a->number < b->number);
+        return sl_value_number(a->number < b->number);
     case SL_TOKEN_RCHEVR:
-        return value_number(a->number > b->number);
+        return sl_value_number(a->number > b->number);
     }
     throw("Unkown binary operation %d", op);
-    return value_null();
+    return sl_value_null();
 }
 
 static sl_value_t *binary_string(int op, sl_value_t *a, sl_value_t *b)
@@ -200,33 +200,33 @@ static sl_value_t *binary_string(int op, sl_value_t *a, sl_value_t *b)
         str[0] = 0;
         strcat(str, a->string);
         strcat(str, b->string);
-        return value_string(str);
+        return sl_value_string(str);
     case SL_TOKEN_EQUAL:
-        return value_number(strcmp(a->string, b->string) == 0);
+        return sl_value_number(strcmp(a->string, b->string) == 0);
     case SL_TOKEN_NOTEQUAL:
-        return value_number(strcmp(a->string, b->string) != 0);
+        return sl_value_number(strcmp(a->string, b->string) != 0);
     }
     throw("Unkown binary operation");
-    return value_null();
+    return sl_value_null();
 }
 
 static sl_value_t *binary_array(int op, sl_value_t *a, sl_value_t *b)
 {
     throw("Cannot perform any binary operation on type array");
-    return value_null();
+    return sl_value_null();
 }
 
 static sl_value_t *binary_dict(int op, sl_value_t *a, sl_value_t *b)
 {
     throw("Cannot perform any binary operation on type dict");
-    return value_null();
+    return sl_value_null();
 }
 
-sl_value_t *value_binary(int op, sl_value_t *a, sl_value_t *b)
+sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
 {
     if (op == SL_TOKEN_ASSIGN)
     {
-        value_assign(a, b);
+        sl_value_assign(a, b);
         return a;
     }
 
@@ -252,10 +252,10 @@ sl_value_t *value_binary(int op, sl_value_t *a, sl_value_t *b)
         return binary_dict(op, a, b);
     }
     throw("Unkown value type");
-    return value_null();
+    return sl_value_null();
 }
 
-sl_value_t *value_get(int i, sl_value_t *a)
+sl_value_t *sl_value_get(int i, sl_value_t *a)
 {
     if (a->type == SL_VALUE_REF)
         a = a->ref;
@@ -269,7 +269,7 @@ sl_value_t *value_get(int i, sl_value_t *a)
         char buf[2];
         buf[0] = a->string[i];
         buf[1] = 0;
-        return value_string(strdup(buf));
+        return sl_value_string(strdup(buf));
     }
     else if (a->type == SL_VALUE_ARRAY)
     {
@@ -279,10 +279,10 @@ sl_value_t *value_get(int i, sl_value_t *a)
     }
 
     throw("Cannot index value of this type");
-    return value_null();
+    return sl_value_null();
 }
 
-sl_value_t *value_member(char *name, sl_value_t *a)
+sl_value_t *sl_value_member(char *name, sl_value_t *a)
 {
     if (a->type == SL_VALUE_REF)
         a = a->ref;
@@ -296,11 +296,11 @@ sl_value_t *value_member(char *name, sl_value_t *a)
         }
 
         vector_push(a->dict.names, strdup(name));
-        vector_push(a->dict.values, value_null());
+        vector_push(a->dict.values, sl_value_null());
 
         return a->dict.values[vector_size(a->dict.values) - 1];
     }
 
     throw("Cannot get member for this type");
-    return value_null();
+    return sl_value_null();
 }

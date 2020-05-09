@@ -7,7 +7,7 @@
 
 void *sl_safe_alloc(int size);
 sl_value_t *sl_gc_alloc_value();
-void sl_gc_collect(ctx_t *ctx);
+void sl_gc_collect(sl_ctx_t *ctx);
 void sl_gc_freeall();
 
 #endif

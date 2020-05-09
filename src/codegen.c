@@ -5,7 +5,7 @@
 #include "utils.h"
 #include "bytecode.h"
 
-void codegen_root(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
 {
     for (int i = 0; i < vector_size(node->root.funcs->block); i++)
     {
@@ -30,35 +30,35 @@ void codegen_root(sl_node_t *node, sl_binary_t *binary)
         f->codegen(f, binary);
     }
 }
-void codegen_ident(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_ident(sl_node_t *node, sl_binary_t *binary)
 {
     sl_bytecode_emitstr(binary, SL_OPCODE_PUSHV, node->ident);
 }
 
-void codegen_unary(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_unary(sl_node_t *node, sl_binary_t *binary)
 {
     node->unary.val->codegen(node->unary.val, binary);
     sl_bytecode_emitint(binary, SL_OPCODE_UNARY, node->unary.op);
 }
 
-void codegen_binary(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_binary(sl_node_t *node, sl_binary_t *binary)
 {
     node->binary.a->codegen(node->binary.a, binary);
     node->binary.b->codegen(node->binary.b, binary);
     sl_bytecode_emitint(binary, SL_OPCODE_BINARY, node->binary.op);
 }
 
-void codegen_int(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_int(sl_node_t *node, sl_binary_t *binary)
 {
     sl_bytecode_emitint(binary, SL_OPCODE_PUSHN, node->integer);
 }
 
-void codegen_string(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_string(sl_node_t *node, sl_binary_t *binary)
 {
     sl_bytecode_emitstr(binary, SL_OPCODE_PUSHS, node->string);
 }
 
-void codegen_call(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_call(sl_node_t *node, sl_binary_t *binary)
 {
     int i = 0;
     for (; i < vector_size(node->call.args->block); i++)
@@ -83,7 +83,7 @@ void codegen_call(sl_node_t *node, sl_binary_t *binary)
     }
 }
 
-void codegen_func(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_func(sl_node_t *node, sl_binary_t *binary)
 {
     char *name = sl_mprintf("func_%s", node->func.name);
     sl_bytecode_addlabel(binary, name, binary->size);
@@ -98,7 +98,7 @@ void codegen_func(sl_node_t *node, sl_binary_t *binary)
     sl_bytecode_emit(binary, SL_OPCODE_RETN);
 }
 
-void codegen_return(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_return(sl_node_t *node, sl_binary_t *binary)
 {
     if (node->ret != NULL)
     {
@@ -111,7 +111,7 @@ void codegen_return(sl_node_t *node, sl_binary_t *binary)
     }
 }
 
-void codegen_cond(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_cond(sl_node_t *node, sl_binary_t *binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_BRZ, 0x22222222); // fill it later with adress!!!
@@ -134,7 +134,7 @@ void codegen_cond(sl_node_t *node, sl_binary_t *binary)
     }
 }
 
-void codegen_loop(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_loop(sl_node_t *node, sl_binary_t *binary)
 {
     int old = binary->loop;
     int i = binary->index++;
@@ -155,7 +155,7 @@ void codegen_loop(sl_node_t *node, sl_binary_t *binary)
     binary->loop = old;
 }
 
-void codegen_break(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_break(sl_node_t *node, sl_binary_t *binary)
 {
     if (binary->loop < 0)
         throw("No loop to break from");
@@ -166,7 +166,7 @@ void codegen_break(sl_node_t *node, sl_binary_t *binary)
     sl_bytecode_addtofill(binary, lename, adr + 1);
 }
 
-void codegen_decl(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_decl(sl_node_t *node, sl_binary_t *binary)
 {
     if (node->decl.name->type != SL_NODETYPE_IDENT)
         throw("Declaration name must be identifier"); // error
@@ -174,20 +174,20 @@ void codegen_decl(sl_node_t *node, sl_binary_t *binary)
     sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->decl.name->ident);
 }
 
-void codegen_index(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_index(sl_node_t *node, sl_binary_t *binary)
 {
     node->index.var->codegen(node->index.var, binary);
     node->index.expr->codegen(node->index.expr, binary);
     sl_bytecode_emit(binary, SL_OPCODE_INDEX);
 }
 
-void codegen_block(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_block(sl_node_t *node, sl_binary_t *binary)
 {
     for (int i = 0; i < vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
 }
 
-void codegen_member(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_member(sl_node_t *node, sl_binary_t *binary)
 {
     node->member.parent->codegen(node->member.parent, binary);
     sl_bytecode_emitstr(binary, SL_OPCODE_MEMBER, node->member.name);

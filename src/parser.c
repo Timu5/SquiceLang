@@ -308,7 +308,7 @@ sl_node_t *statment()
     }
 }
 
-sl_node_t *parse()
+sl_node_t *sl_parse()
 {
     nexttoken();
     vector(sl_node_t *) funcs = NULL;

@@ -11,7 +11,7 @@ vector(sl_value_t *) values;
 size_t maxmem = 128;
 size_t usedmem = 0;
 
-extern ctx_t *global;
+extern sl_ctx_t *global;
 
 void *sl_safe_alloc(int size)
 {
@@ -58,9 +58,9 @@ static void gc_mark(sl_value_t *val)
     }
 }
 
-void sl_gc_collect(ctx_t *ctx)
+void sl_gc_collect(sl_ctx_t *ctx)
 {
-    ctx_t *c = ctx;
+    sl_ctx_t *c = ctx;
     while (c)
     {
         for (int i = 0; i < vector_size(c->vars); i++)
@@ -78,7 +78,7 @@ void sl_gc_collect(ctx_t *ctx)
     {
         if (values[i]->markbit == 0)
         {
-            value_free(values[i]);
+            sl_value_free(values[i]);
             int l = (int)vector_size(values) - 1;
             if (i != l)
                 values[i] = values[l];
@@ -93,7 +93,7 @@ void sl_gc_freeall()
 {
     for (int i = 0; i < vector_size(values); i++)
     {
-        value_free(values[i]);
+        sl_value_free(values[i]);
     }
     vector_free(values);
 }

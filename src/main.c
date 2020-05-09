@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
     try
     {
-        sl_node_t *tree = parse();
+        sl_node_t *tree = sl_parse();
 
         sl_binary_t *bin = sl_binary_new();
         tree->codegen(tree, bin);
