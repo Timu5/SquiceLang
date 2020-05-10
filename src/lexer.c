@@ -6,100 +6,119 @@
 #include "lexer.h"
 #include "utils.h"
 
-FILE *input;
-
-char buffer[255] = {0};
-int number = 0;
-int line = 1;
-int col = 0;
-
-int lastchar = ' ';
-
-int nextchar()
+sl_lexer_t *sl_lexer_new(char *input)
 {
-    lastchar = fgetc(input);
-    if (lastchar == '\n')
+    sl_lexer_t *lexer = (sl_lexer_t*)malloc(sizeof(sl_lexer_t));
+    lexer->input = input;
+    lexer->index = 0;
+    lexer->buffer = (char*)malloc(255);
+    lexer->number = 0;
+    lexer->line = 0;
+    lexer->col = 0;
+    lexer->lastchar = ' ';
+}
+
+void sl_lexer_free(sl_lexer_t *lexer)
+{
+    free(lexer->buffer);
+    free(lexer);
+}
+
+static int nextchar(sl_lexer_t *lexer)
+{
+    //lastchar = fgetc(input);
+    if(lexer->input[lexer->index] == 0)
     {
-        line++;
-        col = 0;
+        lexer->lastchar = EOF;
     }
     else
     {
-        col++;
+        lexer->lastchar = lexer->input[lexer->index];
+        lexer->index++;
     }
-    return lastchar;
+    
+    if (lexer->lastchar == '\n')
+    {
+        lexer->line++;
+        lexer->col = 0;
+    }
+    else
+    {
+        lexer->col++;
+    }
+    return lexer->lastchar;
 }
 
-int sl_gettoken()
+int sl_gettoken(sl_lexer_t *lexer)
 {
-    while (isspace(lastchar))
-        nextchar(); // eaat white space
+    while (isspace(lexer->lastchar))
+        nextchar(lexer); // eaat white space
 
-    if (lastchar < 0)
+    if (lexer->lastchar <= 0)
     {
         return SL_TOKEN_EOF;
     }
-    else if (isalpha(lastchar))
+    else if (isalpha(lexer->lastchar))
     {
         int ptr = 0;
         do
         {
-            buffer[ptr++] = (char)tolower(lastchar);
-            nextchar();
-        } while (isalpha(lastchar) || isdigit(lastchar));
+            lexer->buffer[ptr++] = (char)tolower(lexer->lastchar);
+            nextchar(lexer);
+        } while (isalpha(lexer->lastchar) || isdigit(lexer->lastchar));
 
-        buffer[ptr] = 0;
+        lexer->buffer[ptr] = 0;
 
-        if (strcmp(buffer, "if") == 0)
+        if (strcmp(lexer->buffer, "if") == 0)
             return SL_TOKEN_IF;
-        else if (strcmp(buffer, "else") == 0)
+        else if (strcmp(lexer->buffer, "else") == 0)
             return SL_TOKEN_ELSE;
-        else if (strcmp(buffer, "while") == 0)
+        else if (strcmp(lexer->buffer, "while") == 0)
             return SL_TOKEN_WHILE;
-        else if (strcmp(buffer, "let") == 0)
+        else if (strcmp(lexer->buffer, "let") == 0)
             return SL_TOKEN_LET;
-        else if (strcmp(buffer, "fn") == 0)
+        else if (strcmp(lexer->buffer, "fn") == 0)
             return SL_TOKEN__FN;
-        else if (strcmp(buffer, "return") == 0)
+        else if (strcmp(lexer->buffer, "return") == 0)
             return SL_TOKEN_RETURN;
-        else if (strcmp(buffer, "break") == 0)
+        else if (strcmp(lexer->buffer, "break") == 0)
             return SL_TOKEN_BREAK;
 
         return SL_TOKEN_IDENT;
     }
-    else if (isdigit(lastchar))
+    else if (isdigit(lexer->lastchar))
     {
         int ptr = 0;
         do
         {
-            buffer[ptr++] = (char)lastchar;
-            nextchar();
-        } while (isalnum(lastchar));
-        buffer[ptr] = 0;
+            lexer->buffer[ptr++] = (char)lexer->lastchar;
+            nextchar(lexer);
+        } while (isalnum(lexer->lastchar));
+        lexer->buffer[ptr] = 0;
 
-        number = (int)strtol(buffer, NULL, 0);
+        lexer->number = (int)strtol(lexer->buffer, NULL, 0);
 
         return SL_TOKEN_NUMBER;
     }
-    else if (lastchar == '"')
+    else if (lexer->lastchar == '"')
     {
-        nextchar();
+        nextchar(lexer);
         int ptr = 0;
-        while (lastchar != '"' && lastchar > 0)
+        while (lexer->lastchar != '"' && lexer->lastchar > 0)
         {
-            buffer[ptr++] = (char)lastchar;
-            nextchar();
+            lexer->buffer[ptr++] = (char)lexer->lastchar;
+            nextchar(lexer);
         }
-        if (lastchar < 0)
+        if (lexer->lastchar < 0)
             throw("Unexpected end of file");
 
-        buffer[ptr] = 0;
-        nextchar();
+        lexer->buffer[ptr] = 0;
+        nextchar(lexer);
         return SL_TOKEN_STRING;
     }
 
     int tmp = SL_TOKEN_UNKOWN;
-    switch (lastchar)
+    switch (lexer->lastchar)
     {
     case ',':
         tmp = SL_TOKEN_COMMA;
@@ -120,24 +139,24 @@ int sl_gettoken()
         tmp = SL_TOKEN_MINUS;
         break;
     case '/':
-        if (nextchar() == '/')
+        if (nextchar(lexer) == '/')
         {
-            int l = line;
-            while (nextchar() >= 0 && l == line)
+            int l = lexer->line;
+            while (nextchar(lexer) >= 0 && l == lexer->line)
                 ;
-            return sl_gettoken();
+            return sl_gettoken(lexer);
         }
-        else if (lastchar == '*')
+        else if (lexer->lastchar == '*')
         {
-            nextchar();
-            while (!(lastchar == '*' && nextchar() == '/'))
+            nextchar(lexer);
+            while (!(lexer->lastchar == '*' && nextchar(lexer) == '/'))
             {
-                if (lastchar < 0)
+                if (lexer->lastchar < 0)
                     throw("Unexpected end of file");
-                nextchar();
+                nextchar(lexer);
             }
-            nextchar();
-            return sl_gettoken();
+            nextchar(lexer);
+            return sl_gettoken(lexer);
         }
         else
             return SL_TOKEN_SLASH;
@@ -147,7 +166,7 @@ int sl_gettoken()
         break;
     case '!':
     {
-        if (nextchar() == '=')
+        if (nextchar(lexer) == '=')
             tmp = SL_TOKEN_NOTEQUAL;
         else
             return SL_TOKEN_EXCLAM;
@@ -155,7 +174,7 @@ int sl_gettoken()
     }
     case '=':
     {
-        if (nextchar() == '=')
+        if (nextchar(lexer) == '=')
             tmp = SL_TOKEN_EQUAL;
         else
             return SL_TOKEN_ASSIGN;
@@ -181,21 +200,21 @@ int sl_gettoken()
         break;
     case '<':
     {
-        if (nextchar() == '=')
+        if (nextchar(lexer) == '=')
             tmp = SL_TOKEN_LESSEQUAL;
         else
             return SL_TOKEN_LCHEVR;
     }
     case '>':
     {
-        if (nextchar() == '=')
+        if (nextchar(lexer) == '=')
             tmp = SL_TOKEN_MOREEQUAL;
         else
             return SL_TOKEN_RCHEVR;
     }
     }
 
-    nextchar();
+    nextchar(lexer);
     return tmp;
 }
 
@@ -227,7 +246,7 @@ char *sl_tokenstr(int token)
 
         "SL_TOKEN_ASSIGN",    // =
         "SL_TOKEN_EQUAL",     // ==
-        "T_NOTEQUAL",  // !=
+        "SL_TOKEN_NOTEQUAL",  // !=
         "SL_TOKEN_LESSEQUAL", // <=
         "SL_TOKEN_MOREEQUAL", // >=
         "SL_TOKEN_LCHEVR",    // <

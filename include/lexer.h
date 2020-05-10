@@ -46,6 +46,22 @@ enum SL_TOKEN
     SL_TOKEN_UNKOWN
 };
 
-int sl_gettoken();
+struct sl_lexer_s
+{
+    char *input;
+    int index;
+    char *buffer;
+    int number;
+    int line;
+    int col;
+    int lastchar;
+};
+
+typedef struct sl_lexer_s sl_lexer_t;
+
+sl_lexer_t *sl_lexer_new(char *input);
+void sl_lexer_free(sl_lexer_t *lexer);
+
+int sl_gettoken(sl_lexer_t *lexer);
 char *sl_tokenstr(int token);
 #endif
