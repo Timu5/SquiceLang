@@ -10,8 +10,8 @@ sl_ctx_t *sl_ctx_new(sl_ctx_t *parent)
     ctx->child = NULL;
     ctx->vars = NULL;
     ctx->stack = NULL;
-    ctx->ret = NULL;
-    ctx->retLoop = NULL;
+    //ctx->ret = NULL;
+    //ctx->retLoop = NULL;
     return ctx;
 }
 
@@ -23,19 +23,19 @@ void sl_ctx_free(sl_ctx_t *ctx)
         ctx->child = NULL;
     }
 
-    for (int i = 0; i < vector_size(ctx->vars); i++)
+    for (int i = 0; i < sl_vector_size(ctx->vars); i++)
     {
         //free(ctx->vars[i]->name);
         //sl_value_free(ctx->vars[i]->val, 1);
         free(ctx->vars[i]);
     }
-    vector_free(ctx->vars);
+    sl_vector_free(ctx->vars);
 
-    /* while(vector_size(ctx->stack))
-        sl_value_free(vector_pop(ctx->stack), 1);*/
-    vector_free(ctx->stack);
-    free(ctx->ret);
-    free(ctx->retLoop);
+    /* while(sl_vector_size(ctx->stack))
+        sl_value_free(sl_vector_pop(ctx->stack), 1);*/
+    sl_vector_free(ctx->stack);
+    //free(ctx->ret);
+    //free(ctx->retLoop);
 
     if (ctx->parent)
         ctx->parent->child = NULL;
@@ -48,7 +48,7 @@ sl_value_t *sl_ctx_getvar(sl_ctx_t *ctx, char *name)
     sl_ctx_t *c = ctx;
     while (c)
     {
-        for (int i = (int)vector_size(c->vars) - 1; i >= 0; i--)
+        for (int i = (int)sl_vector_size(c->vars) - 1; i >= 0; i--)
         {
             sl_var_t *v = c->vars[i];
 
@@ -66,7 +66,7 @@ void sl_ctx_addvar(sl_ctx_t *ctx, char *name, sl_value_t *val)
     var->name = name;
     var->val = val;
 
-    vector_push(ctx->vars, var);
+    sl_vector_push(ctx->vars, var);
 }
 
 sl_fn_t *sl_ctx_getfn(sl_ctx_t *ctx, char *name)

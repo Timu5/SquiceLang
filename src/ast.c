@@ -17,7 +17,7 @@ sl_node_t *node_root(sl_node_t *funcs, sl_node_t *stmts)
     node->type = SL_NODETYPE_ROOT;
     node->root.funcs = funcs;
     node->root.stmts = stmts;
-    node->codegen = codegen_root;
+    node->codegen = sl_codegen_root;
     node->free = free_root;
     return node;
 }
@@ -33,7 +33,7 @@ sl_node_t *node_ident(char *name)
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_IDENT;
     node->ident = name;
-    node->codegen = codegen_ident;
+    node->codegen = sl_codegen_ident;
     node->free = free_ident;
     return node;
 }
@@ -50,7 +50,7 @@ sl_node_t *node_unary(int op, sl_node_t *val)
     node->type = SL_NODETYPE_UNARY;
     node->unary.op = op;
     node->unary.val = val;
-    node->codegen = codegen_unary;
+    node->codegen = sl_codegen_unary;
     node->free = free_unary;
     return node;
 }
@@ -69,7 +69,7 @@ sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b)
     node->binary.op = op;
     node->binary.a = a;
     node->binary.b = b;
-    node->codegen = codegen_binary;
+    node->codegen = sl_codegen_binary;
     node->free = free_binary;
     return node;
 }
@@ -84,7 +84,7 @@ sl_node_t *node_int(int integer)
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_INT;
     node->integer = integer;
-    node->codegen = codegen_int;
+    node->codegen = sl_codegen_int;
     node->free = free_int;
     return node;
 }
@@ -100,7 +100,7 @@ sl_node_t *node_string(char *string)
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_STRING;
     node->string = string;
-    node->codegen = codegen_string;
+    node->codegen = sl_codegen_string;
     node->free = free_string;
     return node;
 }
@@ -118,7 +118,7 @@ sl_node_t *node_call(sl_node_t *func, sl_node_t *args)
     node->type = SL_NODETYPE_CALL;
     node->call.func = func;
     node->call.args = args;
-    node->codegen = codegen_call;
+    node->codegen = sl_codegen_call;
     node->free = free_call;
     return node;
 }
@@ -126,21 +126,21 @@ sl_node_t *node_call(sl_node_t *func, sl_node_t *args)
 static void free_func(sl_node_t *node)
 {
     sl_node_free(node->func.body);
-    for (int i = 0; i < vector_size(node->func.args); i++)
+    for (int i = 0; i < sl_vector_size(node->func.args); i++)
         free(node->func.args[i]);
-    vector_free(node->func.args);
+    sl_vector_free(node->func.args);
     free(node->func.name);
     free(node);
 }
 
-sl_node_t *node_func(char *name, vector(char *) args, sl_node_t *body)
+sl_node_t *node_func(char *name, sl_vector(char *) args, sl_node_t *body)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_FUNC;
     node->func.name = name;
     node->func.args = args;
     node->func.body = body;
-    node->codegen = codegen_func;
+    node->codegen = sl_codegen_func;
     node->free = free_func;
     return node;
 }
@@ -156,7 +156,7 @@ sl_node_t *node_return(sl_node_t *expr)
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_RETURN;
     node->ret = expr;
-    node->codegen = codegen_return;
+    node->codegen = sl_codegen_return;
     node->free = free_return;
     return node;
 }
@@ -177,7 +177,7 @@ sl_node_t *node_cond(sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody)
     node->cond.arg = arg;
     node->cond.body = body;
     node->cond.elsebody = elsebody;
-    node->codegen = codegen_cond;
+    node->codegen = sl_codegen_cond;
     node->free = free_cond;
     return node;
 }
@@ -195,7 +195,7 @@ sl_node_t *node_loop(sl_node_t *arg, sl_node_t *body)
     node->type = SL_NODETYPE_LOOP;
     node->loop.arg = arg;
     node->loop.body = body;
-    node->codegen = codegen_loop;
+    node->codegen = sl_codegen_loop;
     node->free = free_loop;
     return node;
 }
@@ -209,7 +209,7 @@ sl_node_t *node_break()
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_BREAK;
-    node->codegen = codegen_break;
+    node->codegen = sl_codegen_break;
     node->free = free_break;
     return node;
 }
@@ -227,7 +227,7 @@ sl_node_t *node_decl(sl_node_t *name, sl_node_t *value)
     node->type = SL_NODETYPE_DECL;
     node->decl.name = name;
     node->decl.value = value;
-    node->codegen = codegen_decl;
+    node->codegen = sl_codegen_decl;
     node->free = free_decl;
     return node;
 }
@@ -245,25 +245,25 @@ sl_node_t *node_index(sl_node_t *var, sl_node_t *expr)
     node->type = SL_NODETYPE_INDEX;
     node->index.var = var;
     node->index.expr = expr;
-    node->codegen = codegen_index;
+    node->codegen = sl_codegen_index;
     node->free = free_index;
     return node;
 }
 
 static void free_block(sl_node_t *node)
 {
-    for (int i = 0; i < vector_size(node->block); i++)
+    for (int i = 0; i < sl_vector_size(node->block); i++)
         sl_node_free(node->block[i]);
-    vector_free(node->block);
+    sl_vector_free(node->block);
     free(node);
 }
 
-sl_node_t *node_block(vector(sl_node_t *) list)
+sl_node_t *node_block(sl_vector(sl_node_t *) list)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_BLOCK;
     node->block = list;
-    node->codegen = codegen_block;
+    node->codegen = sl_codegen_block;
     node->free = free_block;
     return node;
 }
@@ -281,7 +281,7 @@ sl_node_t *node_member(sl_node_t *parent, char *name)
     node->type = SL_NODETYPE_MEMBER;
     node->member.name = name;
     node->member.parent = parent;
-    node->codegen = codegen_member;
+    node->codegen = sl_codegen_member;
     node->free = free_member;
     return node;
 }
@@ -304,7 +304,7 @@ void sl_node_print(sl_node_t *node, int ind)
         break;
     case SL_NODETYPE_BLOCK:
         printf("block\n");
-        for (int i = 0; i < vector_size(node->block); i++)
+        for (int i = 0; i < sl_vector_size(node->block); i++)
         {
             sl_node_print(node->block[i], ind + 1);
         }
@@ -334,10 +334,10 @@ void sl_node_print(sl_node_t *node, int ind)
         break;
     case SL_NODETYPE_FUNC:
         printf("function: %s(", node->func.name);
-        for (int i = 0; i < vector_size(node->func.args); i++)
+        for (int i = 0; i < sl_vector_size(node->func.args); i++)
         {
             printf("%s", node->func.args[i]);
-            if (i != vector_size(node->func.args) - 1)
+            if (i != sl_vector_size(node->func.args) - 1)
                 printf(", ");
         }
         printf(")\n");

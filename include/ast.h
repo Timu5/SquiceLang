@@ -58,7 +58,7 @@ struct sl_node_s
         struct
         {
             char *name;
-            vector(char *) args;
+            sl_vector(char *) args;
             struct sl_node_s *body;
         } func;
         struct sl_node_s *ret;
@@ -83,7 +83,7 @@ struct sl_node_s
             struct sl_node_s *var;
             struct sl_node_s *expr;
         } index;
-        vector(struct sl_node_s *) block;
+        sl_vector(struct sl_node_s *) block;
         struct
         {
             struct sl_node_s *parent;
@@ -103,14 +103,14 @@ sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b);
 sl_node_t *node_int(int integer);
 sl_node_t *node_string(char *string);
 sl_node_t *node_call(sl_node_t *func, sl_node_t *args);
-sl_node_t *node_func(char *name, vector(char *) args, sl_node_t *body);
+sl_node_t *node_func(char *name, sl_vector(char *) args, sl_node_t *body);
 sl_node_t *node_return(sl_node_t *expr);
 sl_node_t *node_cond(sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody);
 sl_node_t *node_loop(sl_node_t *arg, sl_node_t *body);
 sl_node_t *node_break();
 sl_node_t *node_decl(sl_node_t *name, sl_node_t *value);
 sl_node_t *node_index(sl_node_t *var, sl_node_t *expr);
-sl_node_t *node_block(vector(sl_node_t *) list);
+sl_node_t *node_block(sl_vector(sl_node_t *) list);
 sl_node_t *node_member(sl_node_t *parent, char *name);
 
 void sl_node_print(sl_node_t *node, int ind);

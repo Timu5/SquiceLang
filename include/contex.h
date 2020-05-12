@@ -25,10 +25,10 @@ struct sl_ctx_s
 {
     struct sl_ctx_s *parent;
     struct sl_ctx_s *child;
-    vector(struct sl_var_s *) vars;
-    vector(sl_value_t *) stack;
-    jmp_buf *ret;
-    jmp_buf *retLoop;
+    sl_vector(struct sl_var_s *) vars;
+    sl_vector(sl_value_t *) stack;
+    //jmp_buf *ret;
+    //jmp_buf *retLoop;
 };
 
 typedef struct sl_var_s sl_var_t;

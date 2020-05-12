@@ -8,44 +8,81 @@
 #include "bytecode.h"
 #include "utils.h"
 #include "codegen.h"
+#include "vm.h"
+#include "builtin.h"
 
-extern FILE *input;
+char input_buffer[255];
+
+int balanced()
+{
+    int i = 0;
+    int par = 0;
+    int bra = 0;
+    int squ = 0;
+    while(input_buffer[i] != '\0')
+    {
+        if(input_buffer[i] == '(')
+            par++;
+        if(input_buffer[i] == ')')
+            par--;
+        if(input_buffer[i] == '[')
+            squ++;
+        if(input_buffer[i] == ']')
+            squ--;
+        if(input_buffer[i] == '{')
+            bra++;
+        if(input_buffer[i] == '}')
+            bra--;
+        i++;
+    }
+    return par == 0 && bra == 0 && squ == 0;
+}
+
+void getstring()
+{
+    printf(">>> ");
+    fgets(input_buffer, 255, stdin);
+
+    while(!balanced()) {
+        printf("... ");
+        fgets(input_buffer + strlen(input_buffer), 255, stdin);
+    }
+}
 
 int main(int argc, char **argv)
 {
-    /*if (argc < 2)
-    {
-        printf("Usage: lang input\n");
-        return -1;
-    }*/
+    sl_ctx_t *ctx = sl_ctx_new(NULL);
+    sl_builtin_install(ctx);
 
-    input = fopen("test.lang", "r");
-
-    if (!input)
+    while (1)
     {
-        printf("Cannot open file.\n");
-        return -2;
+        try
+        {
+            getstring();
+
+            sl_parser_t *parser = sl_parser_new(input_buffer);
+
+            sl_node_t *tree = sl_parse(parser);
+            sl_parser_free(parser);
+
+            sl_binary_t *bin = sl_binary_new();
+            tree->codegen(tree, bin);
+
+            sl_bytecode_fill(bin);
+
+            //sl_binary_save(bin, "test.bin");
+
+            sl_node_free(tree);
+
+            exec(ctx, bin->block, bin->size);
+        }
+        catch
+        {
+            puts(ex_msg);
+        }
     }
 
-    try
-    {
-        sl_node_t *tree = sl_parse();
-
-        sl_binary_t *bin = sl_binary_new();
-        tree->codegen(tree, bin);
-
-        sl_bytecode_fill(bin);
-
-        sl_binary_save(bin, "test.bin");
-
-        sl_node_free(tree);
-    }
-    catch
-    {
-        puts(ex_msg);
-    }
-
-    fclose(input);
+    //fclose(input);
 
     return 0;
 }

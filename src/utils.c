@@ -31,7 +31,7 @@ char *sl_mprintf(char *fmt, ...)
 
 void vec_grow(void **vector, size_t more, size_t type_size)
 {
-    sl_vector_t *meta = vector_meta(*vector);
+    sl_vector_t *meta = sl_vector_meta(*vector);
     size_t count = 0;
     void *data = NULL;
 

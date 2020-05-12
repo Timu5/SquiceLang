@@ -28,10 +28,10 @@ enum SL_OPCODE
 // Structure to store bytecode in binary format
 struct sl_binary_s
 {
-    vector(int) adresses;
-    vector(char *) symbols;
-    vector(int) fadresses;
-    vector(char *) fsymbols;
+    sl_vector(int) adresses;
+    sl_vector(char *) symbols;
+    sl_vector(int) fadresses;
+    sl_vector(char *) fsymbols;
     char *block;
     int size;
     int index; // free label index

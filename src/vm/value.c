@@ -39,7 +39,7 @@ sl_value_t *sl_value_string(char *val)
     return v;
 }
 
-sl_value_t *sl_value_array(vector(sl_value_t *) arr)
+sl_value_t *sl_value_array(sl_vector(sl_value_t *) arr)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_ARRAY;
@@ -50,7 +50,7 @@ sl_value_t *sl_value_array(vector(sl_value_t *) arr)
     return v;
 }
 
-sl_value_t *sl_value_dict(vector(char *) names, vector(sl_value_t *) values)
+sl_value_t *sl_value_dict(sl_vector(char *) names, sl_vector(sl_value_t *) values)
 {
     sl_value_t *v = sl_gc_alloc_value();
     v->type = SL_VALUE_DICT;
@@ -92,14 +92,14 @@ void sl_value_free(sl_value_t *val)
     }
     else if (val->type == SL_VALUE_ARRAY)
     {
-        vector_free(val->array);
+        sl_vector_free(val->array);
     }
     else if (val->type == SL_VALUE_DICT)
     {
-        for (int i = 0; i < vector_size(val->dict.names); i++)
+        for (int i = 0; i < sl_vector_size(val->dict.names); i++)
             free(val->dict.names[i]);
-        vector_free(val->dict.names);
-        vector_free(val->dict.values);
+        sl_vector_free(val->dict.names);
+        sl_vector_free(val->dict.values);
     }
     else if (val->type == SL_VALUE_FN)
     {
@@ -273,7 +273,7 @@ sl_value_t *sl_value_get(int i, sl_value_t *a)
     }
     else if (a->type == SL_VALUE_ARRAY)
     {
-        if (i >= vector_size(a->array))
+        if (i >= sl_vector_size(a->array))
             throw("Index aut of range");
         return a->array[i];
     }
@@ -289,16 +289,16 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a)
 
     if (a->type == SL_VALUE_DICT)
     {
-        for (int i = 0; i < vector_size(a->dict.names); i++)
+        for (int i = 0; i < sl_vector_size(a->dict.names); i++)
         {
             if (strcmp(a->dict.names[i], name) == 0)
                 return a->dict.values[i];
         }
 
-        vector_push(a->dict.names, strdup(name));
-        vector_push(a->dict.values, sl_value_null());
+        sl_vector_push(a->dict.names, strdup(name));
+        sl_vector_push(a->dict.values, sl_value_null());
 
-        return a->dict.values[vector_size(a->dict.values) - 1];
+        return a->dict.values[sl_vector_size(a->dict.values) - 1];
     }
 
     throw("Cannot get member for this type");

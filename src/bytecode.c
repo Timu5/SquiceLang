@@ -68,25 +68,25 @@ int sl_bytecode_emitdouble(sl_binary_t *bin, int opcode, double number)
 
 int sl_bytecode_addlabel(sl_binary_t *bin, char *name, int adress)
 {
-    vector_push(bin->adresses, adress);
-    vector_push(bin->symbols, name);
+    sl_vector_push(bin->adresses, adress);
+    sl_vector_push(bin->symbols, name);
     return 0;
 }
 
 int sl_bytecode_addtofill(sl_binary_t *bin, char *name, int adress)
 {
-    vector_push(bin->fadresses, adress);
-    vector_push(bin->fsymbols, name);
+    sl_vector_push(bin->fadresses, adress);
+    sl_vector_push(bin->fsymbols, name);
     return 0;
 }
 
 int sl_bytecode_fill(sl_binary_t *bin)
 {
-    for (int i = 0; i < vector_size(bin->fadresses); i++)
+    for (int i = 0; i < sl_vector_size(bin->fadresses); i++)
     {
         bin->fadresses[i];
         bin->fsymbols[i];
-        for (int j = 0; j < vector_size(bin->adresses); j++)
+        for (int j = 0; j < sl_vector_size(bin->adresses); j++)
         {
             if (strcmp(bin->fsymbols[i], bin->symbols[j]) == 0)
             {

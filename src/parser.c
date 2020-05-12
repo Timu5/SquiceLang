@@ -13,6 +13,7 @@ sl_parser_t *sl_parser_new(char *input)
     sl_parser_t *parser = (sl_parser_t*)malloc(sizeof(sl_parser_t));
     parser->lexer = sl_lexer_new(input);
     parser->lasttoken = 0;
+    return parser;
 }
 
 void sl_parser_free(sl_parser_t *parser)
@@ -73,11 +74,11 @@ sl_node_t *primary(sl_parser_t *parser)
     {
         // new array
         nexttoken(parser);
-        vector(sl_node_t *) elements = NULL;
+        sl_vector(sl_node_t *) elements = NULL;
         while (parser->lasttoken != SL_TOKEN_RBRACK)
         {
             sl_node_t *e = expr(parser, 0);
-            vector_push(elements, e);
+            sl_vector_push(elements, e);
             if (parser->lasttoken != SL_TOKEN_COMMA)
                 break;
             nexttoken(parser);
@@ -92,20 +93,20 @@ sl_node_t *primary(sl_parser_t *parser)
     {
         // new dictonary
         nexttoken(parser);
-        vector(sl_node_t *) keys = NULL;
-        vector(sl_node_t *) values = NULL;
+        sl_vector(sl_node_t *) keys = NULL;
+        sl_vector(sl_node_t *) values = NULL;
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
             if (!(parser->lasttoken == SL_TOKEN_STRING || parser->lasttoken == SL_TOKEN_IDENT))
                 throw("Unexpexted token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s", parser->lasttoken);
-            vector_push(keys, node_string(strdup(parser->lexer->buffer)));
+            sl_vector_push(keys, node_string(strdup(parser->lexer->buffer)));
 
             nexttoken(parser);
             match(parser, SL_TOKEN_COLON);
             nexttoken(parser);
 
             sl_node_t *e = expr(parser, 0);
-            vector_push(values, e);
+            sl_vector_push(values, e);
 
             if (parser->lasttoken != SL_TOKEN_COMMA)
                 break;
@@ -115,9 +116,9 @@ sl_node_t *primary(sl_parser_t *parser)
         nexttoken(parser);
 
         // syntax sugar, convert {a:1, b:2+2} to dict(list('a', 'b'), list(1, 2+2))
-        vector(sl_node_t *) args = NULL;
-        vector_push(args, node_call(node_ident(strdup("list")), node_block(keys)));
-        vector_push(args, node_call(node_ident(strdup("list")), node_block(values)));
+        sl_vector(sl_node_t *) args = NULL;
+        sl_vector_push(args, node_call(node_ident(strdup("list")), node_block(keys)));
+        sl_vector_push(args, node_call(node_ident(strdup("list")), node_block(values)));
         prim = node_call(node_ident(strdup("dict")), node_block(args));
     }
     else
@@ -130,11 +131,11 @@ sl_node_t *primary(sl_parser_t *parser)
         if (parser->lasttoken == SL_TOKEN_LPAREN) // primary '(' expr ')'
         {
             nexttoken(parser);
-            vector(sl_node_t *) args = NULL;
+            sl_vector(sl_node_t *) args = NULL;
             while (parser->lasttoken != SL_TOKEN_RPAREN)
             {
                 sl_node_t *e = expr(parser, 0);
-                vector_push(args, e);
+                sl_vector_push(args, e);
 
                 if (parser->lasttoken != SL_TOKEN_COMMA)
                     break;
@@ -211,11 +212,11 @@ sl_node_t *statment(sl_parser_t *parser)
     case SL_TOKEN_LBRACE:
         nexttoken(parser);
 
-        vector(sl_node_t *) list = NULL;
+        sl_vector(sl_node_t *) list = NULL;
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
             sl_node_t *node = statment(parser);
-            vector_push(list, node);
+            sl_vector_push(list, node);
         }
         match(parser, SL_TOKEN_RBRACE);
 
@@ -275,12 +276,12 @@ sl_node_t *statment(sl_parser_t *parser)
         nexttoken(parser);
         match(parser, SL_TOKEN_LPAREN);
 
-        vector(char *) args = NULL;
+        sl_vector(char *) args = NULL;
 
         while (nexttoken(parser) != SL_TOKEN_RPAREN)
         {
             match(parser, SL_TOKEN_IDENT);
-            vector_push(args, strdup(parser->lexer->buffer));
+            sl_vector_push(args, strdup(parser->lexer->buffer));
             if (nexttoken(parser) != SL_TOKEN_COMMA)
                 break;
         }
@@ -319,16 +320,16 @@ sl_node_t *statment(sl_parser_t *parser)
 sl_node_t *sl_parse(sl_parser_t *parser)
 {
     nexttoken(parser);
-    vector(sl_node_t *) funcs = NULL;
-    vector(sl_node_t *) stmts = NULL;
+    sl_vector(sl_node_t *) funcs = NULL;
+    sl_vector(sl_node_t *) stmts = NULL;
     while (parser->lasttoken != SL_TOKEN_EOF)
     {
         sl_node_t *n = statment(parser);
 
         if (n->type == SL_NODETYPE_FUNC)
-            vector_push(funcs, n);
+            sl_vector_push(funcs, n);
         else
-            vector_push(stmts, n);
+            sl_vector_push(stmts, n);
     }
     return node_root(node_block(funcs), node_block(stmts));
 }

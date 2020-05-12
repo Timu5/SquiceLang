@@ -111,17 +111,17 @@ void dis(char *opcodes, long fsize)
     ip = 0;
 }
 
-void exec(char * _opcodes, int size)
+void exec(sl_ctx_t * global, char * _opcodes, int size)
 {
     int ip = 0;
     char *opcodes = NULL;
     long fsize = 0;
-    vector(int) call_stack = NULL;
-    sl_ctx_t *global;
+    sl_vector(int) call_stack = NULL;
+    //sl_ctx_t *global;
 
     opcodes = _opcodes;
-    global = sl_ctx_new(NULL);
-    sl_builtin_install(global);
+    //global = sl_ctx_new(NULL);
+    //sl_builtin_install(global);
     
     sl_ctx_t *context = global;
 
@@ -137,39 +137,44 @@ void exec(char * _opcodes, int size)
         case SL_OPCODE_NOP:
             break;
         case SL_OPCODE_PUSHN:
-            vector_push(global->stack, sl_value_number(getint(opcodes, &ip)));
+            sl_vector_push(global->stack, sl_value_number(getint(opcodes, &ip)));
             break;
         case SL_OPCODE_PUSHS:
-            vector_push(global->stack, sl_value_string(getstr(opcodes, &ip)));
+            sl_vector_push(global->stack, sl_value_string(getstr(opcodes, &ip)));
             break;
         case SL_OPCODE_PUSHV:
-            vector_push(global->stack, sl_ctx_getvar(context, getstr(opcodes, &ip)));
+            sl_value_t *val = sl_ctx_getvar(context, getstr(opcodes, &ip));
+            if(val == NULL)
+            {
+                throw("No such variable!");
+            }
+            sl_vector_push(global->stack, val);
             break;
         case SL_OPCODE_POP:
-            vector_pop(global->stack);
+            sl_vector_pop(global->stack);
             break;
         case SL_OPCODE_STOREFN:
-            sl_ctx_addfn(context, getstr(opcodes, &ip), (int)vector_pop(global->stack)->number, NULL);
+            sl_ctx_addfn(context, getstr(opcodes, &ip), (int)sl_vector_pop(global->stack)->number, NULL);
             break;
         case SL_OPCODE_STORE:
-            sl_ctx_addvar(context, getstr(opcodes, &ip), vector_pop(global->stack));
+            sl_ctx_addvar(context, getstr(opcodes, &ip), sl_vector_pop(global->stack));
             break;
         case SL_OPCODE_UNARY:
         {
-            sl_value_t *a = vector_pop(global->stack);
-            vector_push(global->stack, sl_value_unary(getint(opcodes, &ip), a));
+            sl_value_t *a = sl_vector_pop(global->stack);
+            sl_vector_push(global->stack, sl_value_unary(getint(opcodes, &ip), a));
             break;
         }
         case SL_OPCODE_BINARY:
         {
-            sl_value_t *b = vector_pop(global->stack);
-            sl_value_t *a = vector_pop(global->stack);
-            vector_push(global->stack, sl_value_binary(getint(opcodes, &ip), a, b));
+            sl_value_t *b = sl_vector_pop(global->stack);
+            sl_value_t *a = sl_vector_pop(global->stack);
+            sl_vector_push(global->stack, sl_value_binary(getint(opcodes, &ip), a, b));
             break;
         }
         case SL_OPCODE_CALL:
         case SL_OPCODE_CALLM:
-            sl_value_t *fn_value = vector_pop(global->stack);
+            sl_value_t *fn_value = sl_vector_pop(global->stack);
             while (fn_value->type == SL_VALUE_REF)
                 fn_value = fn_value->ref;
             if (fn_value->type != SL_VALUE_FN)
@@ -185,22 +190,22 @@ void exec(char * _opcodes, int size)
                 context = sl_ctx_new(context);
                 if (byte == SL_OPCODE_CALLM)
                 {
-                    sl_ctx_addvar(context, "this", vector_pop(global->stack)); // add "this" variable
+                    sl_ctx_addvar(context, "this", sl_vector_pop(global->stack)); // add "this" variable
                 }
-                vector_push(call_stack, ip);
-                //vector_pop(global->stack);
+                sl_vector_push(call_stack, ip);
+                //sl_vector_pop(global->stack);
                 ip = fn_value->fn->address;
             }
             break;
         case SL_OPCODE_RETN:
-            vector_push(global->stack, sl_value_null());
+            sl_vector_push(global->stack, sl_value_null());
         case SL_OPCODE_RET:
-            if (vector_size(call_stack) == 0)
+            if (sl_vector_size(call_stack) == 0)
             {
                 // nothing to return
                 return;
             }
-            int ret_adr = vector_pop(call_stack);
+            int ret_adr = sl_vector_pop(call_stack);
             ip = ret_adr;
             if (context->parent != NULL)
                 context = context->parent;
@@ -209,37 +214,37 @@ void exec(char * _opcodes, int size)
             ip = getint(opcodes, &ip);
             break;
         case SL_OPCODE_BRZ:
-            sl_value_t *v = vector_pop(global->stack);
+            sl_value_t *v = sl_vector_pop(global->stack);
             int nip = getint(opcodes, &ip);
             if (v->number == 0)
                 ip = nip;
             break;
         case SL_OPCODE_INDEX:
         {
-            sl_value_t *expr = vector_pop(global->stack);
-            sl_value_t *var = vector_pop(global->stack);
-            vector_push(global->stack, sl_value_get((int)expr->number, var));
+            sl_value_t *expr = sl_vector_pop(global->stack);
+            sl_value_t *var = sl_vector_pop(global->stack);
+            sl_vector_push(global->stack, sl_value_get((int)expr->number, var));
             break;
         }
         case SL_OPCODE_MEMBER:
         {
-            sl_value_t *var = vector_pop(global->stack);
+            sl_value_t *var = sl_vector_pop(global->stack);
             char *name = getstr(opcodes, &ip);
-            vector_push(global->stack, sl_value_member(name, var));
+            sl_vector_push(global->stack, sl_value_member(name, var));
             break;
         }
         case SL_OPCODE_MEMBERD:
         {
-            sl_value_t *var = vector_pop(global->stack);
+            sl_value_t *var = sl_vector_pop(global->stack);
             char *name = getstr(opcodes, &ip);
-            vector_push(global->stack, var);
-            vector_push(global->stack, sl_value_member(name, var));
+            sl_vector_push(global->stack, var);
+            sl_vector_push(global->stack, sl_value_member(name, var));
             break;
         }
         }
     }
 }
-
+/*
 int vm_main(int argc, char ** argv)
 {
     if (argc < 2)
@@ -267,4 +272,4 @@ int vm_main(int argc, char ** argv)
     }
 
     return 0;
-}
+}*/

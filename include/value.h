@@ -25,11 +25,11 @@ struct sl_value_s
     union {
         double number;
         char *string;
-        vector(struct sl_value_s *) array;
+        sl_vector(struct sl_value_s *) array;
         struct
         {
-            vector(char *) names;
-            vector(struct sl_value_s *) values;
+            sl_vector(char *) names;
+            sl_vector(struct sl_value_s *) values;
         } dict;
         struct sl_fn_s *fn;
         struct sl_value_s *ref;
@@ -41,8 +41,8 @@ typedef struct sl_value_s sl_value_t;
 sl_value_t *sl_value_null();
 sl_value_t *sl_value_number(double val);
 sl_value_t *sl_value_string(char *val);
-sl_value_t *sl_value_array(vector(sl_value_t *) arr);
-sl_value_t *sl_value_dict(vector(char *) names, vector(sl_value_t *) values);
+sl_value_t *sl_value_array(sl_vector(sl_value_t *) arr);
+sl_value_t *sl_value_dict(sl_vector(char *) names, sl_vector(sl_value_t *) values);
 sl_value_t *sl_value_fn(struct sl_fn_s *fn);
 sl_value_t *sl_value_ref(sl_value_t *val);
 

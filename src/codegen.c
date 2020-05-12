@@ -7,7 +7,7 @@
 
 void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
 {
-    for (int i = 0; i < vector_size(node->root.funcs->block); i++)
+    for (int i = 0; i < sl_vector_size(node->root.funcs->block); i++)
     {
         int adr = sl_bytecode_emitint(binary, SL_OPCODE_PUSHN, 0x22222222);
         sl_bytecode_emitstr(binary, SL_OPCODE_STOREFN, node->root.funcs->block[i]->func.name);
@@ -16,7 +16,7 @@ void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
         sl_bytecode_addtofill(binary, name, adr + 1);
     }
 
-    for (int i = 0; i < vector_size(node->root.stmts->block); i++)
+    for (int i = 0; i < sl_vector_size(node->root.stmts->block); i++)
     {
         sl_node_t *n = node->root.stmts->block[i];
         n->codegen(n, binary);
@@ -24,7 +24,7 @@ void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
 
     sl_bytecode_emit(binary, SL_OPCODE_RETN);
 
-    for (int i = 0; i < vector_size(node->root.funcs->block); i++)
+    for (int i = 0; i < sl_vector_size(node->root.funcs->block); i++)
     {
         sl_node_t *f = node->root.funcs->block[i];
         f->codegen(f, binary);
@@ -61,7 +61,7 @@ void sl_codegen_string(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_call(sl_node_t *node, sl_binary_t *binary)
 {
     int i = 0;
-    for (; i < vector_size(node->call.args->block); i++)
+    for (; i < sl_vector_size(node->call.args->block); i++)
     {
         sl_node_t *n = node->call.args->block[i];
         n->codegen(n, binary);
@@ -89,7 +89,7 @@ void sl_codegen_func(sl_node_t *node, sl_binary_t *binary)
     sl_bytecode_addlabel(binary, name, binary->size);
 
     sl_bytecode_emitstr(binary, SL_OPCODE_STORE, "argc");
-    for (int i = (int)vector_size(node->func.args) - 1; i >= 0; i--)
+    for (int i = (int)sl_vector_size(node->func.args) - 1; i >= 0; i--)
     {
         sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->func.args[i]);
     }
@@ -183,7 +183,7 @@ void sl_codegen_index(sl_node_t *node, sl_binary_t *binary)
 
 void sl_codegen_block(sl_node_t *node, sl_binary_t *binary)
 {
-    for (int i = 0; i < vector_size(node->block); i++)
+    for (int i = 0; i < sl_vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
 }
 
