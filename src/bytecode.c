@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "bytecode.h"
-#include "utils.h"
+#include "SquiceLang.h"
 
 sl_binary_t *sl_binary_new()
 {

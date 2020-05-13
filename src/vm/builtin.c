@@ -1,7 +1,6 @@
-#include "builtin.h"
 #include <stdio.h>
 
-#include "utils.h"
+#include "SquiceLang.h"
 
 static void print(sl_ctx_t *ctx)
 {

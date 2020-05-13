@@ -1,11 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lexer.h"
-#include "value.h"
-#include "utils.h"
-#include "gc.h"
-#include "contex.h"
+#include "SquiceLang.h"
 
 sl_value_t *sl_value_null()
 {

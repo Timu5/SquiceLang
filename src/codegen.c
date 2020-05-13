@@ -1,9 +1,6 @@
 #include <stdio.h>
 
-#include "codegen.h"
-#include "ast.h"
-#include "utils.h"
-#include "bytecode.h"
+#include "SquiceLang.h"
 
 void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
 {

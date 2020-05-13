@@ -1,10 +1,6 @@
 #include <string.h>
 
-#include "vector.h"
-#include "value.h"
-#include "utils.h"
-#include "contex.h"
-#include "gc.h"
+#include "SquiceLang.h"
 
 sl_vector(sl_value_t *) values;
 

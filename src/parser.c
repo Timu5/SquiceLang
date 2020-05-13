@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.h"
-#include "lexer.h"
-#include "ast.h"
-#include "vector.h"
-#include "utils.h"
+#include "SquiceLang.h"
 
 sl_parser_t *sl_parser_new(char *input)
 {

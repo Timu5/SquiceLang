@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "utils.h"
-#include "vector.h"
+#include "SquiceLang.h"
 
 jmp_buf __ex_buf__;
 char ex_msg[256];

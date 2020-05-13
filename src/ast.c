@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "ast.h"
-#include "codegen.h"
-#include "lexer.h"
+
+#include "SquiceLang.h"
 
 static void free_root(sl_node_t *node)
 {

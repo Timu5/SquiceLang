@@ -3,8 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "lexer.h"
-#include "utils.h"
+#include "SquiceLang.h"
 
 sl_lexer_t *sl_lexer_new(char *input)
 {

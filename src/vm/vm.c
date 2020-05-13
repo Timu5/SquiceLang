@@ -1,9 +1,6 @@
 #include <stdio.h>
-#include "bytecode.h"
-#include "utils.h"
-#include "value.h"
-#include "builtin.h"
-#include "contex.h"
+
+#include "SquiceLang.h"
 
 static char *getstr(char *opcodes, int *ip)
 {

@@ -1,15 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "lexer.h"
-#include "value.h"
-#include "ast.h"
-#include "parser.h"
-#include "vector.h"
-#include "bytecode.h"
-#include "utils.h"
-#include "codegen.h"
-#include "vm.h"
-#include "builtin.h"
+
+#include "SquiceLang.h"
 
 char input_buffer[255];
 
