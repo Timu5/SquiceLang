@@ -140,6 +140,7 @@ void exec(sl_ctx_t * global, char * _opcodes, int size)
             sl_vector_push(global->stack, sl_value_string(getstr(opcodes, &ip)));
             break;
         case SL_OPCODE_PUSHV:
+        {
             sl_value_t *val = sl_ctx_getvar(context, getstr(opcodes, &ip));
             if(val == NULL)
             {
@@ -147,6 +148,7 @@ void exec(sl_ctx_t * global, char * _opcodes, int size)
             }
             sl_vector_push(global->stack, val);
             break;
+        }
         case SL_OPCODE_POP:
             sl_vector_pop(global->stack);
             break;
@@ -171,6 +173,7 @@ void exec(sl_ctx_t * global, char * _opcodes, int size)
         }
         case SL_OPCODE_CALL:
         case SL_OPCODE_CALLM:
+        {
             sl_value_t *fn_value = sl_vector_pop(global->stack);
             while (fn_value->type == SL_VALUE_REF)
                 fn_value = fn_value->ref;
@@ -193,6 +196,7 @@ void exec(sl_ctx_t * global, char * _opcodes, int size)
                 //sl_vector_pop(global->stack);
                 ip = fn_value->fn->address;
             }
+        }
             break;
         case SL_OPCODE_RETN:
             sl_vector_push(global->stack, sl_value_null());
@@ -211,10 +215,12 @@ void exec(sl_ctx_t * global, char * _opcodes, int size)
             ip = getint(opcodes, &ip);
             break;
         case SL_OPCODE_BRZ:
+        {
             sl_value_t *v = sl_vector_pop(global->stack);
             int nip = getint(opcodes, &ip);
             if (v->number == 0)
                 ip = nip;
+        }
             break;
         case SL_OPCODE_INDEX:
         {
