@@ -1,0 +1,1 @@
+quom -I include src/main.c squicelang.h

@@ -1,7 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "SquiceLang.h"
+
+#ifdef SL_IMPLEMENTATION
+
+#include "vm/builtin.c"
+#include "vm/contex.c"
+#include "vm/gc.c"
+#include "vm/value.c"
+#include "vm/vm.c"
+#include "ast.c"
+#include "bytecode.c"
+#include "codegen.c"
+#include "lexer.c"
+#include "parser.c"
+#include "utils.c"
 
 char input_buffer[255];
 
@@ -78,3 +89,5 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+#endif
