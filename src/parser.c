@@ -14,7 +14,7 @@ sl_parser_t *sl_parser_new(char *input)
 
 void sl_parser_free(sl_parser_t *parser)
 {
-    free(parser->lexer);
+    sl_lexer_free(parser->lexer);
     free(parser);
 }
 

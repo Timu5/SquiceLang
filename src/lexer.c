@@ -15,6 +15,7 @@ sl_lexer_t *sl_lexer_new(char *input)
     lexer->line = 0;
     lexer->col = 0;
     lexer->lastchar = ' ';
+    return lexer;
 }
 
 void sl_lexer_free(sl_lexer_t *lexer)
@@ -25,7 +26,6 @@ void sl_lexer_free(sl_lexer_t *lexer)
 
 static int nextchar(sl_lexer_t *lexer)
 {
-    //lastchar = fgetc(input);
     if(lexer->input[lexer->index] == 0)
     {
         lexer->lastchar = EOF;
