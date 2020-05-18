@@ -108,17 +108,11 @@ void dis(char *opcodes, long fsize)
     ip = 0;
 }
 
-void exec(sl_ctx_t * global, char * _opcodes, int size)
+void sl_exec(sl_ctx_t * global, char * opcodes, int size)
 {
     int ip = 0;
-    char *opcodes = NULL;
     long fsize = 0;
     sl_vector(int) call_stack = NULL;
-    //sl_ctx_t *global;
-
-    opcodes = _opcodes;
-    //global = sl_ctx_new(NULL);
-    //sl_builtin_install(global);
     
     sl_ctx_t *context = global;
 

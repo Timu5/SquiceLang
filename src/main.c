@@ -52,6 +52,20 @@ void getstring()
     }
 }
 
+void sl_eval_str(sl_ctx_t *ctx, char *code)
+{
+    sl_parser_t *parser = sl_parser_new(code);
+    sl_node_t *tree = sl_parse(parser);
+    sl_parser_free(parser);
+
+    sl_binary_t *bin = sl_binary_new();
+    tree->codegen(tree, bin);
+    sl_node_free(tree);
+
+    sl_bytecode_fill(bin);
+    sl_exec(ctx, bin->block, bin->size);
+}
+
 int main(int argc, char **argv)
 {
     sl_ctx_t *ctx = sl_ctx_new(NULL);
@@ -62,22 +76,7 @@ int main(int argc, char **argv)
         try
         {
             getstring();
-
-            sl_parser_t *parser = sl_parser_new(input_buffer);
-
-            sl_node_t *tree = sl_parse(parser);
-            sl_parser_free(parser);
-
-            sl_binary_t *bin = sl_binary_new();
-            tree->codegen(tree, bin);
-
-            sl_bytecode_fill(bin);
-
-            //sl_binary_save(bin, "test.bin");
-
-            sl_node_free(tree);
-
-            exec(ctx, bin->block, bin->size);
+            sl_eval_str(ctx, input_buffer);
         }
         catch
         {
