@@ -73,18 +73,18 @@ sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b)
     return node;
 }
 
-static void free_int(sl_node_t *node)
+static void free_number(sl_node_t *node)
 {
     free(node);
 }
 
-sl_node_t *node_int(int integer)
+sl_node_t *node_number(double number)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
-    node->type = SL_NODETYPE_INT;
-    node->integer = integer;
-    node->codegen = sl_codegen_int;
-    node->free = free_int;
+    node->type = SL_NODETYPE_NUMBER;
+    node->number = number;
+    node->codegen = sl_codegen_double;
+    node->free = free_number;
     return node;
 }
 
@@ -320,8 +320,8 @@ void sl_node_print(sl_node_t *node, int ind)
         sl_node_print(node->binary.a, ind + 1);
         sl_node_print(node->binary.b, ind + 1);
         break;
-    case SL_NODETYPE_INT:
-        printf("int %i\n", node->integer);
+    case SL_NODETYPE_NUMBER:
+        printf("num %g\n", node->number);
         break;
     case SL_NODETYPE_STRING:
         printf("string \"%s\"", node->string);

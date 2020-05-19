@@ -45,9 +45,9 @@ void sl_codegen_binary(sl_node_t *node, sl_binary_t *binary)
     sl_bytecode_emitint(binary, SL_OPCODE_BINARY, node->binary.op);
 }
 
-void sl_codegen_int(sl_node_t *node, sl_binary_t *binary)
+void sl_codegen_double(sl_node_t *node, sl_binary_t *binary)
 {
-    sl_bytecode_emitint(binary, SL_OPCODE_PUSHN, node->integer);
+    sl_bytecode_emitdouble(binary, SL_OPCODE_PUSHN, node->number);
 }
 
 void sl_codegen_string(sl_node_t *node, sl_binary_t *binary)

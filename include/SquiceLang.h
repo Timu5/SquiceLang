@@ -84,7 +84,7 @@ enum SL_NODETYPE
     SL_NODETYPE_IDENT,
     SL_NODETYPE_UNARY,
     SL_NODETYPE_BINARY,
-    SL_NODETYPE_INT,
+    SL_NODETYPE_NUMBER,
     SL_NODETYPE_STRING,
     SL_NODETYPE_CALL,
     SL_NODETYPE_FUNC,
@@ -123,7 +123,7 @@ struct sl_node_s
             struct sl_node_s *a;
             struct sl_node_s *b;
         } binary;
-        int integer;
+        double number;
         char *string;
         struct
         {
@@ -205,7 +205,7 @@ sl_node_t *node_root(sl_node_t *funcs, sl_node_t *stmts);
 sl_node_t *node_ident(char *name);
 sl_node_t *node_unary(int op, sl_node_t *val);
 sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b);
-sl_node_t *node_int(int integer);
+sl_node_t *node_number(double number);
 sl_node_t *node_string(char *string);
 sl_node_t *node_call(sl_node_t *func, sl_node_t *args);
 sl_node_t *node_func(char *name, sl_vector(char *) args, sl_node_t *body);
@@ -275,7 +275,7 @@ void sl_codegen_root(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_ident(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_unary(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_binary(sl_node_t *node, sl_binary_t *binary);
-void sl_codegen_int(sl_node_t *node, sl_binary_t *binary);
+void sl_codegen_double(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_string(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_call(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_func(sl_node_t *node, sl_binary_t *binary);
@@ -352,7 +352,7 @@ struct sl_lexer_s
     char *input;
     int index;
     char *buffer;
-    int number;
+    double number;
     int line;
     int col;
     int lastchar;

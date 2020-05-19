@@ -9,8 +9,6 @@ sl_ctx_t *sl_ctx_new(sl_ctx_t *parent)
     ctx->child = NULL;
     ctx->vars = NULL;
     ctx->stack = NULL;
-    //ctx->ret = NULL;
-    //ctx->retLoop = NULL;
     return ctx;
 }
 
@@ -33,8 +31,6 @@ void sl_ctx_free(sl_ctx_t *ctx)
     /* while(sl_vector_size(ctx->stack))
         sl_value_free(sl_vector_pop(ctx->stack), 1);*/
     sl_vector_free(ctx->stack);
-    //free(ctx->ret);
-    //free(ctx->retLoop);
 
     if (ctx->parent)
         ctx->parent->child = NULL;

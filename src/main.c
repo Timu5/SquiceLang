@@ -22,19 +22,19 @@ int balanced()
     int par = 0;
     int bra = 0;
     int squ = 0;
-    while(input_buffer[i] != '\0')
+    while (input_buffer[i] != '\0')
     {
-        if(input_buffer[i] == '(')
+        if (input_buffer[i] == '(')
             par++;
-        if(input_buffer[i] == ')')
+        if (input_buffer[i] == ')')
             par--;
-        if(input_buffer[i] == '[')
+        if (input_buffer[i] == '[')
             squ++;
-        if(input_buffer[i] == ']')
+        if (input_buffer[i] == ']')
             squ--;
-        if(input_buffer[i] == '{')
+        if (input_buffer[i] == '{')
             bra++;
-        if(input_buffer[i] == '}')
+        if (input_buffer[i] == '}')
             bra--;
         i++;
     }
@@ -46,7 +46,8 @@ void getstring()
     printf(">>> ");
     fgets(input_buffer, 255, stdin);
 
-    while(!balanced()) {
+    while (!balanced())
+    {
         printf("... ");
         fgets(input_buffer + strlen(input_buffer), 255, stdin);
     }

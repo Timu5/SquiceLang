@@ -87,15 +87,32 @@ int sl_gettoken(sl_lexer_t *lexer)
     }
     else if (isdigit(lexer->lastchar))
     {
+        double value = 0.0;
+        int exponent = 0;
         int ptr = 0;
         do
         {
-            lexer->buffer[ptr++] = (char)lexer->lastchar;
+            value = value * 10 + (lexer->lastchar - '0');
             nextchar(lexer);
-        } while (isalnum(lexer->lastchar));
-        lexer->buffer[ptr] = 0;
+        } while (isdigit(lexer->lastchar));
+        if(lexer->lastchar == '.')
+        {
+            nextchar(lexer);
+            do 
+            {
+                value = value * 10 + (lexer->lastchar - '0');
+                exponent--;
+                nextchar(lexer);
+            } while (isdigit(lexer->lastchar));
+        }
+        /* TODO: add e notation*/
 
-        lexer->number = (int)strtol(lexer->buffer, NULL, 0);
+        while(exponent < 0)
+        {
+            value *= 0.1;
+            exponent++;
+        }
+        lexer->number = value;
 
         return SL_TOKEN_NUMBER;
     }

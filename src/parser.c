@@ -39,7 +39,7 @@ sl_node_t *primary(sl_parser_t *parser)
     sl_node_t *prim = NULL;
     if (parser->lasttoken == SL_TOKEN_NUMBER)
     {
-        prim = node_int(parser->lexer->number);
+        prim = node_number(parser->lexer->number);
         nexttoken(parser);
     }
     else if (parser->lasttoken == SL_TOKEN_STRING)
