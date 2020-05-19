@@ -64,7 +64,7 @@ void sl_codegen_call(sl_node_t *node, sl_binary_t *binary)
         n->codegen(n, binary);
     }
 
-    sl_bytecode_emitint(binary, SL_OPCODE_PUSHN, i);
+    sl_bytecode_emitdouble(binary, SL_OPCODE_PUSHN, (double)i);
 
     node->call.func->codegen(node->call.func, binary);
 
