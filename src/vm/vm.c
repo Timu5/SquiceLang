@@ -133,6 +133,9 @@ void sl_exec(sl_ctx_t * global, char * opcodes, int size)
         case SL_OPCODE_PUSHN:
             sl_vector_push(global->stack, sl_value_number(getdouble(opcodes, &ip)));
             break;
+        case SL_OPCODE_PUSHI:
+            sl_vector_push(global->stack, sl_value_number(getint(opcodes, &ip)));
+            break;
         case SL_OPCODE_PUSHS:
             sl_vector_push(global->stack, sl_value_string(getstr(opcodes, &ip)));
             break;
