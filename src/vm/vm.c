@@ -46,6 +46,9 @@ void dis(char *opcodes, long fsize)
         case SL_OPCODE_NOP:
             printf("NOP");
             break;
+        case SL_OPCODE_PUSHI:
+            printf("pushi %d", getint(opcodes, &ip));
+            break;
         case SL_OPCODE_PUSHN:
             printf("pushn %f", getdouble(opcodes, &ip));
             break;

@@ -6,7 +6,7 @@ void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
 {
     for (int i = 0; i < sl_vector_size(node->root.funcs->block); i++)
     {
-        int adr = sl_bytecode_emitint(binary, SL_OPCODE_PUSHN, 0x22222222);
+        int adr = sl_bytecode_emitint(binary, SL_OPCODE_PUSHI, 0x22222222);
         sl_bytecode_emitstr(binary, SL_OPCODE_STOREFN, node->root.funcs->block[i]->func.name);
 
         char *name = sl_mprintf("func_%s", node->root.funcs->block[i]->func.name);
@@ -64,7 +64,7 @@ void sl_codegen_call(sl_node_t *node, sl_binary_t *binary)
         n->codegen(n, binary);
     }
 
-    sl_bytecode_emitdouble(binary, SL_OPCODE_PUSHN, (double)i);
+    sl_bytecode_emitint(binary, SL_OPCODE_PUSHI, i);
 
     node->call.func->codegen(node->call.func, binary);
 
