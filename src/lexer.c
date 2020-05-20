@@ -89,24 +89,50 @@ int sl_gettoken(sl_lexer_t *lexer)
     {
         double value = 0.0;
         int exponent = 0;
-        int ptr = 0;
         do
         {
             value = value * 10 + (lexer->lastchar - '0');
             nextchar(lexer);
         } while (isdigit(lexer->lastchar));
+        
         if(lexer->lastchar == '.')
         {
             nextchar(lexer);
-            do 
+            while (isdigit(lexer->lastchar))
             {
                 value = value * 10 + (lexer->lastchar - '0');
                 exponent--;
                 nextchar(lexer);
-            } while (isdigit(lexer->lastchar));
+            }
         }
-        /* TODO: add e notation*/
 
+        if(lexer->lastchar == 'e' || lexer->lastchar == 'E')
+        {
+            int sign = 1;
+            int i = 0;
+            nextchar(lexer);
+            if(lexer->lastchar == '-')
+            {
+                sign = -1;
+            }
+            else if(lexer->lastchar == '+')
+            {
+                /* do nothing when positive :) */
+            }
+            nextchar(lexer);
+            while(isdigit(lexer->lastchar))
+            {
+                i = i * 10 + (lexer->lastchar - '0');
+                nextchar(lexer);
+            }
+            exponent += sign * i;
+        }
+        
+        while(exponent > 0)
+        {
+            value *= 10;
+            exponent--;
+        }
         while(exponent < 0)
         {
             value *= 0.1;
