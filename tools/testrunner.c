@@ -11,8 +11,8 @@
 #define RESET "\033[0m"
 
 char *tests[] = {
-    "tests/test1.sqlang"
-    //"test2.sqlang"
+    "tests/test1_logic.sqlang",
+    "tests/test2_arithmetic.sqlang"
     };
 
 static void assertfn(sl_ctx_t *ctx)

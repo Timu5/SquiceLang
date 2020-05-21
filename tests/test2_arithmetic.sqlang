@@ -1,0 +1,12 @@
+// basic operators
+assert(2+2==4);
+assert(3+(-2)==1);
+assert(-3+4==1);
+assert(-1-1==-2);
+assert(2*3==6);
+assert(2*-3==-6);
+assert(4/2==2);
+
+// scientific notation
+assert(1e2 == 100);
+assert(1e-2 == 0.01);
