@@ -114,12 +114,13 @@ int sl_gettoken(sl_lexer_t *lexer)
             if(lexer->lastchar == '-')
             {
                 sign = -1;
+                nextchar(lexer);
             }
             else if(lexer->lastchar == '+')
             {
                 /* do nothing when positive :) */
+                nextchar(lexer);
             }
-            nextchar(lexer);
             while(isdigit(lexer->lastchar))
             {
                 i = i * 10 + (lexer->lastchar - '0');
