@@ -247,6 +247,7 @@ int sl_gettoken(sl_lexer_t *lexer)
             tmp = SL_TOKEN_LESSEQUAL;
         else
             return SL_TOKEN_LCHEVR;
+        break;
     }
     case '>':
     {
@@ -254,6 +255,7 @@ int sl_gettoken(sl_lexer_t *lexer)
             tmp = SL_TOKEN_MOREEQUAL;
         else
             return SL_TOKEN_RCHEVR;
+        break;
     }
     }
 
