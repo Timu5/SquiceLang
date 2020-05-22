@@ -89,13 +89,36 @@ int sl_gettoken(sl_lexer_t *lexer)
     {
         double value = 0.0;
         int exponent = 0;
-        do
+
+        if (lexer->lastchar == '0')
+        {
+            nextchar(lexer);
+            if (lexer->lastchar == 'x' || lexer->lastchar == 'X')
+            {
+                nextchar(lexer);
+                while (isdigit(lexer->lastchar) || (lexer->lastchar >= 'A' && lexer->lastchar <= 'F') || (lexer->lastchar >= 'a' && lexer->lastchar <= 'f'))
+                {
+                    if (lexer->lastchar >= 'a')
+                        value = value * 16 + (lexer->lastchar - 'a' + 10);
+                    else if (lexer->lastchar >= 'A')
+                        value = value * 16 + (lexer->lastchar - 'A' + 10);
+                    else
+                        value = value * 16 + (lexer->lastchar - '0');
+                    nextchar(lexer);
+                }
+                lexer->number = value;
+
+                return SL_TOKEN_NUMBER;
+            }
+        }
+
+        while (isdigit(lexer->lastchar))
         {
             value = value * 10 + (lexer->lastchar - '0');
             nextchar(lexer);
-        } while (isdigit(lexer->lastchar));
-        
-        if(lexer->lastchar == '.')
+        }
+
+        if (lexer->lastchar == '.')
         {
             nextchar(lexer);
             while (isdigit(lexer->lastchar))

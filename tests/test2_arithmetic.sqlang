@@ -10,3 +10,6 @@ assert(4/2==2);
 // scientific notation
 assert(1e2 == 100);
 assert(1e-2 == 0.01);
+
+// hex
+assert(0xff == 255);
