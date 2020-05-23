@@ -172,6 +172,50 @@ int sl_gettoken(sl_lexer_t *lexer)
         int ptr = 0;
         while (lexer->lastchar != '"' && lexer->lastchar > 0)
         {
+            if (lexer->lastchar == '\\')
+            {
+                nextchar(lexer);
+                switch (lexer->lastchar)
+                {
+                case 'a':
+                    lexer->buffer[ptr++] = '\a';
+                    break;
+                case 'b':
+                    lexer->buffer[ptr++] = '\b';
+                    break;
+                case 'e':
+                    lexer->buffer[ptr++] = '\e';
+                    break;
+                case 'f':
+                    lexer->buffer[ptr++] = '\f';
+                    break;
+                case 'n':
+                    lexer->buffer[ptr++] = '\n';
+                    break;
+                case 'r':
+                    lexer->buffer[ptr++] = '\r';
+                    break;
+                case 't':
+                    lexer->buffer[ptr++] = '\t';
+                    break;
+                case 'v':
+                    lexer->buffer[ptr++] = '\v';
+                    break;
+                case '\\':
+                    lexer->buffer[ptr++] = '\\';
+                    break;
+                case '\'':
+                    lexer->buffer[ptr++] = '\'';
+                    break;
+                case '\"':
+                    lexer->buffer[ptr++] = '\"';
+                    break;
+                default:
+                    throw("Unexpected character after \\ in string");
+                    break;
+                }
+            }
+
             lexer->buffer[ptr++] = (char)lexer->lastchar;
             nextchar(lexer);
         }
