@@ -38,7 +38,7 @@ void dis(char *opcodes, long fsize)
         if (ip >= fsize)
             break;
         int byte = opcodes[ip];
-        printf("%d:\t\t\t\t", ip);
+        printf("%d %x:\t\t\t\t", ip, byte);
         ip += 1;
 
         switch (byte)

@@ -7,10 +7,10 @@
 
 sl_lexer_t *sl_lexer_new(char *input)
 {
-    sl_lexer_t *lexer = (sl_lexer_t*)malloc(sizeof(sl_lexer_t));
+    sl_lexer_t *lexer = (sl_lexer_t *)malloc(sizeof(sl_lexer_t));
     lexer->input = input;
     lexer->index = 0;
-    lexer->buffer = (char*)malloc(255);
+    lexer->buffer = (char *)malloc(255);
     lexer->number = 0;
     lexer->line = 0;
     lexer->col = 0;
@@ -26,7 +26,7 @@ void sl_lexer_free(sl_lexer_t *lexer)
 
 static int nextchar(sl_lexer_t *lexer)
 {
-    if(lexer->input[lexer->index] == 0)
+    if (lexer->input[lexer->index] == 0)
     {
         lexer->lastchar = EOF;
     }
@@ -35,7 +35,7 @@ static int nextchar(sl_lexer_t *lexer)
         lexer->lastchar = lexer->input[lexer->index];
         lexer->index++;
     }
-    
+
     if (lexer->lastchar == '\n')
     {
         lexer->line++;
@@ -129,35 +129,35 @@ int sl_gettoken(sl_lexer_t *lexer)
             }
         }
 
-        if(lexer->lastchar == 'e' || lexer->lastchar == 'E')
+        if (lexer->lastchar == 'e' || lexer->lastchar == 'E')
         {
             int sign = 1;
             int i = 0;
             nextchar(lexer);
-            if(lexer->lastchar == '-')
+            if (lexer->lastchar == '-')
             {
                 sign = -1;
                 nextchar(lexer);
             }
-            else if(lexer->lastchar == '+')
+            else if (lexer->lastchar == '+')
             {
                 /* do nothing when positive :) */
                 nextchar(lexer);
             }
-            while(isdigit(lexer->lastchar))
+            while (isdigit(lexer->lastchar))
             {
                 i = i * 10 + (lexer->lastchar - '0');
                 nextchar(lexer);
             }
             exponent += sign * i;
         }
-        
-        while(exponent > 0)
+
+        while (exponent > 0)
         {
             value *= 10;
             exponent--;
         }
-        while(exponent < 0)
+        while (exponent < 0)
         {
             value *= 0.1;
             exponent++;
@@ -215,8 +215,10 @@ int sl_gettoken(sl_lexer_t *lexer)
                     break;
                 }
             }
-
-            lexer->buffer[ptr++] = (char)lexer->lastchar;
+            else
+            {
+                lexer->buffer[ptr++] = (char)lexer->lastchar;
+            }
             nextchar(lexer);
         }
         if (lexer->lastchar < 0)
