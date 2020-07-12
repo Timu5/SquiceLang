@@ -45,6 +45,8 @@ static int nextchar(sl_lexer_t *lexer)
     {
         lexer->col++;
     }
+    if(lexer->lastchar < -1)
+        lexer->lastchar = -1;
     return lexer->lastchar;
 }
 
