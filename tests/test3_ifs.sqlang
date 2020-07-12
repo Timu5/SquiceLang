@@ -1,0 +1,55 @@
+if(1) assert(1);
+if(0) assert(0);
+
+if(1) assert(1);
+else assert(0);
+
+if(0) assert(0);
+else assert(1);
+
+if(1) if(1) assert(1); else assert(0);
+else assert(0);
+
+if(0) 
+{
+    assert(0);
+}
+else 
+{
+    assert(1);
+}
+
+if(1) 
+{
+    assert(1);
+}
+else 
+{
+    assert(0);
+}
+
+if(0) 
+{
+    assert(0);
+}
+else if(1)
+{
+    assert(1);
+}
+else 
+{
+    assert(0);
+}
+
+if(0) 
+{
+    assert(0);
+}
+else if(0)
+{
+    assert(0);
+}
+else 
+{
+    assert(1);
+}
