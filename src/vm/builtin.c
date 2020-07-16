@@ -85,10 +85,46 @@ static void len(sl_ctx_t *ctx)
     throw("Function len need argument of type string or array.");
 }
 
+static void ord(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    if (n != 1)
+        throw("Function ord takes exactly 1 argument");
+
+    sl_value_t *v = sl_vector_pop(ctx->stack);
+    if (v->type == SL_VALUE_STRING)
+    {
+        sl_vector_push(ctx->stack, sl_value_number(v->string[0]));
+        return;
+    }
+
+    throw("Function ord need argument of type string.");
+}
+
+static void chr(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    if (n != 1)
+        throw("Function chr takes exactly 1 argument");
+
+    sl_value_t *v = sl_vector_pop(ctx->stack);
+    if (v->type == SL_VALUE_NUMBER)
+    {
+        char *data = (char*)mallock(sizeof(char));
+        data[0] = (char)v->number; 
+        sl_vector_push(ctx->stack, sl_value_string(data));
+        return;
+    }
+
+    throw("Function chr need argument of type number.");
+}
+
 void sl_builtin_install(sl_ctx_t *ctx)
 {
     sl_ctx_addfn(ctx, "print", 0, print);
     sl_ctx_addfn(ctx, "list", 0, list);
     sl_ctx_addfn(ctx, "dict", 0, dict);
     sl_ctx_addfn(ctx, "len", 0, len);
+    sl_ctx_addfn(ctx, "ord", 0, ord);
+    sl_ctx_addfn(ctx, "chr", 0, ord);
 }
