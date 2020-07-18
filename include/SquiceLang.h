@@ -226,6 +226,7 @@ enum SL_OPCODE
 {
     SL_OPCODE_NOP,
     SL_OPCODE_PUSHN, // push number
+    SL_OPCODE_PUSHI, // push integer
     SL_OPCODE_PUSHS, // push string
     SL_OPCODE_PUSHV, // push value
     SL_OPCODE_POP,   // remove element from stack
@@ -455,5 +456,6 @@ void sl_value_free(sl_value_t *val);
 void sl_exec(sl_ctx_t *global, char *opcodes, int size);
 
 void sl_eval_str(sl_ctx_t *ctx, char *code);
+void sl_dis_str(sl_ctx_t *ctx, char *code);
 
 #endif
