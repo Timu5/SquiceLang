@@ -1,3 +1,6 @@
+#define SL_IMPLEMENTATION
+
+#include <stdio.h>
 #include "SquiceLang.h"
 #include "main.c"
 
