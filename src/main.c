@@ -28,6 +28,27 @@ void sl_eval_str(sl_ctx_t *ctx, char *code)
     sl_exec(ctx, bin->block, bin->size);
 }
 
+void sl_eval_file(sl_ctx_t *ctx, char *filename)
+{
+    FILE *fd = fopen(filename, "r");
+    if(!fd)
+        throw("Cannot open file %s", filename);
+    
+    fseek(fd, 0, SEEK_END);
+    long fsize = ftell(fd);
+    fseek(fd, 0, SEEK_SET);
+
+    char *string = (char*)malloc(fsize + 1);
+    fread(string, 1, fsize, fd);
+    fclose(fd);
+
+    string[fsize] = 0;
+
+    sl_eval_str(ctx, string);
+
+    free(string);
+}
+
 void sl_dis_str(sl_ctx_t *ctx, char *code)
 {
     sl_parser_t *parser = sl_parser_new(code);
