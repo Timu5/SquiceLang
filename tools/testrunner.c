@@ -15,7 +15,8 @@ char *tests[] = {
     "tests/test2_arithmetic.sqlang",
     "tests/test3_ifs.sqlang",
     "tests/test4_loop.sqlang",
-    "tests/test5_string.sqlang"
+    "tests/test5_string.sqlang",
+    "tests/test6_list.sqlang"
     };
 
 static void assertfn(sl_ctx_t *ctx)
