@@ -263,7 +263,7 @@ sl_node_t *statment(sl_parser_t *parser)
         sl_node_t *body2 = statment(parser);
 
         return node_loop(arg2, body2);
-    case SL_TOKEN__FN:
+    case SL_TOKEN_FN:
         nexttoken(parser);
         match(parser, SL_TOKEN_IDENT);
 

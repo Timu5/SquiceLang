@@ -79,7 +79,7 @@ int sl_gettoken(sl_lexer_t *lexer)
         else if (strcmp(lexer->buffer, "let") == 0)
             return SL_TOKEN_LET;
         else if (strcmp(lexer->buffer, "fn") == 0)
-            return SL_TOKEN__FN;
+            return SL_TOKEN_FN;
         else if (strcmp(lexer->buffer, "return") == 0)
             return SL_TOKEN_RETURN;
         else if (strcmp(lexer->buffer, "break") == 0)

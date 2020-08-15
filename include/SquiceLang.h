@@ -312,7 +312,7 @@ enum SL_TOKEN
     SL_TOKEN_STRING,
 
     //keyword
-    SL_TOKEN__FN,
+    SL_TOKEN_FN,
     SL_TOKEN_RETURN,
     SL_TOKEN_LET,
     SL_TOKEN_IF,
