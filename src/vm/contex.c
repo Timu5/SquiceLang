@@ -72,11 +72,13 @@ sl_fn_t *sl_ctx_getfn(sl_ctx_t *ctx, char *name)
     return v->fn;
 }
 
-void sl_ctx_addfn(sl_ctx_t *ctx, char *name, int address, void (*fn)(sl_ctx_t *))
+void sl_ctx_addfn(sl_ctx_t *ctx, sl_binary_t *binary, char *name, int address, void (*fn)(sl_ctx_t *))
 {
     sl_fn_t *func = (sl_fn_t *)malloc(sizeof(sl_fn_t));
     func->address = address;
     func->native = fn;
+    func->binary = binary;
+    func->ctx = ctx;
 
     sl_value_t *v = sl_value_fn(func);
 

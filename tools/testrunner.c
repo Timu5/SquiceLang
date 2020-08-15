@@ -37,7 +37,7 @@ int main(void)
 
         sl_ctx_t *ctx = sl_ctx_new(NULL);
         sl_builtin_install(ctx);
-        sl_ctx_addfn(ctx, "assert", 0, assertfn);
+        sl_ctx_addfn(ctx, NULL, "assert", 0, assertfn);
 
         try
         {

@@ -110,7 +110,7 @@ static void chr(sl_ctx_t *ctx)
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_NUMBER)
     {
-        char *data = (char*)mallock(sizeof(char));
+        char *data = (char*)malloc(sizeof(char));
         data[0] = (char)v->number; 
         sl_vector_push(ctx->stack, sl_value_string(data));
         return;
@@ -121,10 +121,10 @@ static void chr(sl_ctx_t *ctx)
 
 void sl_builtin_install(sl_ctx_t *ctx)
 {
-    sl_ctx_addfn(ctx, "print", 0, print);
-    sl_ctx_addfn(ctx, "list", 0, list);
-    sl_ctx_addfn(ctx, "dict", 0, dict);
-    sl_ctx_addfn(ctx, "len", 0, len);
-    sl_ctx_addfn(ctx, "ord", 0, ord);
-    sl_ctx_addfn(ctx, "chr", 0, ord);
+    sl_ctx_addfn(ctx, NULL, "print", 0, print);
+    sl_ctx_addfn(ctx, NULL, "list", 0, list);
+    sl_ctx_addfn(ctx, NULL, "dict", 0, dict);
+    sl_ctx_addfn(ctx, NULL, "len", 0, len);
+    sl_ctx_addfn(ctx, NULL, "ord", 0, ord);
+    sl_ctx_addfn(ctx, NULL, "chr", 0, ord);
 }

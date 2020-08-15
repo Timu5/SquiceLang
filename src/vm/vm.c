@@ -111,7 +111,7 @@ void dis(char *opcodes, long fsize)
     ip = 0;
 }
 
-void sl_exec(sl_ctx_t * global, char * opcodes, int size)
+void sl_exec(sl_ctx_t *global, sl_binary_t *binary, char *opcodes, int size)
 {
     int ip = 0;
     long fsize = 0;
@@ -153,7 +153,7 @@ void sl_exec(sl_ctx_t * global, char * opcodes, int size)
             sl_vector_pop(global->stack);
             break;
         case SL_OPCODE_STOREFN:
-            sl_ctx_addfn(context, getstr(opcodes, &ip), (int)sl_vector_pop(global->stack)->number, NULL);
+            sl_ctx_addfn(context, binary, getstr(opcodes, &ip), (int)sl_vector_pop(global->stack)->number, NULL);
             break;
         case SL_OPCODE_STORE:
             sl_ctx_addvar(context, getstr(opcodes, &ip), sl_vector_pop(global->stack));
