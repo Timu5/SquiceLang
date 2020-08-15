@@ -25,7 +25,7 @@ void sl_eval_str(sl_ctx_t *ctx, char *code)
     sl_node_free(tree);
 
     sl_bytecode_fill(bin);
-    sl_exec(ctx, bin, bin->block, bin->size);
+    sl_exec(ctx, ctx, bin, 0);
 }
 
 void sl_eval_file(sl_ctx_t *ctx, char *filename)
@@ -67,7 +67,7 @@ void sl_dis_str(sl_ctx_t *ctx, char *code)
     }
     printf("\n");
     dis(bin->block, bin->size);
-    sl_exec(ctx, bin, bin->block, bin->size);
+    sl_exec(ctx, ctx, bin, 0);
 }
 
 

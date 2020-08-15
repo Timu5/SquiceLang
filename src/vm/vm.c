@@ -111,13 +111,11 @@ void dis(char *opcodes, long fsize)
     ip = 0;
 }
 
-void sl_exec(sl_ctx_t *global, sl_binary_t *binary, char *opcodes, int size)
+void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip)
 {
-    int ip = 0;
-    long fsize = 0;
+    char *opcodes = binary->block;
+    int size = binary->size;
     sl_vector(int) call_stack = NULL;
-    
-    sl_ctx_t *context = global;
 
     while (1)
     {
@@ -181,20 +179,37 @@ void sl_exec(sl_ctx_t *global, sl_binary_t *binary, char *opcodes, int size)
             {
                 throw("Can only call functions!");
             }
-            if (fn_value->fn->native != NULL)
+            sl_fn_t *fn = fn_value->fn;
+            if (fn->native != NULL)
             {
-                fn_value->fn->native(global);
+                fn->native(global);
             }
             else
             {
-                context = sl_ctx_new(context);
-                if (byte == SL_OPCODE_CALLM)
+                sl_binary_t *fn_binary = fn->binary;
+                if(binary == fn_binary)
                 {
-                    sl_ctx_addvar(context, "this", sl_vector_pop(global->stack)); // add "this" variable
+                    // same module :)
+                    context = sl_ctx_new(context);
+                    if (byte == SL_OPCODE_CALLM)
+                    {
+                        sl_ctx_addvar(context, "this", sl_vector_pop(global->stack)); // add "this" variable
+                    }
+                    sl_vector_push(call_stack, ip);
+                    //sl_vector_pop(global->stack);
+                    ip = fn->address;
                 }
-                sl_vector_push(call_stack, ip);
-                //sl_vector_pop(global->stack);
-                ip = fn_value->fn->address;
+                else
+                {
+                    // diffrent module :(
+                    sl_ctx_t *n_context = sl_ctx_new(fn->ctx);
+                    if (byte == SL_OPCODE_CALLM)
+                    {
+                        sl_ctx_addvar(n_context, "this", sl_vector_pop(global->stack)); // add "this" variable
+                    }
+                    sl_exec(global, n_context, fn->binary, fn->address);
+                    // what with return value ???? :(
+                }
             }
         }
             break;

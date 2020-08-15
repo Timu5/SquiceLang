@@ -455,7 +455,7 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a);
 
 void sl_value_free(sl_value_t *val);
 
-void sl_exec(sl_ctx_t *global, sl_binary_t *binary, char *opcodes, int size);
+void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip);
 
 void sl_eval_str(sl_ctx_t *ctx, char *code);
 void sl_dis_str(sl_ctx_t *ctx, char *code);
