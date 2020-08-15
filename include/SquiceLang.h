@@ -95,7 +95,8 @@ enum SL_NODETYPE
     SL_NODETYPE_DECL,
     SL_NODETYPE_INDEX,
     SL_NODETYPE_BLOCK,
-    SL_NODETYPE_MEMBER
+    SL_NODETYPE_MEMBER,
+    SL_NODETYPE_IMPORT
 };
 
 struct sl_binary_s;
@@ -164,6 +165,7 @@ struct sl_node_s
             struct sl_node_s *parent;
             char *name;
         } member;
+        char *import;
     };
 };
 
@@ -219,6 +221,7 @@ sl_node_t *node_decl(sl_node_t *name, sl_node_t *value);
 sl_node_t *node_index(sl_node_t *var, sl_node_t *expr);
 sl_node_t *node_block(sl_vector(sl_node_t *) list);
 sl_node_t *node_member(sl_node_t *parent, char *name);
+sl_node_t *node_import(char *name);
 
 void sl_node_print(sl_node_t *node, int ind);
 
@@ -244,7 +247,8 @@ enum SL_OPCODE
     SL_OPCODE_BRZ, // brach if zero
     SL_OPCODE_INDEX,
     SL_OPCODE_MEMBER,
-    SL_OPCODE_MEMBERD // member with parent duplicate
+    SL_OPCODE_MEMBERD, // member with parent duplicate
+    SL_OPCODE_IMPORT
 };
 
 // Structure to store bytecode in binary format
@@ -290,6 +294,7 @@ void sl_codegen_decl(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_index(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_block(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_member(sl_node_t *node, sl_binary_t *binary);
+void sl_codegen_import(sl_node_t *node, sl_binary_t *binary);
 
 sl_ctx_t *sl_ctx_new(sl_ctx_t *parent);
 void sl_ctx_free(sl_ctx_t *ctx);
@@ -319,6 +324,7 @@ enum SL_TOKEN
     SL_TOKEN_ELSE,
     SL_TOKEN_WHILE,
     SL_TOKEN_BREAK,
+    SL_TOKEN_IMPORT,
 
     SL_TOKEN_COLON,     // :
     SL_TOKEN_SEMICOLON, // ;
@@ -455,9 +461,13 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a);
 
 void sl_value_free(sl_value_t *val);
 
-void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip);
+void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name));
 
-void sl_eval_str(sl_ctx_t *ctx, char *code);
-void sl_dis_str(sl_ctx_t *ctx, char *code);
+sl_binary_t *sl_compile_str(char *code);
+sl_binary_t *sl_compile_file(char *filename);
+
+void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name));
+void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name));
+void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name));
 
 #endif

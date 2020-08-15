@@ -100,6 +100,9 @@ void dis(char *opcodes, long fsize)
         case SL_OPCODE_MEMBERD:
             printf("memberd \"%s\"", getstr(opcodes, &ip));
             break;
+        case SL_OPCODE_IMPORT:
+            printf("import \"%s\"", getstr(opcodes, &ip));
+            break;
         default:
             printf("data %x", byte);
             break;
@@ -110,8 +113,7 @@ void dis(char *opcodes, long fsize)
 
     ip = 0;
 }
-
-void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip)
+void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name))
 {
     char *opcodes = binary->block;
     int size = binary->size;
@@ -207,7 +209,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip)
                     {
                         sl_ctx_addvar(n_context, "this", sl_vector_pop(global->stack)); // add "this" variable
                     }
-                    sl_exec(global, n_context, fn->binary, fn->address);
+                    sl_exec(global, n_context, fn->binary, fn->address, load_module);
                     // what with return value ???? :(
                 }
             }
@@ -257,6 +259,38 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip)
             char *name = getstr(opcodes, &ip);
             sl_vector_push(global->stack, var);
             sl_vector_push(global->stack, sl_value_member(name, var));
+            break;
+        }
+        case SL_OPCODE_IMPORT:
+        {
+            // eval module
+            char *name = getstr(opcodes, &ip);
+            if(load_module == NULL)
+                throw("Module loading not supported.");
+
+            sl_binary_t *module = load_module(name);
+            if(module == NULL)
+                throw("No such module!");
+
+            sl_ctx_t *module_ctx = sl_ctx_new(NULL);
+            sl_builtin_install(module_ctx);
+            module_ctx = sl_ctx_new(module_ctx);
+            sl_exec(module_ctx, module_ctx, module, 0, load_module);
+            
+            // load it's context into dictonary value
+            sl_vector(char*) names = NULL;
+            sl_vector(sl_value_t*) values = NULL;
+            for(int i = 0; i < sl_vector_size(module_ctx->vars); i++)
+            {
+                char* vname = module_ctx->vars[i]->name;
+                sl_value_t* value = module_ctx->vars[i]->val;
+                sl_vector_push(names, vname);
+                sl_vector_push(values, value);
+            }
+            sl_value_t *module_dict = sl_value_dict(names, values);
+
+            // assign this value to variable withing current context
+            sl_ctx_addvar(context, name, module_dict);
             break;
         }
         }

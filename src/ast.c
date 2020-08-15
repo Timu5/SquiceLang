@@ -285,6 +285,22 @@ sl_node_t *node_member(sl_node_t *parent, char *name)
     return node;
 }
 
+static void free_import(sl_node_t *node)
+{
+    free(node->import);
+    free(node);
+}
+
+sl_node_t *node_import(char *name)
+{
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_MEMBER;
+    node->import = name;
+    node->codegen = sl_codegen_import;
+    node->free = free_import;
+    return node;
+}
+
 static void printtab(int n)
 {
     for (int i = 0; i < n; i++)
@@ -380,5 +396,9 @@ void sl_node_print(sl_node_t *node, int ind)
         printf("index\n");
         sl_node_print(node->index.var, ind + 1);
         sl_node_print(node->index.expr, ind + 1);
+        break;
+    case SL_NODETYPE_IMPORT:
+        printf("import \"%s\"", node->string);
+        break;
     }
 }

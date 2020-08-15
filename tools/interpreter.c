@@ -43,6 +43,20 @@ void getstring()
     }
 }
 
+sl_binary_t *load_module(char *name)
+{
+    FILE *fd;
+    char fullname[255] = { 0 };
+    strcpy(fullname, name);
+    strcat(fullname, ".sqlang");
+    if((fd = fopen(fullname, "r")) != NULL)
+    {
+        fclose(fd);
+        return sl_compile_file(fullname);
+    }
+    return NULL;
+}
+
 int main(int argc, char **argv)
 {
     sl_ctx_t *ctx = sl_ctx_new(NULL);
@@ -53,7 +67,7 @@ int main(int argc, char **argv)
         try
         {
             getstring();
-            sl_dis_str(ctx, input_buffer);
+            sl_dis_str(ctx, input_buffer, load_module);
         }
         catch
         {

@@ -189,3 +189,8 @@ void sl_codegen_member(sl_node_t *node, sl_binary_t *binary)
     node->member.parent->codegen(node->member.parent, binary);
     sl_bytecode_emitstr(binary, SL_OPCODE_MEMBER, node->member.name);
 }
+
+void sl_codegen_import(sl_node_t *node, sl_binary_t *binary)
+{
+    sl_bytecode_emitstr(binary, SL_OPCODE_IMPORT, node->import);
+}

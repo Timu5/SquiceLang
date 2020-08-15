@@ -84,6 +84,8 @@ int sl_gettoken(sl_lexer_t *lexer)
             return SL_TOKEN_RETURN;
         else if (strcmp(lexer->buffer, "break") == 0)
             return SL_TOKEN_BREAK;
+        else if (strcmp(lexer->buffer, "import") == 0)
+            return SL_TOKEN_IMPORT;
 
         return SL_TOKEN_IDENT;
     }
@@ -350,6 +352,7 @@ char *sl_tokenstr(int token)
         "SL_TOKEN_ELSE",
         "SL_TOKEN_WHILE",
         "SL_TOKEN_BREAK",
+        "SL_TOKEN_IMPORT",
 
         "SL_TOKEN_SEMICOLON", // ;
         "SL_TOKEN_COMMA",     // ,

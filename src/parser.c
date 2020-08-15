@@ -200,7 +200,8 @@ sl_node_t *expr(sl_parser_t *parser, int min)
 // while := 'while' '(' expr ')' statement
 // return := 'return' ';' | 'return' expr ';'
 // break := 'break' ';'
-// statement := block | let | if | while | funca | return | break | expr ';'
+// import := 'import' ident ';'
+// statement := block | let | if | while | funca | return | break | import | expr ';'
 sl_node_t *statment(sl_parser_t *parser)
 {
     switch (parser->lasttoken)
@@ -305,6 +306,16 @@ sl_node_t *statment(sl_parser_t *parser)
         nexttoken(parser);
 
         return node_break();
+    case SL_TOKEN_IMPORT:
+        nexttoken(parser);
+        match(parser, SL_TOKEN_IDENT);
+        char *module_name = strdup(parser->lexer->buffer);
+
+        nexttoken(parser);
+        match(parser, SL_TOKEN_SEMICOLON);
+
+        nexttoken(parser);
+        return node_import(module_name);
     default:;
         sl_node_t *e = expr(parser, 0);
         match(parser, SL_TOKEN_SEMICOLON);

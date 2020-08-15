@@ -14,7 +14,7 @@
 #include "parser.c"
 #include "utils.c"
 
-void sl_eval_str(sl_ctx_t *ctx, char *code)
+sl_binary_t *sl_compile_str(char *code)
 {
     sl_parser_t *parser = sl_parser_new(code);
     sl_node_t *tree = sl_parse(parser);
@@ -23,12 +23,18 @@ void sl_eval_str(sl_ctx_t *ctx, char *code)
     sl_binary_t *bin = sl_binary_new();
     tree->codegen(tree, bin);
     sl_node_free(tree);
-
     sl_bytecode_fill(bin);
-    sl_exec(ctx, ctx, bin, 0);
+
+    return bin;
 }
 
-void sl_eval_file(sl_ctx_t *ctx, char *filename)
+void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name))
+{
+    sl_binary_t *bin = sl_compile_str(code);
+    sl_exec(ctx, ctx, bin, 0, load_module);
+}
+
+sl_binary_t *sl_compile_file(char *filename)
 {
     FILE *fd = fopen(filename, "r");
     if(!fd)
@@ -43,13 +49,21 @@ void sl_eval_file(sl_ctx_t *ctx, char *filename)
     fclose(fd);
 
     string[fsize] = 0;
-
-    sl_eval_str(ctx, string);
+    
+    sl_binary_t *bin = sl_compile_str(string);
 
     free(string);
+
+    return bin;
 }
 
-void sl_dis_str(sl_ctx_t *ctx, char *code)
+void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name))
+{
+    sl_binary_t *bin = sl_compile_file(filename);
+    sl_exec(ctx, ctx, bin, 0, load_module);
+}
+
+void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name))
 {
     sl_parser_t *parser = sl_parser_new(code);
     sl_node_t *tree = sl_parse(parser);
@@ -67,7 +81,7 @@ void sl_dis_str(sl_ctx_t *ctx, char *code)
     }
     printf("\n");
     dis(bin->block, bin->size);
-    sl_exec(ctx, ctx, bin, 0);
+    sl_exec(ctx, ctx, bin, 0, load_module);
 }
 
 
