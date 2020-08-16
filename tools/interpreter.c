@@ -15,18 +15,15 @@ int balanced()
     int squ = 0;
     while (input_buffer[i] != '\0')
     {
-        if (input_buffer[i] == '(')
-            par++;
-        if (input_buffer[i] == ')')
-            par--;
-        if (input_buffer[i] == '[')
-            squ++;
-        if (input_buffer[i] == ']')
-            squ--;
-        if (input_buffer[i] == '{')
-            bra++;
-        if (input_buffer[i] == '}')
-            bra--;
+        switch (input_buffer[i])
+        {
+            case '(': par++; break;
+            case ')': par--; break;
+            case '[': squ++; break;
+            case ']': squ--; break;
+            case '{': bra++; break;
+            case '}': bra--; break;
+        }
         i++;
     }
     return par == 0 && bra == 0 && squ == 0;
