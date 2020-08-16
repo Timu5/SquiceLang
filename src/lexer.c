@@ -59,14 +59,14 @@ int sl_gettoken(sl_lexer_t *lexer)
     {
         return SL_TOKEN_EOF;
     }
-    else if (isalpha(lexer->lastchar))
+    else if (isalpha(lexer->lastchar) || lexer->lastchar == '_')
     {
         int ptr = 0;
         do
         {
             lexer->buffer[ptr++] = (char)tolower(lexer->lastchar);
             nextchar(lexer);
-        } while (isalpha(lexer->lastchar) || isdigit(lexer->lastchar));
+        } while (isalpha(lexer->lastchar) || isdigit(lexer->lastchar) || lexer->lastchar == '_');
 
         lexer->buffer[ptr] = 0;
 
