@@ -16,7 +16,8 @@ char *tests[] = {
     "tests/test3_ifs.sqlang",
     "tests/test4_loop.sqlang",
     "tests/test5_string.sqlang",
-    "tests/test6_list.sqlang"
+    "tests/test6_list.sqlang",
+    "tests/test7_module.sqlang",
     };
 
 static void assertfn(sl_ctx_t *ctx)
@@ -29,6 +30,21 @@ static void assertfn(sl_ctx_t *ctx)
     }
 }
 
+sl_binary_t *load_module(char *name)
+{
+    FILE *fd;
+    char fullname[255] = { 0 };
+    strcpy(fullname, "tests/");
+    strcat(fullname, name);
+    strcat(fullname, ".sqlang");
+    if((fd = fopen(fullname, "r")) != NULL)
+    {
+        fclose(fd);
+        return sl_compile_file(fullname);
+    }
+    return NULL;
+}
+
 int main(void)
 {
     for(int i = 0; i < sizeof(tests)/sizeof(char*);i++)
@@ -37,11 +53,12 @@ int main(void)
 
         sl_ctx_t *ctx = sl_ctx_new(NULL);
         sl_builtin_install(ctx);
+        global = ctx;
         sl_ctx_addfn(ctx, NULL, "assert", 0, assertfn);
 
         try
         {
-            sl_eval_file(ctx, tests[i]);
+            sl_eval_file(ctx, tests[i], load_module);
             printf(GREEN "passed" RESET "\n");
         }
         catch

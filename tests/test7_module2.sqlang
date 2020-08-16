@@ -1,0 +1,11 @@
+let a = 3;
+
+fn b()
+{
+    return 11;
+}
+
+fn c(arg)
+{
+    return arg + 1;
+}

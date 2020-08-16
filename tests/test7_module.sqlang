@@ -1,0 +1,5 @@
+import test7_module2;
+
+assert(test7_module2.a == 3);
+assert(test7_module2.b() == 11);
+assert(test7_module2.c(1) == 2);
