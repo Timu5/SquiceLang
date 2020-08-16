@@ -5,6 +5,7 @@
 #include "main.c"
 
 char input_buffer[255];
+sl_ctx_t *global;
 
 int balanced()
 {
@@ -61,6 +62,7 @@ int main(int argc, char **argv)
 {
     sl_ctx_t *ctx = sl_ctx_new(NULL);
     sl_builtin_install(ctx);
+    global = ctx;
 
     while (1)
     {

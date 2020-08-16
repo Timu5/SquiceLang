@@ -18,7 +18,10 @@ char *tests[] = {
     "tests/test5_string.sqlang",
     "tests/test6_list.sqlang",
     "tests/test7_module.sqlang",
+    "tests/test8_gc.sqlang"
     };
+
+sl_ctx_t *global;
 
 static void assertfn(sl_ctx_t *ctx)
 {
@@ -65,6 +68,7 @@ int main(void)
         {
             printf(RED "failed" RESET "(%s)\n", ex_msg);
         }
+        sl_gc_freeall();
     }
     return 0;
 }

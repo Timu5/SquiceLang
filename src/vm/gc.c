@@ -25,7 +25,7 @@ sl_value_t *sl_gc_alloc_value()
     usedmem += 1;
     if (usedmem >= maxmem)
     {
-        //sl_gc_collect(global);
+        sl_gc_collect(global);
         usedmem = sl_vector_size(values);
         if (usedmem >= maxmem)
             maxmem = maxmem * 2;
@@ -36,6 +36,9 @@ sl_value_t *sl_gc_alloc_value()
 
 static void gc_mark(sl_value_t *val)
 {
+    if(val->markbit == 1)
+        return;
+
     val->markbit = 1;
     if (val->type == SL_VALUE_REF)
     {
@@ -45,12 +48,29 @@ static void gc_mark(sl_value_t *val)
     else if (val->type == SL_VALUE_ARRAY)
     {
         for (int j = (int)sl_vector_size(val->array) - 1; j >= 0; j--)
-            val->array[j]->markbit = 1;
+            gc_mark(val->array[j]);
     }
     else if (val->type == SL_VALUE_DICT)
     {
         for (int j = (int)sl_vector_size(val->dict.values) - 1; j >= 0; j--)
-            val->dict.values[j]->markbit = 1;
+            gc_mark(val->dict.values[j]);
+    }
+    else if (val->type == SL_VALUE_FN)
+    {
+        // mark function context variables
+        sl_ctx_t *c = val->fn->ctx;
+        while (c)
+        {
+            for (int i = 0; i < sl_vector_size(c->vars); i++)
+            {
+                gc_mark(c->vars[i]->val);
+            }
+            for (int i = 0; i < sl_vector_size(c->stack); i++)
+            {
+                gc_mark(c->stack[i]);
+            }
+            c = c->parent;
+        }
     }
 }
 
@@ -70,8 +90,14 @@ void sl_gc_collect(sl_ctx_t *ctx)
         c = c->child;
     }
 
+    int flag = 0;
     for (int i = (int)sl_vector_size(values) - 1; i >= 0; i--)
     {
+        if(flag == 0)
+        {
+           values[i]->markbit = 1; 
+        }
+
         if (values[i]->markbit == 0)
         {
             sl_value_free(values[i]);
@@ -81,7 +107,10 @@ void sl_gc_collect(sl_ctx_t *ctx)
             sl_vector_pop(values);
         }
         else
+        {
+            flag = 1;
             values[i]->markbit = 0;
+        }
     }
 }
 
@@ -92,4 +121,6 @@ void sl_gc_freeall()
         sl_value_free(values[i]);
     }
     sl_vector_free(values);
+    usedmem = 0;
+    maxmem = 128;
 }
