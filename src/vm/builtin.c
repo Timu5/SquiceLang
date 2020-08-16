@@ -23,7 +23,7 @@ static void list(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_vector(sl_value_t *) arr = NULL;
-    for (int i = (int)sl_vector_size(ctx->stack) - n; i < (int)sl_vector_size(ctx->stack); i++)
+    for (int i = (int)sl_vector_size(ctx->stack) - 1; i >= (int)sl_vector_size(ctx->stack) - n; i--)
     {
         sl_vector_push(arr, ctx->stack[i]);
     }
@@ -42,8 +42,8 @@ static void dict(sl_ctx_t *ctx)
         sl_vector_push(ctx->stack, sl_value_dict(NULL, NULL));
     else
     {
-        sl_value_t *v = sl_vector_pop(ctx->stack);
         sl_value_t *k = sl_vector_pop(ctx->stack);
+        sl_value_t *v = sl_vector_pop(ctx->stack);
         if (v->type != SL_VALUE_ARRAY || k->type != SL_VALUE_ARRAY)
             throw("Function dict takes arguments of type array");
         sl_vector(char *) keys = NULL;
@@ -121,10 +121,10 @@ static void chr(sl_ctx_t *ctx)
 
 void sl_builtin_install(sl_ctx_t *ctx)
 {
-    sl_ctx_addfn(ctx, NULL, "print", 0, print);
-    sl_ctx_addfn(ctx, NULL, "list", 0, list);
-    sl_ctx_addfn(ctx, NULL, "dict", 0, dict);
-    sl_ctx_addfn(ctx, NULL, "len", 0, len);
-    sl_ctx_addfn(ctx, NULL, "ord", 0, ord);
-    sl_ctx_addfn(ctx, NULL, "chr", 0, ord);
+    sl_ctx_addfn(ctx, NULL, "print", 0, 0, print);
+    sl_ctx_addfn(ctx, NULL, "list", 0, 0, list);
+    sl_ctx_addfn(ctx, NULL, "dict", 2, 0, dict);
+    sl_ctx_addfn(ctx, NULL, "len", 1, 0, len);
+    sl_ctx_addfn(ctx, NULL, "ord", 1, 0, ord);
+    sl_ctx_addfn(ctx, NULL, "chr", 1, 0, ord);
 }

@@ -38,7 +38,7 @@ void dis(char *opcodes, long fsize)
         if (ip >= fsize)
             break;
         int byte = opcodes[ip];
-        printf("%d %x:\t\t\t\t", ip, byte);
+        printf("%d %02hhx:\t\t\t\t", ip, byte);
         ip += 1;
 
         switch (byte)
@@ -153,7 +153,9 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             sl_vector_pop(global->stack);
             break;
         case SL_OPCODE_STOREFN:
-            sl_ctx_addfn(context, binary, getstr(opcodes, &ip), (int)sl_vector_pop(global->stack)->number, NULL);
+            int adr = (int)sl_vector_pop(global->stack)->number;
+            int argc = (int)sl_vector_pop(global->stack)->number;
+            sl_ctx_addfn(context, binary, getstr(opcodes, &ip), argc, adr, NULL);
             break;
         case SL_OPCODE_STORE:
             sl_ctx_addvar(context, getstr(opcodes, &ip), sl_vector_pop(global->stack));
@@ -182,6 +184,18 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 throw("Can only call functions!");
             }
             sl_fn_t *fn = fn_value->fn;
+            sl_value_t *parent = NULL;
+            if (byte == SL_OPCODE_CALLM)
+            {
+                parent = sl_vector_pop(global->stack);
+            }
+            sl_value_t *argc = sl_vector_pop(global->stack);
+            
+            if((int)(argc->number) < fn->argc)
+            {
+                throw("To little arguments for function.");
+            }
+            sl_vector_push(global->stack, argc);
             if (fn->native != NULL)
             {
                 fn->native(global);
@@ -195,7 +209,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     context = sl_ctx_new(context);
                     if (byte == SL_OPCODE_CALLM)
                     {
-                        sl_ctx_addvar(context, "this", sl_vector_pop(global->stack)); // add "this" variable
+                        sl_ctx_addvar(context, "this", parent); // add "this" variable
                     }
                     sl_vector_push(call_stack, ip);
                     //sl_vector_pop(global->stack);
@@ -207,7 +221,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     sl_ctx_t *n_context = sl_ctx_new(fn->ctx);
                     if (byte == SL_OPCODE_CALLM)
                     {
-                        sl_ctx_addvar(n_context, "this", sl_vector_pop(global->stack)); // add "this" variable
+                        sl_ctx_addvar(n_context, "this", parent); // add "this" variable
                     }
                     sl_exec(global, n_context, fn->binary, fn->address, load_module);
                     // what with return value ???? :(
