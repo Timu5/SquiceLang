@@ -146,7 +146,8 @@ sl_node_t *node_func(char *name, sl_vector(char *) args, sl_node_t *body)
 
 static void free_return(sl_node_t *node)
 {
-    sl_node_free(node->ret);
+    if (node->ret)
+        sl_node_free(node->ret);
     free(node);
 }
 
