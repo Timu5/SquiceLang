@@ -226,9 +226,9 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
         return a;
     }
 
-    if (a->type == SL_VALUE_REF)
+    while (a->type == SL_VALUE_REF)
         a = a->ref;
-    if (b->type == SL_VALUE_REF)
+    while (b->type == SL_VALUE_REF)
         b = b->ref;
 
     if (a->type != b->type)
@@ -253,7 +253,7 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
 
 sl_value_t *sl_value_get(int i, sl_value_t *a)
 {
-    if (a->type == SL_VALUE_REF)
+    while (a->type == SL_VALUE_REF)
         a = a->ref;
 
     if (a->type == SL_VALUE_STRING)
@@ -270,7 +270,7 @@ sl_value_t *sl_value_get(int i, sl_value_t *a)
     else if (a->type == SL_VALUE_ARRAY)
     {
         if (i >= sl_vector_size(a->array))
-            throw("Index aut of range");
+            throw("Index out of range");
         return a->array[i];
     }
 
