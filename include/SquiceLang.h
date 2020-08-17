@@ -96,7 +96,8 @@ enum SL_NODETYPE
     SL_NODETYPE_INDEX,
     SL_NODETYPE_BLOCK,
     SL_NODETYPE_MEMBER,
-    SL_NODETYPE_IMPORT
+    SL_NODETYPE_IMPORT,
+    SL_NODETYPE_CLASS
 };
 
 struct sl_binary_s;
@@ -166,6 +167,11 @@ struct sl_node_s
             char *name;
         } member;
         char *import;
+        struct
+        {
+            char* name;
+            sl_vector(struct sl_node_s *) methods;
+        } class;
     };
 };
 
@@ -223,6 +229,7 @@ sl_node_t *node_index(sl_node_t *var, sl_node_t *expr);
 sl_node_t *node_block(sl_vector(sl_node_t *) list);
 sl_node_t *node_member(sl_node_t *parent, char *name);
 sl_node_t *node_import(char *name);
+sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list);
 
 void sl_node_print(sl_node_t *node, int ind);
 
@@ -296,6 +303,7 @@ void sl_codegen_index(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_block(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_member(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_import(sl_node_t *node, sl_binary_t *binary);
+void sl_codegen_class(sl_node_t *node, sl_binary_t *binary);
 
 sl_ctx_t *sl_ctx_new(sl_ctx_t *parent);
 void sl_ctx_free(sl_ctx_t *ctx);
@@ -326,6 +334,7 @@ enum SL_TOKEN
     SL_TOKEN_WHILE,
     SL_TOKEN_BREAK,
     SL_TOKEN_IMPORT,
+    SL_TOKEN_CLASS,
 
     SL_TOKEN_COLON,     // :
     SL_TOKEN_SEMICOLON, // ;

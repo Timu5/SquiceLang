@@ -201,7 +201,8 @@ sl_node_t *expr(sl_parser_t *parser, int min)
 // return := 'return' ';' | 'return' expr ';'
 // break := 'break' ';'
 // import := 'import' ident ';'
-// statement := block | let | if | while | funca | return | break | import | expr ';'
+// class := 'class' ident '{' methods '}'
+// statement := block | let | if | while | funca | return | break | import | class | expr ';'
 sl_node_t *statment(sl_parser_t *parser)
 {
     switch (parser->lasttoken)
@@ -316,6 +317,30 @@ sl_node_t *statment(sl_parser_t *parser)
 
         nexttoken(parser);
         return node_import(module_name);
+    case SL_TOKEN_CLASS:
+        nexttoken(parser);
+        match(parser, SL_TOKEN_IDENT);
+        char *class_name = strdup(parser->lexer->buffer);
+
+        nexttoken(parser);
+        match(parser, SL_TOKEN_LBRACE);
+
+        nexttoken(parser);
+
+        sl_vector(sl_node_t *) methods_list = NULL;
+        while (parser->lasttoken != SL_TOKEN_RBRACE)
+        {
+            if(parser->lasttoken != SL_TOKEN_FN)
+            {
+                throw("Expect methods inside class.");
+            }
+            sl_node_t *node = statment(parser);
+            sl_vector_push(methods_list, node);
+        }
+        match(parser, SL_TOKEN_RBRACE);
+
+        nexttoken(parser);
+        return NULL;
     default:;
         sl_node_t *e = expr(parser, 0);
         match(parser, SL_TOKEN_SEMICOLON);

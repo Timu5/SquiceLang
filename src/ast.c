@@ -302,6 +302,25 @@ sl_node_t *node_import(char *name)
     return node;
 }
 
+static void free_class(sl_node_t *node)
+{
+    // TODO: free methods!
+    free(node->class.name);
+    free(node);
+}
+
+sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list)
+{
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_BLOCK;
+    node->class.name = name;
+    node->class.methods = list;
+    node->codegen = sl_codegen_class;
+    node->free = free_class;
+    return node;
+}
+
+
 static void printtab(int n)
 {
     for (int i = 0; i < n; i++)
