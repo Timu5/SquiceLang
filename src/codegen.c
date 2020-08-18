@@ -197,5 +197,4 @@ void sl_codegen_import(sl_node_t *node, sl_binary_t *binary)
 
 void sl_codegen_class(sl_node_t *node, sl_binary_t *binary)
 {
-    // put magic in here :)
 }

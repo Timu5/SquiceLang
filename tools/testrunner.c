@@ -18,7 +18,8 @@ char *tests[] = {
     "tests/test5_string.sqlang",
     "tests/test6_list.sqlang",
     "tests/test7_module.sqlang",
-    "tests/test8_gc.sqlang"
+    "tests/test8_gc.sqlang",
+    "tests/test9_class.sqlang"
     };
 
 sl_ctx_t *global;

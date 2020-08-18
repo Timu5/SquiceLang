@@ -327,6 +327,16 @@ sl_node_t *statment(sl_parser_t *parser)
 
         nexttoken(parser);
 
+        sl_vector(sl_node_t*) constructor = NULL;
+
+        // generated constructor code:
+        // let this = dict();
+        // this.old_name = __class_old_name_;
+        // ...
+        // return this;
+
+        sl_vector_push(constructor, node_decl(node_ident("this"), node_call(node_ident(strdup("dict")), node_block(NULL))));
+
         sl_vector(sl_node_t *) methods_list = NULL;
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
@@ -335,12 +345,32 @@ sl_node_t *statment(sl_parser_t *parser)
                 throw("Expect methods inside class.");
             }
             sl_node_t *node = statment(parser);
+            
+            // change name to __class_name__
+            char *old_name = node->func.name;
+            char *new_name = malloc(6 + strlen(old_name) + strlen(class_name));
+            strcpy(new_name, "__");
+            strcat(new_name, node->class.name);
+            strcat(new_name, "_");
+            strcat(new_name, old_name);
+            strcat(new_name, "__");
+
+            // add code to cosntructor
+            sl_vector_push(constructor, node_binary(20, node_member(node_ident("this"), strdup(old_name)), node_ident(strdup(new_name))));
+
+            free(old_name);
+            node->func.name = new_name;
+
             sl_vector_push(methods_list, node);
         }
         match(parser, SL_TOKEN_RBRACE);
 
+        sl_vector_push(constructor, node_return(node_ident("this")));
+
+        sl_vector_push(methods_list, node_func(class_name, NULL, node_block(constructor)));
+
         nexttoken(parser);
-        return NULL;
+        return node_class(class_name, methods_list);
     default:;
         sl_node_t *e = expr(parser, 0);
         match(parser, SL_TOKEN_SEMICOLON);
@@ -359,9 +389,19 @@ sl_node_t *sl_parse(sl_parser_t *parser)
         sl_node_t *n = statment(parser);
 
         if (n->type == SL_NODETYPE_FUNC)
+        {
             sl_vector_push(funcs, n);
+        }
+        else if (n->type == SL_NODETYPE_CLASS)
+        {
+            // generate constructor from class
+            for (int i = 0; i < sl_vector_size(n->class.methods); i++)
+                sl_vector_push(funcs, n->class.methods[i]);
+        }
         else
+        {
             sl_vector_push(stmts, n);
+        }
     }
     return node_root(node_block(funcs), node_block(stmts));
 }
