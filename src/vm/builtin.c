@@ -123,7 +123,7 @@ void sl_builtin_install(sl_ctx_t *ctx)
 {
     sl_ctx_addfn(ctx, NULL, "print", 0, 0, print);
     sl_ctx_addfn(ctx, NULL, "list", 0, 0, list);
-    sl_ctx_addfn(ctx, NULL, "dict", 2, 0, dict);
+    sl_ctx_addfn(ctx, NULL, "dict", 0, 0, dict);
     sl_ctx_addfn(ctx, NULL, "len", 1, 0, len);
     sl_ctx_addfn(ctx, NULL, "ord", 1, 0, ord);
     sl_ctx_addfn(ctx, NULL, "chr", 1, 0, ord);

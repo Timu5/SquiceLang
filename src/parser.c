@@ -335,7 +335,7 @@ sl_node_t *statment(sl_parser_t *parser)
         // ...
         // return this;
 
-        sl_vector_push(constructor, node_decl(node_ident("this"), node_call(node_ident(strdup("dict")), node_block(NULL))));
+        sl_vector_push(constructor, node_decl(node_ident(strdup("this")), node_call(node_ident(strdup("dict")), node_block(NULL))));
 
         sl_vector(sl_node_t *) methods_list = NULL;
         while (parser->lasttoken != SL_TOKEN_RBRACE)
@@ -356,7 +356,7 @@ sl_node_t *statment(sl_parser_t *parser)
             strcat(new_name, "__");
 
             // add code to cosntructor
-            sl_vector_push(constructor, node_binary(20, node_member(node_ident("this"), strdup(old_name)), node_ident(strdup(new_name))));
+            sl_vector_push(constructor, node_binary(20, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
 
             free(old_name);
             node->func.name = new_name;
@@ -365,7 +365,7 @@ sl_node_t *statment(sl_parser_t *parser)
         }
         match(parser, SL_TOKEN_RBRACE);
 
-        sl_vector_push(constructor, node_return(node_ident("this")));
+        sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
 
         sl_vector_push(methods_list, node_func(class_name, NULL, node_block(constructor)));
 

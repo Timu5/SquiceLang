@@ -312,7 +312,7 @@ static void free_class(sl_node_t *node)
 sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
-    node->type = SL_NODETYPE_BLOCK;
+    node->type = SL_NODETYPE_CLASS;
     node->class.name = name;
     node->class.methods = list;
     node->codegen = sl_codegen_class;
