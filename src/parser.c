@@ -337,12 +337,13 @@ sl_node_t *statment(sl_parser_t *parser)
 
         sl_vector_push(constructor, node_decl(node_ident(strdup("this")), node_call(node_ident(strdup("dict")), node_block(NULL))));
 
+        sl_vector(sl_node_t *) constructors = NULL;
         sl_vector(sl_node_t *) methods_list = NULL;
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
             if(parser->lasttoken != SL_TOKEN_FN)
             {
-                throw("Expect methods inside class.");
+                throw("Expect methods inside class");
             }
             sl_node_t *node = statment(parser);
             
@@ -350,13 +351,20 @@ sl_node_t *statment(sl_parser_t *parser)
             char *old_name = node->func.name;
             char *new_name = malloc(6 + strlen(old_name) + strlen(class_name));
             strcpy(new_name, "__");
-            strcat(new_name, node->class.name);
+            strcat(new_name, class_name);
             strcat(new_name, "_");
             strcat(new_name, old_name);
             strcat(new_name, "__");
 
-            // add code to cosntructor
-            sl_vector_push(constructor, node_binary(20, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
+            if (strcmp(old_name, class_name) == 0)
+            {
+                sl_vector_push(constructors, node);
+            }
+            else
+            {
+                // add code to cosntructor
+                sl_vector_push(constructor, node_binary(20, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
+            }
 
             free(old_name);
             node->func.name = new_name;
@@ -365,9 +373,28 @@ sl_node_t *statment(sl_parser_t *parser)
         }
         match(parser, SL_TOKEN_RBRACE);
 
-        sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
-
-        sl_vector_push(methods_list, node_func(class_name, NULL, node_block(constructor)));
+        if (sl_vector_size(constructors) > 1)
+        {
+            throw("Class %s has more than one contructor", class_name);
+        }
+        else if (sl_vector_size(constructors) == 1)
+        {
+            if (constructors[0]->func.body->type != SL_NODETYPE_BLOCK)
+            {
+                throw("Contructor body need to be block");
+            }
+            // combine with constructor and add retrun at the end!
+            sl_vector_append(constructor, sl_vector_size(constructors[0]->func.body->block), constructors[0]->func.body->block);
+            constructors[0]->func.body->block = constructor;
+            constructors[0]->func.name = strdup(class_name);
+            sl_vector_push(constructors[0]->func.body->block, node_return(node_ident(strdup("this"))));
+            // TODO: search for return and replace to "return this;""
+        }
+        else
+        {
+            sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
+            sl_vector_push(methods_list, node_func(class_name, NULL, node_block(constructor)));
+        }   
 
         nexttoken(parser);
         return node_class(class_name, methods_list);
