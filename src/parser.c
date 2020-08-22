@@ -386,6 +386,7 @@ sl_node_t *statment(sl_parser_t *parser)
             // combine with constructor and add retrun at the end!
             sl_vector_append(constructor, sl_vector_size(constructors[0]->func.body->block), constructors[0]->func.body->block);
             constructors[0]->func.body->block = constructor;
+            free(constructors[0]->func.name);
             constructors[0]->func.name = strdup(class_name);
             sl_vector_push(constructors[0]->func.body->block, node_return(node_ident(strdup("this"))));
             // TODO: search for return and replace to "return this;""

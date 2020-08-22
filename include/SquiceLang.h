@@ -275,6 +275,7 @@ struct sl_binary_s
 typedef struct sl_binary_s sl_binary_t;
 
 sl_binary_t *sl_binary_new();
+void sl_binary_free(sl_binary_t *bin);
 void sl_binary_save(sl_binary_t *bin, char *filename);
 
 int sl_bytecode_emit(sl_binary_t *bin, int opcode);

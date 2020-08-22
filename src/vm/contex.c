@@ -22,7 +22,7 @@ void sl_ctx_free(sl_ctx_t *ctx)
 
     for (int i = 0; i < sl_vector_size(ctx->vars); i++)
     {
-        //free(ctx->vars[i]->name);
+        free(ctx->vars[i]->name);
         //sl_value_free(ctx->vars[i]->val, 1);
         free(ctx->vars[i]);
     }

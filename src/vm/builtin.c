@@ -121,10 +121,10 @@ static void chr(sl_ctx_t *ctx)
 
 void sl_builtin_install(sl_ctx_t *ctx)
 {
-    sl_ctx_addfn(ctx, NULL, "print", 0, 0, print);
-    sl_ctx_addfn(ctx, NULL, "list", 0, 0, list);
-    sl_ctx_addfn(ctx, NULL, "dict", 0, 0, dict);
-    sl_ctx_addfn(ctx, NULL, "len", 1, 0, len);
-    sl_ctx_addfn(ctx, NULL, "ord", 1, 0, ord);
-    sl_ctx_addfn(ctx, NULL, "chr", 1, 0, ord);
+    sl_ctx_addfn(ctx, NULL, strdup("print"), 0, 0, print);
+    sl_ctx_addfn(ctx, NULL, strdup("list"), 0, 0, list);
+    sl_ctx_addfn(ctx, NULL, strdup("dict"), 0, 0, dict);
+    sl_ctx_addfn(ctx, NULL, strdup("len"), 1, 0, len);
+    sl_ctx_addfn(ctx, NULL, strdup("ord"), 1, 0, ord);
+    sl_ctx_addfn(ctx, NULL, strdup("chr"), 1, 0, ord);
 }

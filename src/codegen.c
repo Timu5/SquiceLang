@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "SquiceLang.h"
 
@@ -114,21 +115,23 @@ void sl_codegen_cond(sl_node_t *node, sl_binary_t *binary)
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_BRZ, 0x22222222); // fill it later with adress!!!
     char *name = sl_mprintf("cond_%d", binary->index);
     char *ename = sl_mprintf("condend_%d", binary->index++);
-    sl_bytecode_addtofill(binary, name, adr + 1);
+    sl_bytecode_addtofill(binary, strdup(name), adr + 1);
     node->cond.body->codegen(node->cond.body, binary);
 
     if (node->cond.elsebody != NULL)
     {
         adr = sl_bytecode_emitint(binary, SL_OPCODE_JMP, 0x22222222);
-        sl_bytecode_addlabel(binary, name, binary->size);
-        sl_bytecode_addtofill(binary, ename, adr + 1);
+        sl_bytecode_addlabel(binary, strdup(name), binary->size);
+        sl_bytecode_addtofill(binary, strdup(ename), adr + 1);
         node->cond.elsebody->codegen(node->cond.elsebody, binary);
-        sl_bytecode_addlabel(binary, ename, binary->size);
+        sl_bytecode_addlabel(binary, strdup(ename), binary->size);
     }
     else
     {
-        sl_bytecode_addlabel(binary, name, binary->size);
+        sl_bytecode_addlabel(binary, strdup(name), binary->size);
     }
+    free(ename);
+    free(name);
 }
 
 void sl_codegen_loop(sl_node_t *node, sl_binary_t *binary)
@@ -140,16 +143,18 @@ void sl_codegen_loop(sl_node_t *node, sl_binary_t *binary)
     char *lname = sl_mprintf("loops_%d", i);
     char *lename = sl_mprintf("loopend_%d", i);
 
-    sl_bytecode_addlabel(binary, lname, binary->size);
+    sl_bytecode_addlabel(binary, strdup(lname), binary->size);
     node->loop.arg->codegen(node->loop.arg, binary);
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_BRZ, 0x22222222);
-    sl_bytecode_addtofill(binary, lename, adr + 1);
+    sl_bytecode_addtofill(binary, strdup(lename), adr + 1);
     node->loop.body->codegen(node->loop.body, binary);
     adr = sl_bytecode_emitint(binary, SL_OPCODE_JMP, 0x22222222);
-    sl_bytecode_addtofill(binary, lname, adr + 1);
-    sl_bytecode_addlabel(binary, lename, binary->size);
+    sl_bytecode_addtofill(binary, strdup(lname), adr + 1);
+    sl_bytecode_addlabel(binary, strdup(lename), binary->size);
 
     binary->loop = old;
+    free(lname);
+    free(lename);
 }
 
 void sl_codegen_break(sl_node_t *node, sl_binary_t *binary)

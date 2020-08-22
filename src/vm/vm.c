@@ -141,12 +141,14 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             break;
         case SL_OPCODE_PUSHV:
         {
-            sl_value_t *val = sl_ctx_getvar(context, getstr(opcodes, &ip));
+            char* name = getstr(opcodes, &ip);
+            sl_value_t *val = sl_ctx_getvar(context, name);
             if(val == NULL)
             {
                 throw("No such variable!");
             }
             sl_vector_push(global->stack, val);
+            free(name);
             break;
         }
         case SL_OPCODE_POP:
@@ -211,7 +213,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     context = sl_ctx_new(context);
                     if (byte == SL_OPCODE_CALLM)
                     {
-                        sl_ctx_addvar(context, "this", parent); // add "this" variable
+                        sl_ctx_addvar(context, strdup("this"), parent); // add "this" variable
                     }
                     sl_vector_push(call_stack, ip);
                     //sl_vector_pop(global->stack);
@@ -223,7 +225,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     sl_ctx_t *n_context = sl_ctx_new(fn->ctx);
                     if (byte == SL_OPCODE_CALLM)
                     {
-                        sl_ctx_addvar(n_context, "this", parent); // add "this" variable
+                        sl_ctx_addvar(n_context, strdup("this"), parent); // add "this" variable
                     }
                     sl_exec(global, n_context, fn->binary, fn->address, load_module);
                     // what with return value ???? :(
@@ -267,6 +269,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             sl_value_t *var = sl_vector_pop(global->stack);
             char *name = getstr(opcodes, &ip);
             sl_vector_push(global->stack, sl_value_member(name, var));
+            free(name);
             break;
         }
         case SL_OPCODE_MEMBERD:
@@ -275,6 +278,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             char *name = getstr(opcodes, &ip);
             sl_vector_push(global->stack, var);
             sl_vector_push(global->stack, sl_value_member(name, var));
+            free(name);
             break;
         }
         case SL_OPCODE_IMPORT:
@@ -312,32 +316,3 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
         }
     }
 }
-/*
-int vm_main(int argc, char ** argv)
-{
-    if (argc < 2)
-    {
-        printf("Usage: vm input\n");
-        return -1;
-    }
-
-    FILE *file = fopen(argv[1], "rb");
-    fseek(file, 0, SEEK_END);
-    int fsize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    int opcodes = (char *)malloc(fsize);
-    fread(opcodes, 1, fsize, file);
-    fclose(file);
-
-    try
-    {
-        exec(opcodes, fsize);
-    }
-    catch
-    {
-        puts(ex_msg);
-    }
-
-    return 0;
-}*/

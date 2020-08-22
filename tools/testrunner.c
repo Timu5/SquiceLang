@@ -34,6 +34,8 @@ static void assertfn(sl_ctx_t *ctx)
     }
 }
 
+sl_vector(sl_binary_t*) modules = NULL;
+
 sl_binary_t *load_module(char *name)
 {
     FILE *fd;
@@ -44,7 +46,9 @@ sl_binary_t *load_module(char *name)
     if((fd = fopen(fullname, "r")) != NULL)
     {
         fclose(fd);
-        return sl_compile_file(fullname);
+        sl_binary_t *module = sl_compile_file(fullname);
+        sl_vector_push(modules, module);
+        return module;
     }
     return NULL;
 }
@@ -58,7 +62,7 @@ int main(void)
         sl_ctx_t *ctx = sl_ctx_new(NULL);
         sl_builtin_install(ctx);
         global = ctx;
-        sl_ctx_addfn(ctx, NULL, "assert", 1, 0, assertfn);
+        sl_ctx_addfn(ctx, NULL, strdup("assert"), 1, 0, assertfn);
 
         try
         {
@@ -70,6 +74,12 @@ int main(void)
             printf(RED "failed" RESET "(%s)\n", ex_msg);
         }
         sl_gc_freeall();
+        sl_ctx_free(ctx);
+        for(int i = 0; i < sl_vector_size(modules); i++)
+        {
+            sl_binary_free(modules[i]);
+        }
+        sl_vector_free(modules);
     }
     return 0;
 }

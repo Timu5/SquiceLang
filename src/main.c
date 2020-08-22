@@ -32,6 +32,7 @@ void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *na
 {
     sl_binary_t *bin = sl_compile_str(code);
     sl_exec(ctx, ctx, bin, 0, load_module);
+    sl_binary_free(bin);
 }
 
 sl_binary_t *sl_compile_file(char *filename)
@@ -61,6 +62,7 @@ void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(cha
 {
     sl_binary_t *bin = sl_compile_file(filename);
     sl_exec(ctx, ctx, bin, 0, load_module);
+    sl_binary_free(bin);
 }
 
 void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name))
@@ -82,6 +84,7 @@ void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *nam
     printf("\n");
     dis(bin->block, bin->size);
     sl_exec(ctx, ctx, bin, 0, load_module);
+    sl_binary_free(bin);
 }
 
 

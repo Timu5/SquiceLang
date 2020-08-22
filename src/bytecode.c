@@ -19,6 +19,24 @@ sl_binary_t *sl_binary_new()
     return bin;
 }
 
+void sl_binary_free(sl_binary_t *bin)
+{
+    sl_vector_free(bin->adresses);
+    for(int i = 0; i < sl_vector_size(bin->symbols); i++)
+    {
+        free(bin->symbols[i]);
+    }
+    sl_vector_free(bin->symbols);
+    sl_vector_free(bin->fadresses);
+    for(int i = 0; i < sl_vector_size(bin->fsymbols); i++)
+    {
+        free(bin->fsymbols[i]);
+    }
+    sl_vector_free(bin->fsymbols);
+    free(bin->block);
+    free(bin);
+}
+
 void sl_binary_save(sl_binary_t *bin, char *filename)
 {
     FILE *file = fopen(filename, "wb");
