@@ -153,10 +153,12 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             sl_vector_pop(global->stack);
             break;
         case SL_OPCODE_STOREFN:
+        {
             int adr = (int)sl_vector_pop(global->stack)->number;
             int argc = (int)sl_vector_pop(global->stack)->number;
             sl_ctx_addfn(context, binary, getstr(opcodes, &ip), argc, adr, NULL);
             break;
+        }
         case SL_OPCODE_STORE:
             sl_ctx_addvar(context, getstr(opcodes, &ip), sl_vector_pop(global->stack));
             break;
