@@ -1,0 +1,39 @@
+class test
+{
+    fn a()
+    {
+        this.name = 1;
+        return 1;
+    }
+
+    fn b(c)
+    {
+        this.name = this.name + 1;
+        return c+1;
+    }
+}
+
+class yz
+{
+    fn yz()
+    {
+        this.name = "My super name";
+        this.b();
+    }
+
+    fn b()
+    {
+        this.name = "Not super :(";
+    }
+}
+
+let xyz = test();
+
+assert(xyz.a() == 1);
+assert(xyz.name == 1);
+assert(xyz.b(1) == 2);
+assert(xyz.name == 2);
+
+let t2 = yz();
+
+assert(t2.name == "Not super :(");
