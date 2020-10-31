@@ -94,7 +94,7 @@ sl_node_t *primary(sl_parser_t *parser)
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
             if (!(parser->lasttoken == SL_TOKEN_STRING || parser->lasttoken == SL_TOKEN_IDENT))
-                throw("Unexpexted token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s", parser->lasttoken);
+                throw("Unexpected token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s", parser->lasttoken);
             sl_vector_push(keys, node_string(strdup(parser->lexer->buffer)));
 
             nexttoken(parser);
@@ -119,7 +119,7 @@ sl_node_t *primary(sl_parser_t *parser)
     }
     else
     {
-        throw("Unexpected token in primary!");
+        throw("Unexpected token in primary");
     }
 
     while (parser->lasttoken == SL_TOKEN_DOT || parser->lasttoken == SL_TOKEN_LBRACK || parser->lasttoken == SL_TOKEN_LPAREN)

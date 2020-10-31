@@ -67,9 +67,6 @@ static void dict(sl_ctx_t *ctx)
 static void len(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
-    if (n != 1)
-        throw("Function len takes exactly 1 argument");
-
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_STRING)
     {
@@ -88,9 +85,6 @@ static void len(sl_ctx_t *ctx)
 static void ord(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
-    if (n != 1)
-        throw("Function ord takes exactly 1 argument");
-
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_STRING)
     {
@@ -104,9 +98,6 @@ static void ord(sl_ctx_t *ctx)
 static void chr(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
-    if (n != 1)
-        throw("Function chr takes exactly 1 argument");
-
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_NUMBER)
     {

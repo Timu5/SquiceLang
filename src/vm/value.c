@@ -115,7 +115,7 @@ void sl_value_assign(sl_value_t *a, sl_value_t *b)
         b = b->ref;
 
     if (a->constant)
-        throw("cannot assign to const value");
+        throw("Cannot assign to const value");
 
     if (a->type == SL_VALUE_STRING)
         free(a->string);
@@ -202,7 +202,7 @@ static sl_value_t *binary_string(int op, sl_value_t *a, sl_value_t *b)
     case SL_TOKEN_NOTEQUAL:
         return sl_value_number(strcmp(a->string, b->string) != 0);
     }
-    throw("Unkown binary operation");
+    throw("Unkown binary operation %d", op);
     return sl_value_null();
 }
 
@@ -232,12 +232,12 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
         b = b->ref;
 
     if (a->type != b->type)
-        throw("Type mismatch");
+        throw("Type mismatch %d %d %d", op, a->type, b->type);
 
     switch (a->type)
     {
     case SL_VALUE_NULL:
-        throw("Cannot perfom operation on null");
+        throw("Cannot perform operation on null");
     case SL_VALUE_NUMBER:
         return binary_number(op, a, b);
     case SL_VALUE_STRING:

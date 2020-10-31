@@ -145,7 +145,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             sl_value_t *val = sl_ctx_getvar(context, name);
             if(val == NULL)
             {
-                throw("No such variable!");
+                throw("No variable named '%s'", name);
             }
             sl_vector_push(global->stack, val);
             free(name);
@@ -185,7 +185,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 fn_value = fn_value->ref;
             if (fn_value->type != SL_VALUE_FN)
             {
-                throw("Can only call functions!");
+                throw("Can only call functions");
             }
             sl_fn_t *fn = fn_value->fn;
             sl_value_t *parent = NULL;
@@ -197,7 +197,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             
             if((int)(argc->number) < fn->argc)
             {
-                throw("To little arguments for function.");
+                throw("To little arguments for function, expect %d got %d", fn->argc, (int)(argc->number));
             }
             sl_vector_push(global->stack, argc);
             if (fn->native != NULL)
@@ -286,11 +286,11 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             // eval module
             char *name = getstr(opcodes, &ip);
             if(load_module == NULL)
-                throw("Module loading not supported.");
+                throw("Module loading not supported");
 
             sl_binary_t *module = load_module(name);
             if(module == NULL)
-                throw("No such module!");
+                throw("Cannot find %s module", name);
 
             sl_ctx_t *module_ctx = sl_ctx_new(NULL);
             sl_builtin_install(module_ctx);
