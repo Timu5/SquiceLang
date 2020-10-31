@@ -244,7 +244,11 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             int ret_adr = sl_vector_pop(call_stack);
             ip = ret_adr;
             if (context->parent != NULL)
-                context = context->parent;
+            {
+                sl_ctx_t* parent = context->parent;
+                sl_ctx_free(context);
+                context = parent;
+            }
             break;
         case SL_OPCODE_JMP:
             ip = getint(opcodes, &ip);

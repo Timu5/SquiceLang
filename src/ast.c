@@ -304,7 +304,7 @@ sl_node_t *node_import(char *name)
 
 static void free_class(sl_node_t *node)
 {
-    // TODO: free methods!
+    sl_vector_free(node->class.methods);
     free(node->class.name);
     free(node);
 }

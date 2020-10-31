@@ -346,6 +346,8 @@ sl_node_t *statment(sl_parser_t *parser)
                 throw("Expect methods inside class");
             }
             sl_node_t *node = statment(parser);
+
+            // TODO: check for funcition!
             
             // change name to __class_name__
             char *old_name = node->func.name;
@@ -375,26 +377,28 @@ sl_node_t *statment(sl_parser_t *parser)
 
         if (sl_vector_size(constructors) > 1)
         {
-            throw("Class %s has more than one contructor", class_name);
+            throw("Class %s has more than one constructor", class_name);
         }
         else if (sl_vector_size(constructors) == 1)
         {
             if (constructors[0]->func.body->type != SL_NODETYPE_BLOCK)
             {
-                throw("Contructor body need to be block");
+                throw("Constructor body need to be block");
             }
             // combine with constructor and add retrun at the end!
             sl_vector_append(constructor, sl_vector_size(constructors[0]->func.body->block), constructors[0]->func.body->block);
+            sl_vector_free(constructors[0]->func.body->block);
             constructors[0]->func.body->block = constructor;
             free(constructors[0]->func.name);
             constructors[0]->func.name = strdup(class_name);
             sl_vector_push(constructors[0]->func.body->block, node_return(node_ident(strdup("this"))));
             // TODO: search for return and replace to "return this;""
+            sl_vector_free(constructors);
         }
         else
         {
             sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
-            sl_vector_push(methods_list, node_func(class_name, NULL, node_block(constructor)));
+            sl_vector_push(methods_list, node_func(strdup(class_name), NULL, node_block(constructor)));
         }   
 
         nexttoken(parser);
@@ -425,6 +429,7 @@ sl_node_t *sl_parse(sl_parser_t *parser)
             // generate constructor from class
             for (int i = 0; i < sl_vector_size(n->class.methods); i++)
                 sl_vector_push(funcs, n->class.methods[i]);
+            sl_node_free(n);
         }
         else
         {
