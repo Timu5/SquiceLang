@@ -248,6 +248,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_ctx_t* parent = context->parent;
                 sl_ctx_free(context);
                 context = parent;
+                context->child = NULL;
             }
             break;
         case SL_OPCODE_JMP:

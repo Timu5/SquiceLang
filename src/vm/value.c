@@ -80,7 +80,7 @@ sl_value_t *sl_value_ref(sl_value_t *val)
     return v;
 }
 
-void sl_value_free(sl_value_t *val)
+void sl_value_free_members(sl_value_t *val)
 {
     if (val->type == SL_VALUE_STRING)
     {
@@ -88,6 +88,8 @@ void sl_value_free(sl_value_t *val)
     }
     else if (val->type == SL_VALUE_ARRAY)
     {
+        //for (int i = 0; i < sl_vector_size(val->array); i++)
+        //    sl_value_free(val->array[i]);
         sl_vector_free(val->array);
     }
     else if (val->type == SL_VALUE_DICT)
@@ -100,8 +102,12 @@ void sl_value_free(sl_value_t *val)
     else if (val->type == SL_VALUE_FN)
     {
         free(val->fn);
-    }
+    }   
+}
 
+void sl_value_free(sl_value_t *val)
+{
+    sl_value_free_members(val);
     free(val);
 }
 
@@ -109,8 +115,8 @@ void sl_value_assign(sl_value_t *a, sl_value_t *b)
 {
     sl_value_t *olda = a;
 
-    while (a->type == SL_VALUE_REF)
-        a = a->ref;
+    //while (a->type == SL_VALUE_REF)
+    //    a = a->ref;
     while (b->type == SL_VALUE_REF)
         b = b->ref;
 
@@ -122,6 +128,7 @@ void sl_value_assign(sl_value_t *a, sl_value_t *b)
 
     if (b->type == SL_VALUE_ARRAY || b->type == SL_VALUE_DICT || b->type == SL_VALUE_FN)
     {
+        sl_value_free_members(a);
         a->ref = b;
         a->type = SL_VALUE_REF;
         b->refs++;
