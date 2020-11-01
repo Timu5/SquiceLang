@@ -3,6 +3,7 @@
 #include "SquiceLang.h"
 
 sl_vector(sl_value_t *) values;
+sl_vector(sl_ctx_t *) ctxs;
 
 size_t maxmem = 128;
 size_t usedmem = 0;
@@ -32,6 +33,13 @@ sl_value_t *sl_gc_alloc_value()
     }
 
     return v;
+}
+
+sl_ctx_t *sl_gc_alloc_ctx()
+{
+    void *ctx = sl_safe_alloc(sizeof(sl_ctx_t));
+    sl_vector_push(ctxs, ctx);
+    return ctx;
 }
 
 static void gc_mark(sl_value_t *val)
@@ -79,6 +87,7 @@ void sl_gc_collect(sl_ctx_t *ctx)
     sl_ctx_t *c = ctx;
     while (c)
     {
+        ctx->markbit = 1;
         for (int i = 0; i < sl_vector_size(c->vars); i++)
         {
             gc_mark(c->vars[i]->val);
@@ -116,6 +125,11 @@ void sl_gc_collect(sl_ctx_t *ctx)
 
 void sl_gc_freeall()
 {
+    for (int i = 0; i < sl_vector_size(ctxs); i++)
+    {
+        sl_ctx_free(ctxs[i]);
+    }
+    sl_vector_free(ctxs);
     for (int i = 0; i < sl_vector_size(values); i++)
     {
         sl_value_free(values[i]);

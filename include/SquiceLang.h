@@ -206,6 +206,7 @@ struct sl_ctx_s
     struct sl_ctx_s *child;
     sl_vector(struct sl_var_s *) vars;
     sl_vector(struct sl_value_s *) stack;
+    int markbit;
 };
 
 typedef struct sl_ctx_s sl_ctx_t;
@@ -317,6 +318,7 @@ void sl_ctx_addfn(sl_ctx_t *ctx, sl_binary_t *binary, char *name, int argc, int 
 
 void *sl_safe_alloc(int size);
 struct sl_value_s *sl_gc_alloc_value();
+struct sl_ctx_s *sl_gc_alloc_ctx();
 void sl_gc_collect(sl_ctx_t *ctx);
 void sl_gc_freeall();
 

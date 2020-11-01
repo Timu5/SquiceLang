@@ -239,14 +239,13 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             if (sl_vector_size(call_stack) == 0)
             {
                 // nothing to return
-                return;
+                goto end;
             }
             int ret_adr = sl_vector_pop(call_stack);
             ip = ret_adr;
             if (context->parent != NULL)
             {
                 sl_ctx_t* parent = context->parent;
-                sl_ctx_free(context);
                 context = parent;
                 context->child = NULL;
             }
@@ -293,6 +292,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             if(load_module == NULL)
                 throw("Module loading not supported");
 
+            // TODO: cache loaded module and it's context
             sl_binary_t *module = load_module(name);
             if(module == NULL)
                 throw("Cannot find %s module", name);
@@ -302,12 +302,12 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             module_ctx = sl_ctx_new(module_ctx);
             sl_exec(module_ctx, module_ctx, module, 0, load_module);
             
-            // load it's context into dictonary value
+            // load it's context into dictionary value
             sl_vector(char*) names = NULL;
             sl_vector(sl_value_t*) values = NULL;
             for(int i = 0; i < sl_vector_size(module_ctx->vars); i++)
             {
-                char* vname = module_ctx->vars[i]->name;
+                char* vname = strdup(module_ctx->vars[i]->name);
                 sl_value_t* value = module_ctx->vars[i]->val;
                 sl_vector_push(names, vname);
                 sl_vector_push(values, value);
@@ -320,4 +320,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
         }
         }
     }
+end:
+    sl_vector_free(call_stack);
 }

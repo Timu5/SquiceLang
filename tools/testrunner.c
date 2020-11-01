@@ -74,7 +74,7 @@ int main(void)
             printf(RED "failed" RESET "(%s)\n", ex_msg);
         }
         sl_gc_freeall();
-        sl_ctx_free(ctx);
+        //sl_ctx_free(ctx);
         for(int i = 0; i < sl_vector_size(modules); i++)
         {
             sl_binary_free(modules[i]);

@@ -2,7 +2,7 @@
 
 sl_ctx_t *sl_ctx_new(sl_ctx_t *parent)
 {
-    sl_ctx_t *ctx = (sl_ctx_t *)malloc(sizeof(sl_ctx_t));
+    sl_ctx_t *ctx = (sl_ctx_t *)sl_gc_alloc_ctx();
     ctx->parent = parent;
     if (parent)
         parent->child = ctx;
@@ -14,11 +14,14 @@ sl_ctx_t *sl_ctx_new(sl_ctx_t *parent)
 
 void sl_ctx_free(sl_ctx_t *ctx)
 {
-    if (ctx->child)
+    /*if (ctx->child)
     {
-        sl_ctx_free(ctx->child);
-        ctx->child = NULL;
+        ctx->child->parent = NULL;
     }
+    if (ctx->parent)
+    {
+        ctx->parent->child = NULL;
+    }*/   
 
     for (int i = 0; i < sl_vector_size(ctx->vars); i++)
     {
@@ -31,9 +34,6 @@ void sl_ctx_free(sl_ctx_t *ctx)
     /* while(sl_vector_size(ctx->stack))
         sl_value_free(sl_vector_pop(ctx->stack), 1);*/
     sl_vector_free(ctx->stack);
-
-    if (ctx->parent)
-        ctx->parent->child = NULL;
 
     free(ctx);
 }
