@@ -64,7 +64,32 @@ static void binding_SDL_CreateRenderer(sl_ctx_t *ctx)
     SDL_Window *window = (SDL_Window *)sl_vector_pop(ctx->stack)->ref;
     int index = (int)sl_vector_pop(ctx->stack)->number;
     int flags = (int)sl_vector_pop(ctx->stack)->number;
-    SDL_CreateRenderer(window, index, flags);
+    SDL_Renderer *ren = SDL_CreateRenderer(window, index, flags);
+    sl_vector_push(ctx->stack, sl_value_ref(ren));
+}
+
+static void binding_SDL_DestroyRenderer(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    sl_value_t *ren = sl_vector_pop(ctx->stack);
+    SDL_Renderer *renderer = (SDL_Renderer *)(win->ref);
+    SDL_DestroyRenderer(renderer);
+}
+
+static void binding_SDL_RenderClear(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    sl_value_t *ren = sl_vector_pop(ctx->stack);
+    SDL_Renderer *renderer = (SDL_Renderer *)(win->ref);
+    SDL_RenderClear(renderer);
+}
+
+static void binding_SDL_RenderPresent(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    sl_value_t *ren = sl_vector_pop(ctx->stack);
+    SDL_Renderer *renderer = (SDL_Renderer *)(win->ref);
+    SDL_RenderPresent(renderer);
 }
 
 sl_binary_t *load_module(char *name)
@@ -97,6 +122,13 @@ int main(void)
     sl_ctx_addfn(ctx, NULL, strdup("sdl_quit"), 0, 0, binding_SDL_Quit);
     sl_ctx_addfn(ctx, NULL, strdup("sdl_delay"), 1, 0, binding_SDL_Delay);
     sl_ctx_addfn(ctx, NULL, strdup("sdl_createrenderer"), 1, 0, binding_SDL_CreateRenderer);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_destroyrenderer"), 1, 0, binding_SDL_DestroyRenderer);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_renderclear"), 1, 0, binding_SDL_RenderClear);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_renderpreset"), 1, 0, binding_SDL_RenderPresent);
+
+    sl_ctx_addvar(ctx, strdup("sdl_init_everything"), sl_value_number(SDL_INIT_EVERYTHING));
+    sl_ctx_addvar(ctx, strdup("sdl_renderer_accelerated"), sl_value_number(SDL_RENDERER_ACCELERATED));
+    sl_ctx_addvar(ctx, strdup("sdl_renderer_presentvsync"), sl_value_number(SDL_RENDERER_PRESENTVSYNC));
 
     try
     {

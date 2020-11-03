@@ -1,5 +1,7 @@
-SDL_Init(32);
+SDL_Init(SDL_INIT_EVERYTHING);
 let window = SDL_CreateWindow("test", 0, 0, 640, 480, 0);
+let renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 SDL_Delay(3000);
+SDL_DestroyRenderer(renderer);
 SDL_DestroyWindow(window);
 SDL_Quit();
