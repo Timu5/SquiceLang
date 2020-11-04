@@ -66,7 +66,7 @@ int main(int argc, char **argv)
         try
         {
             getstring();
-            sl_dis_str(ctx, input_buffer, load_module);
+            sl_dis_str(ctx, input_buffer, load_module, NULL);
         }
         catch
         {

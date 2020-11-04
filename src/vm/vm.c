@@ -113,7 +113,7 @@ void dis(char *opcodes, long fsize)
 
     ip = 0;
 }
-void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name))
+void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
     char *opcodes = binary->block;
     int size = binary->size;
@@ -125,6 +125,14 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             break;
         int byte = opcodes[ip];
         ip += 1;
+
+#ifdef SL_DEBUG
+        if(byte & SL_OPCODE_TRAP_MASK) // for debugging only
+        {   
+             if(trap)trap(context);
+             byte &= ~SL_OPCODE_TRAP_MASK;
+        }
+#endif
 
         switch (byte)
         {
@@ -227,7 +235,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     {
                         sl_ctx_addvar(n_context, strdup("this"), parent); // add "this" variable
                     }
-                    sl_exec(global, n_context, fn->binary, fn->address, load_module);
+                    sl_exec(global, n_context, fn->binary, fn->address, load_module, trap);
                     // what with return value ???? :(
                 }
             }
@@ -300,7 +308,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             sl_ctx_t *module_ctx = sl_ctx_new(NULL);
             sl_builtin_install(module_ctx);
             module_ctx = sl_ctx_new(module_ctx);
-            sl_exec(module_ctx, module_ctx, module, 0, load_module);
+            sl_exec(module_ctx, module_ctx, module, 0, load_module, trap);
             
             // load it's context into dictionary value
             sl_vector(char*) names = NULL;

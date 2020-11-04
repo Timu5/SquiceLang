@@ -66,7 +66,7 @@ int main(void)
 
         try
         {
-            sl_eval_file(ctx, tests[i], load_module);
+            sl_eval_file(ctx, tests[i], load_module, NULL);
             printf(GREEN "passed" RESET "\n");
         }
         catch

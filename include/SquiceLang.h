@@ -260,6 +260,13 @@ enum SL_OPCODE
     SL_OPCODE_IMPORT
 };
 
+#ifdef SL_DEBUG
+
+#define SL_OPCODE_TRAP_MASK 128
+#define sl_settrap(bin, ip) binary->block[ip] |= SL_OPCODE_TRAP_MASK;
+#define sl_cleartrap(bin, ip) binary->block[ip] &= ~SL_OPCODE_TRAP_MASK;
+
+#endif
 // Structure to store bytecode in binary format
 struct sl_binary_s
 {
@@ -474,13 +481,13 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a);
 
 void sl_value_free(sl_value_t *val);
 
-void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name));
+void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
 
 sl_binary_t *sl_compile_str(char *code);
 sl_binary_t *sl_compile_file(char *filename);
 
-void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name));
-void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name));
-void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name));
+void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
+void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
+void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
 
 #endif

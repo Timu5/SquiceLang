@@ -28,10 +28,10 @@ sl_binary_t *sl_compile_str(char *code)
     return bin;
 }
 
-void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name))
+void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
     sl_binary_t *bin = sl_compile_str(code);
-    sl_exec(ctx, ctx, bin, 0, load_module);
+    sl_exec(ctx, ctx, bin, 0, load_module, trap);
     sl_binary_free(bin);
 }
 
@@ -58,14 +58,15 @@ sl_binary_t *sl_compile_file(char *filename)
     return bin;
 }
 
-void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name))
+void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
     sl_binary_t *bin = sl_compile_file(filename);
-    sl_exec(ctx, ctx, bin, 0, load_module);
+    //dis(bin->block, bin->size);
+    sl_exec(ctx, ctx, bin, 0, load_module, trap);
     sl_binary_free(bin);
 }
 
-void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name))
+void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
     sl_parser_t *parser = sl_parser_new(code);
     sl_node_t *tree = sl_parse(parser);
@@ -83,7 +84,7 @@ void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *nam
     }
     printf("\n");
     dis(bin->block, bin->size);
-    sl_exec(ctx, ctx, bin, 0, load_module);
+    sl_exec(ctx, ctx, bin, 0, load_module, trap);
     sl_binary_free(bin);
 }
 
