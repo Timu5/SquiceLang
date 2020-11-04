@@ -121,6 +121,29 @@ void sl_gc_collect(sl_ctx_t *ctx)
             values[i]->markbit = 0;
         }
     }
+
+    flag = 0;
+    for (int i = (int)sl_vector_size(ctxs) - 1; i >= 0; i--)
+    {
+        if(flag == 0)
+        {
+           ctxs[i]->markbit = 1; 
+        }
+
+        if (ctxs[i]->markbit == 0)
+        {
+            sl_ctx_free(ctxs[i]);
+            int l = (int)sl_vector_size(ctxs) - 1;
+            if (i != l)
+                ctxs[i] = ctxs[l];
+            sl_vector_pop(ctxs);
+        }
+        else
+        {
+            flag = 1;
+            ctxs[i]->markbit = 0;
+        }
+    }
 }
 
 void sl_gc_freeall()
