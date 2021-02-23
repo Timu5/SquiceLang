@@ -46,10 +46,10 @@ sl_binary_t *sl_compile_file(char *filename)
     fseek(fd, 0, SEEK_SET);
 
     char *string = (char*)malloc(fsize + 1);
-    fread(string, 1, fsize, fd);
+    size_t r = fread(string, 1, fsize, fd);
     fclose(fd);
 
-    string[fsize] = 0;
+    string[r] = 0;
     
     sl_binary_t *bin = sl_compile_str(string);
 
