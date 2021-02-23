@@ -347,7 +347,7 @@ char *sl_tokenstr(int token)
         "SL_TOKEN_NUMBER",
         "SL_TOKEN_STRING",
 
-        "SL_TOKEN__FN",
+        "SL_TOKEN_FN",
         "SL_TOKEN_RETURN",
         "SL_TOKEN_LET",
         "SL_TOKEN_IF",
@@ -357,6 +357,7 @@ char *sl_tokenstr(int token)
         "SL_TOKEN_IMPORT",
         "SL_TOKEN_CLASS"
 
+        "SL_TOKEN_COLON", // :
         "SL_TOKEN_SEMICOLON", // ;
         "SL_TOKEN_COMMA",     // ,
         "SL_TOKEN_DOT",       // .
