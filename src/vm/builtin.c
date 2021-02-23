@@ -36,7 +36,7 @@ static void dict(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     if (n != 0 && n != 2)
-        throw("Function dict takes 0 or 2 arguments");
+        throw("Function dict() takes 0 or 2 arguments");
 
     if (n == 0)
         sl_vector_push(ctx->stack, sl_value_dict(NULL, NULL));
@@ -79,7 +79,7 @@ static void len(sl_ctx_t *ctx)
         return;
     }
 
-    throw("Function len need argument of type string or array.");
+    throw("Function len() need argument of type string or array.");
 }
 
 static void ord(sl_ctx_t *ctx)
@@ -101,13 +101,42 @@ static void chr(sl_ctx_t *ctx)
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_NUMBER)
     {
-        char *data = (char*)malloc(sizeof(char));
-        data[0] = (char)v->number; 
+        char *data = (char *)malloc(sizeof(char));
+        data[0] = (char)v->number;
         sl_vector_push(ctx->stack, sl_value_string(data));
         return;
     }
 
     throw("Function chr need argument of type number.");
+}
+
+static void super(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    sl_value_t *a = sl_vector_pop(ctx->stack);
+    sl_value_t *b = sl_vector_pop(ctx->stack);
+    if (a->type == SL_VALUE_DICT && b->type == SL_VALUE_DICT)
+    {
+        for (int i = 0; i < sl_vector_size(b->dict.names); i++)
+        {
+            int flag = 0;
+            for (int j = 0; j < sl_vector_size(a->dict.names); j++)
+            {
+                if (strcmp(a->dict.names[j], b->dict.names[i]) == 0)
+                {
+                    goto end;
+                }
+            }
+            sl_vector_push(a->dict.names, strdup(b->dict.names[i]));
+            sl_vector_push(a->dict.values, b->dict.values[i]);
+        end:;
+        }
+
+        sl_vector_push(ctx->stack, a);
+        return;
+    }
+
+    throw("Function _super_ need arguments of type dict.");
 }
 
 void sl_builtin_install(sl_ctx_t *ctx)
@@ -118,4 +147,5 @@ void sl_builtin_install(sl_ctx_t *ctx)
     sl_ctx_addfn(ctx, NULL, strdup("len"), 1, 0, len);
     sl_ctx_addfn(ctx, NULL, strdup("ord"), 1, 0, ord);
     sl_ctx_addfn(ctx, NULL, strdup("chr"), 1, 0, ord);
+    sl_ctx_addfn(ctx, NULL, strdup("_super_"), 2, 0, super);
 }

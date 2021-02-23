@@ -27,6 +27,32 @@ class yz
     }
 }
 
+class foo {
+    fn foo() {
+        this.name = "foo";
+        this.smth = "foo";
+    }
+
+    fn do() {
+        return "foo";
+    }
+
+    fn dont() {
+        return "foo";
+    }
+}
+
+class bar {
+    fn bar() {
+        _super_(this, foo());
+        this.name = "bar";
+    }
+
+    fn do() {
+        return "bar";
+    }
+}
+
 let xyz = test();
 
 assert(xyz.a() == 1);
@@ -37,3 +63,10 @@ assert(xyz.name == 2);
 let t2 = yz();
 
 assert(t2.name == "Not super :(");
+
+let b = bar();
+
+assert(b.name == "bar");
+assert(b.smth == "foo");
+assert(b.do() == "bar");
+assert(b.dont() == "foo");
