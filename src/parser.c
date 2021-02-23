@@ -343,11 +343,11 @@ sl_node_t *statment(sl_parser_t *parser)
         {
             if(parser->lasttoken != SL_TOKEN_FN)
             {
-                throw("Expect methods inside class");
+                throw("Expect only methods inside class");
             }
             sl_node_t *node = statment(parser);
 
-            // TODO: check for funcition!
+            // TODO: check for function!
             
             // change name to __class_name__
             char *old_name = node->func.name;
@@ -364,7 +364,7 @@ sl_node_t *statment(sl_parser_t *parser)
             }
             else
             {
-                // add code to cosntructor
+                // add code to conctructor
                 sl_vector_push(constructor, node_binary(20, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
             }
 
@@ -385,15 +385,19 @@ sl_node_t *statment(sl_parser_t *parser)
             {
                 throw("Constructor body need to be block");
             }
-            // combine with constructor and add retrun at the end!
-            sl_vector_append(constructor, sl_vector_size(constructors[0]->func.body->block), constructors[0]->func.body->block);
-            sl_vector_free(constructors[0]->func.body->block);
-            constructors[0]->func.body->block = constructor;
-            free(constructors[0]->func.name);
-            constructors[0]->func.name = strdup(class_name);
-            sl_vector_push(constructors[0]->func.body->block, node_return(node_ident(strdup("this"))));
-            // TODO: search for return and replace to "return this;""
-            sl_vector_free(constructors);
+
+            sl_vector(sl_node_t*) args = NULL;
+            for(int i = 0; i < sl_vector_size(constructors[0]->func.args); i++) {
+                sl_vector_push(args, node_ident(strdup(constructors[0]->func.args[i])));
+            }
+            sl_vector_push(constructor, node_call(node_ident(strdup(constructors[0]->func.name)), node_block(args)));
+            sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
+
+            sl_vector(char*) args2 = NULL;
+            for (int i = 0; i < sl_vector_size(constructors[0]->func.args); i++) {
+                sl_vector_push(args2, strdup(constructors[0]->func.args[i]));
+            }
+            sl_vector_push(methods_list, node_func(strdup(class_name), args2, node_block(constructor)));
         }
         else
         {
