@@ -360,11 +360,13 @@ void sl_node_print(sl_node_t *node, int ind)
         printf("num %g\n", node->number);
         break;
     case SL_NODETYPE_STRING:
-        printf("string \"%s\"", node->string);
+        printf("string \"%s\"\n", node->string);
         break;
     case SL_NODETYPE_CALL:
         printf("call\n");
+        printf("->func:\n");
         sl_node_print(node->call.func, ind + 1);
+        printf("->args:\n");
         sl_node_print(node->call.args, ind + 1);
         break;
     case SL_NODETYPE_FUNC:
@@ -418,7 +420,11 @@ void sl_node_print(sl_node_t *node, int ind)
         sl_node_print(node->index.expr, ind + 1);
         break;
     case SL_NODETYPE_IMPORT:
-        printf("import \"%s\"", node->string);
+        printf("import \"%s\"\n", node->string);
+        break;
+    case SL_NODETYPE_MEMBER:
+        printf("member \"%s\"\n", node->member.name);
+        sl_node_print(node->member.parent, ind + 1);
         break;
     }
 }
