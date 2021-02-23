@@ -67,6 +67,7 @@ int main(int argc, char **argv)
         {
             getstring();
             sl_dis_str(ctx, input_buffer, load_module, NULL);
+            sl_eval_str(ctx, input_buffer, load_module, NULL);
         }
         catch
         {
