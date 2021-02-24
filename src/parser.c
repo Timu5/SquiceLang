@@ -67,19 +67,21 @@ sl_node_t *primary(sl_parser_t *parser)
         {
             if (inexpr)
             {
-                if (fstring[i] == "}")
+                if (fstring[i] == '}')
                 {
                     // create buffer copy and add to parts
                     buffer[ptr] = 0;
                     char *cpy = strdup(buffer);
                     ptr = 0;
                     sl_vector_push(parts, cpy);
+                    inexpr = 0;
+                    continue;
                 }
             }
             else
             {
                 // TODO: Add backslash support!
-                if (fstring[i] == "$" && fstring[i + 1] == "{")
+                if (fstring[i] == '$' && fstring[i + 1] == '{')
                 {
                     if (i != 0)
                     {
@@ -95,20 +97,32 @@ sl_node_t *primary(sl_parser_t *parser)
             buffer[ptr] = fstring[i];
             ptr++;
         }
+        if (ptr != 0)
+        {
+            buffer[ptr] = 0;
+            char *cpy = strdup(buffer);
+            ptr = 0;
+            sl_vector_push(parts, cpy);
+        }
+        if (inexpr)
+            throw("Missing '}' in string interpolation");
 
         sl_vector(sl_node_t *) nodes = NULL;
         for (int i = 0; i < sl_vector_size(parts); i++)
         {
+            char *p = parts[i];
             if (parts[i][0] == '$' && parts[i][1] == '{')
             {
                 // create parser and parse this string!!!
                 sl_parser_t *pars = sl_parser_new(parts[i] + 2);
-                sl_vector_push(nodes, expr(pars));
+                nexttoken(pars);
+                sl_node_t *ex = expr(pars, 0);
+                sl_vector_push(nodes, ex);
             }
             else
             {
                 // check memory mangment!!!
-                sl_vector_push(nodes, node_string(parts[i]))
+                sl_vector_push(nodes, node_string(parts[i]));
             }
         }
 
@@ -123,8 +137,9 @@ sl_node_t *primary(sl_parser_t *parser)
             nodes[nodescnt - 2] = node_binary(SL_TOKEN_PLUS, a, b);
 
             sl_vector_pop(nodes);
+            nodescnt--;
         }
-
+        nexttoken(parser);
         prim = nodes[0];
     }
     else if (parser->lasttoken == SL_TOKEN_LPAREN) // '(' expr ')'
@@ -514,5 +529,6 @@ sl_node_t *sl_parse(sl_parser_t *parser)
             sl_vector_push(stmts, n);
         }
     }
-    return node_root(node_block(funcs), node_block(stmts));
+    sl_node_t *root = node_root(node_block(funcs), node_block(stmts));
+    return root;
 }

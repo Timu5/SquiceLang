@@ -1,0 +1,5 @@
+let a = "10";
+
+assert(f"q_${a}" == "q_10");
+assert(f"${a}_w" == "10_w");
+assert(f"q_${a}_w" == "q_10_w");

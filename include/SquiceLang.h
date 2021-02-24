@@ -193,7 +193,7 @@ struct sl_fn_s
 {
     int address;
     int argc; 
-    struct sl_binary_s *binary; /* binary with funcion code */
+    struct sl_binary_s *binary; /* binary with function code */
     struct sl_ctx_s *ctx;
     void (*native)(struct sl_ctx_s *); // call if not NULL
 };
@@ -365,8 +365,8 @@ enum SL_TOKEN
     SL_TOKEN_LCHEVR,    // <
     SL_TOKEN_RCHEVR,    // >
 
-    SL_TOKEN_LPAREN, // (
-    SL_TOKEN_RPAREN, // )
+    SL_TOKEN_LPAREN,        // (
+    SL_TOKEN_RPAREN,        // )
     SL_TOKEN_LBRACE,        // {
     SL_TOKEN_RBRACE,        // }
     SL_TOKEN_LBRACK,        // [
