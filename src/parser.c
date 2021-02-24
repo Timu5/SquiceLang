@@ -117,11 +117,14 @@ sl_node_t *primary(sl_parser_t *parser)
                 sl_parser_t *pars = sl_parser_new(parts[i] + 2);
                 nexttoken(pars);
                 sl_node_t *ex = expr(pars, 0);
-                sl_vector_push(nodes, ex);
+
+                sl_vector(sl_node_t *) node = NULL;
+                sl_vector_push(node, ex);
+                sl_vector_push(nodes, node_call(node_ident(strdup("str")), node_block(node)));
             }
             else
             {
-                // check memory mangment!!!
+                // check memory management!!!
                 sl_vector_push(nodes, node_string(parts[i]));
             }
         }

@@ -139,6 +139,25 @@ static void super(sl_ctx_t *ctx)
     throw("Function _super_ need arguments of type dict.");
 }
 
+static void str(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    sl_value_t *v = sl_vector_pop(ctx->stack);
+    if (v->type == SL_VALUE_STRING)
+    {
+        sl_vector_push(ctx->stack, v);
+        return;
+    }
+
+    char *str = NULL;
+    if (v->type == SL_VALUE_NUMBER)
+        str = sl_mprintf("%g", v->number);
+    else
+        str = sl_mprintf("[object]");
+
+    sl_vector_push(ctx->stack, sl_value_string(str));
+}
+
 void sl_builtin_install(sl_ctx_t *ctx)
 {
     sl_ctx_addfn(ctx, NULL, strdup("print"), 0, 0, print);
@@ -148,4 +167,5 @@ void sl_builtin_install(sl_ctx_t *ctx)
     sl_ctx_addfn(ctx, NULL, strdup("ord"), 1, 0, ord);
     sl_ctx_addfn(ctx, NULL, strdup("chr"), 1, 0, ord);
     sl_ctx_addfn(ctx, NULL, strdup("_super_"), 2, 0, super);
+    sl_ctx_addfn(ctx, NULL, strdup("str"), 1, 0, str);
 }
