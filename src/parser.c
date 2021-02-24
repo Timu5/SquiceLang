@@ -55,44 +55,58 @@ sl_node_t *primary(sl_parser_t *parser)
     else if (parser->lasttoken == SL_TOKEN_FSTRING)
     {
         sl_lexer_t *lex = sl_lexer_new(parser->lexer->buffer);
-        
+
         // split string into parts
-        sl_vector(char*) parts = NULL;
+        sl_vector(char *) parts = NULL;
         int ptr = 0;
-        char * buffer = (char*)malloc(255);
+        char *buffer = (char *)malloc(255);
         int len = strlen(parser->lexer->buffer);
         char *fstring = parser->lexer->buffer;
         int inexpr = 0;
-        for(int i = 0; i < len; i++){
-            if(inexpr) {
-                if(fstring[i] == "}")
+        for (int i = 0; i < len; i++)
+        {
+            if (inexpr)
+            {
+                if (fstring[i] == "}")
                 {
                     // create buffer copy and add to parts
+                    buffer[ptr] = 0;
+                    char *cpy = strdup(buffer);
                     ptr = 0;
+                    sl_vector_push(parts, cpy);
                 }
             }
-            else {
+            else
+            {
                 // TODO: Add backslash support!
-                if(fstring[i] == "$" && fstring[i+1] == "{")
+                if (fstring[i] == "$" && fstring[i + 1] == "{")
                 {
-                    if(i != 0) {
+                    if (i != 0)
+                    {
                         // create bufffer copy and add to parts
+                        buffer[ptr] = 0;
+                        char *cpy = strdup(buffer);
                         ptr = 0;
+                        sl_vector_push(parts, cpy);
                     }
                     inexpr = 1;
                 }
             }
             buffer[ptr] = fstring[i];
+            ptr++;
         }
 
-        sl_vector(sl_node_t*) nodes = NULL;
-        for(int i = 0; i < sl_vector_size(parts); i++) {
-            if(parts[i][0] == '$' && parts[i][1] == '{') {
+        sl_vector(sl_node_t *) nodes = NULL;
+        for (int i = 0; i < sl_vector_size(parts); i++)
+        {
+            if (parts[i][0] == '$' && parts[i][1] == '{')
+            {
                 // create parser and parse this string!!!
                 sl_parser_t *pars = sl_parser_new(parts[i] + 2);
                 sl_vector_push(nodes, expr(pars));
             }
-            else {
+            else
+            {
                 // check memory mangment!!!
                 sl_vector_push(nodes, node_string(parts[i]))
             }
@@ -101,14 +115,14 @@ sl_node_t *primary(sl_parser_t *parser)
         int nodescnt = sl_vector_size(nodes);
 
         // generate binary additions for all nodes
-        while(sl_vector_size(nodes) > 1) {
+        while (sl_vector_size(nodes) > 1)
+        {
             sl_node_t *a = nodes[nodescnt - 2];
             sl_node_t *b = nodes[nodescnt - 1];
 
-            nodes[nodescnt - 2] = node_binary("+", a, b);
+            nodes[nodescnt - 2] = node_binary(SL_TOKEN_PLUS, a, b);
 
             sl_vector_pop(nodes);
-
         }
 
         prim = nodes[0];
