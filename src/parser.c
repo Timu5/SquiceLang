@@ -32,7 +32,7 @@ static void match(sl_parser_t *parser, int token)
 sl_node_t *expr(sl_parser_t *parser, int min);
 
 // primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary |
-//             array | dict |
+//             array | dict | fstring
 //             primary '[' expr ']' | primary '(' expr ')'| primary '.' ident
 sl_node_t *primary(sl_parser_t *parser)
 {
@@ -51,6 +51,67 @@ sl_node_t *primary(sl_parser_t *parser)
     {
         prim = node_ident(strdup(parser->lexer->buffer));
         nexttoken(parser);
+    }
+    else if (parser->lasttoken == SL_TOKEN_FSTRING)
+    {
+        sl_lexer_t *lex = sl_lexer_new(parser->lexer->buffer);
+        
+        // split string into parts
+        sl_vector(char*) parts = NULL;
+        int ptr = 0;
+        char * buffer = (char*)malloc(255);
+        int len = strlen(parser->lexer->buffer);
+        char *fstring = parser->lexer->buffer;
+        int inexpr = 0;
+        for(int i = 0; i < len; i++){
+            if(inexpr) {
+                if(fstring[i] == "}")
+                {
+                    // create buffer copy and add to parts
+                    ptr = 0;
+                }
+            }
+            else {
+                // TODO: Add backslash support!
+                if(fstring[i] == "$" && fstring[i+1] == "{")
+                {
+                    if(i != 0) {
+                        // create bufffer copy and add to parts
+                        ptr = 0;
+                    }
+                    inexpr = 1;
+                }
+            }
+            buffer[ptr] = fstring[i];
+        }
+
+        sl_vector(sl_node_t*) nodes = NULL;
+        for(int i = 0; i < sl_vector_size(parts); i++) {
+            if(parts[i][0] == '$' && parts[i][1] == '{') {
+                // create parser and parse this string!!!
+                sl_parser_t *pars = sl_parser_new(parts[i] + 2);
+                sl_vector_push(nodes, expr(pars));
+            }
+            else {
+                // check memory mangment!!!
+                sl_vector_push(nodes, node_string(parts[i]))
+            }
+        }
+
+        int nodescnt = sl_vector_size(nodes);
+
+        // generate binary additions for all nodes
+        while(sl_vector_size(nodes) > 1) {
+            sl_node_t *a = nodes[nodescnt - 2];
+            sl_node_t *b = nodes[nodescnt - 1];
+
+            nodes[nodescnt - 2] = node_binary("+", a, b);
+
+            sl_vector_pop(nodes);
+
+        }
+
+        prim = nodes[0];
     }
     else if (parser->lasttoken == SL_TOKEN_LPAREN) // '(' expr ')'
     {

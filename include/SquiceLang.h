@@ -334,6 +334,7 @@ enum SL_TOKEN
     SL_TOKEN_IDENT,
     SL_TOKEN_NUMBER,
     SL_TOKEN_STRING,
+    SL_TOKEN_FSTRING,
 
     //keyword
     SL_TOKEN_FN,

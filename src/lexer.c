@@ -70,6 +70,12 @@ int sl_gettoken(sl_lexer_t *lexer)
 
         lexer->buffer[ptr] = 0;
 
+        if(strcmp(lexer->buffer, "f") == 0 && lexer->lastchar == '"') 
+        {
+            sl_gettoken(lexer);
+            return SL_TOKEN_FSTRING;
+        }
+
         if (strcmp(lexer->buffer, "if") == 0)
             return SL_TOKEN_IF;
         else if (strcmp(lexer->buffer, "else") == 0)
@@ -346,6 +352,7 @@ char *sl_tokenstr(int token)
         "SL_TOKEN_IDENT",
         "SL_TOKEN_NUMBER",
         "SL_TOKEN_STRING",
+        "SL_TOKEN_FSTRING",
 
         "SL_TOKEN_FN",
         "SL_TOKEN_RETURN",
