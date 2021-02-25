@@ -103,6 +103,15 @@ void dis(char *opcodes, long fsize)
         case SL_OPCODE_IMPORT:
             printf("import \"%s\"", getstr(opcodes, &ip));
             break;
+        case SL_OPCODE_TRY:
+            printf("try %d", getint(opcodes, &ip));
+            break;
+        case SL_OPCODE_ENDTRY:
+            printf("endtry");
+            break;
+        case SL_OPCODE_THROW:
+            printf("throw");
+            break;
         default:
             printf("data %x", byte);
             break;
@@ -118,6 +127,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
     char *opcodes = binary->block;
     int size = binary->size;
     sl_vector(int) call_stack = NULL;
+    sl_vector(int) try_stack = NULL;
 
     while (1)
     {
@@ -127,10 +137,11 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
         ip += 1;
 
 #ifdef SL_DEBUG
-        if(byte & SL_OPCODE_TRAP_MASK) // for debugging only
-        {   
-             if(trap)trap(context);
-             byte &= ~SL_OPCODE_TRAP_MASK;
+        if (byte & SL_OPCODE_TRAP_MASK) // for debugging only
+        {
+            if (trap)
+                trap(context);
+            byte &= ~SL_OPCODE_TRAP_MASK;
         }
 #endif
 
@@ -149,9 +160,9 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             break;
         case SL_OPCODE_PUSHV:
         {
-            char* name = getstr(opcodes, &ip);
+            char *name = getstr(opcodes, &ip);
             sl_value_t *val = sl_ctx_getvar(context, name);
-            if(val == NULL)
+            if (val == NULL)
             {
                 throw("No variable named '%s'", name);
             }
@@ -202,8 +213,8 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 parent = sl_vector_pop(global->stack);
             }
             sl_value_t *argc = sl_vector_pop(global->stack);
-            
-            if((int)(argc->number) < fn->argc)
+
+            if ((int)(argc->number) < fn->argc)
             {
                 throw("To little arguments for function, expect %d got %d", fn->argc, (int)(argc->number));
             }
@@ -215,7 +226,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             else
             {
                 sl_binary_t *fn_binary = fn->binary;
-                if(binary == fn_binary)
+                if (binary == fn_binary)
                 {
                     // same module :)
                     context = sl_ctx_new(context);
@@ -237,10 +248,12 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     }
                     sl_exec(global, n_context, fn->binary, fn->address, load_module, trap);
                     // what with return value ???? :(
+                    // TODO: Fix try .. catch on external modules
+                    // TODO: Remove sl_exec, maybe link libraries together into single memory space???
                 }
             }
         }
-            break;
+        break;
         case SL_OPCODE_RETN:
             sl_vector_push(global->stack, sl_value_null());
         case SL_OPCODE_RET:
@@ -253,7 +266,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             ip = ret_adr;
             if (context->parent != NULL)
             {
-                sl_ctx_t* parent = context->parent;
+                sl_ctx_t *parent = context->parent;
                 context = parent;
                 context->child = NULL;
             }
@@ -268,7 +281,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             if (v->number == 0)
                 ip = nip;
         }
-            break;
+        break;
         case SL_OPCODE_INDEX:
         {
             sl_value_t *expr = sl_vector_pop(global->stack);
@@ -297,26 +310,26 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
         {
             // eval module
             char *name = getstr(opcodes, &ip);
-            if(load_module == NULL)
+            if (load_module == NULL)
                 throw("Module loading not supported");
 
             // TODO: cache loaded module and it's context
             sl_binary_t *module = load_module(name);
-            if(module == NULL)
+            if (module == NULL)
                 throw("Cannot find %s module", name);
 
             sl_ctx_t *module_ctx = sl_ctx_new(NULL);
             sl_builtin_install(module_ctx);
             module_ctx = sl_ctx_new(module_ctx);
             sl_exec(module_ctx, module_ctx, module, 0, load_module, trap);
-            
+
             // load it's context into dictionary value
-            sl_vector(char*) names = NULL;
-            sl_vector(sl_value_t*) values = NULL;
-            for(int i = 0; i < sl_vector_size(module_ctx->vars); i++)
+            sl_vector(char *) names = NULL;
+            sl_vector(sl_value_t *) values = NULL;
+            for (int i = 0; i < sl_vector_size(module_ctx->vars); i++)
             {
-                char* vname = strdup(module_ctx->vars[i]->name);
-                sl_value_t* value = module_ctx->vars[i]->val;
+                char *vname = strdup(module_ctx->vars[i]->name);
+                sl_value_t *value = module_ctx->vars[i]->val;
                 sl_vector_push(names, vname);
                 sl_vector_push(values, value);
             }
@@ -324,6 +337,42 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 
             // assign this value to variable withing current context
             sl_ctx_addvar(context, name, module_dict);
+            break;
+        }
+        case SL_OPCODE_TRY:
+        {
+            // push adress onto try stack
+            int adr = getint(opcodes, &ip);
+            sl_vector_push(try_stack, adr);
+            break;
+        }
+        case SL_OPCODE_ENDTRY:
+        {
+            // pop adress from try stack
+            if (sl_vector_size(try_stack) == 0)
+                throw("No try to end!");
+
+            sl_vector_pop(try_stack);
+            break;
+        }
+        case SL_OPCODE_THROW:
+        {
+            if (sl_vector_size(try_stack) == 0)
+            {
+                if (trap)
+                {
+                    trap(context);
+                }
+                else
+                {
+                    throw("Exception not handled!");
+                }
+            }
+            else
+            {
+                ip = sl_vector_pop(try_stack);
+            }
+
             break;
         }
         }

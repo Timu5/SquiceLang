@@ -295,7 +295,8 @@ sl_node_t *expr(sl_parser_t *parser, int min)
 // break := 'break' ';'
 // import := 'import' ident ';'
 // class := 'class' ident '{' methods '}'
-// statement := block | let | if | while | funca | return | break | import | class | expr ';'
+// try := 'try' statement 'catch' statement
+// statement := block | let | if | while | funca | return | break | import | class | try | expr ';'
 sl_node_t *statment(sl_parser_t *parser)
 {
     switch (parser->lasttoken)
@@ -499,6 +500,15 @@ sl_node_t *statment(sl_parser_t *parser)
 
         nexttoken(parser);
         return node_class(class_name, methods_list);
+    case SL_TOKEN_TRY:
+        nexttoken(parser);
+        sl_node_t *tryblock = statment(parser);
+
+        match(parser, SL_TOKEN_CATCH);
+        nexttoken(parser);
+        sl_node_t *catchblock = statment(parser);
+
+        return node_trycatch(tryblock, catchblock);
     default:;
         sl_node_t *e = expr(parser, 0);
         match(parser, SL_TOKEN_SEMICOLON);

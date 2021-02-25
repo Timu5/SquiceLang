@@ -320,6 +320,23 @@ sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list)
     return node;
 }
 
+static void free_trycatch(sl_node_t *node)
+{
+    sl_node_free(node->trycatch.tryblock);
+    sl_node_free(node->trycatch.catchblock);
+    free(node);
+}
+
+sl_node_t *node_trycatch(sl_node_t *tryblock, sl_node_t *catchblock)
+{
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_TRYCATCH;
+    node->trycatch.tryblock = tryblock;
+    node->trycatch.catchblock = catchblock;
+    node->codegen = sl_codegen_trycatch;
+    node->free = free_trycatch;
+    return node;
+}
 
 static void printtab(int n)
 {

@@ -59,7 +59,7 @@ void sl_codegen_string(sl_node_t *node, sl_binary_t *binary)
 
 void sl_codegen_call(sl_node_t *node, sl_binary_t *binary)
 {
-    for (int i = (int)sl_vector_size(node->call.args->block) - 1; i >= 0 ; i--)
+    for (int i = (int)sl_vector_size(node->call.args->block) - 1; i >= 0; i--)
     {
         sl_node_t *n = node->call.args->block[i];
         n->codegen(n, binary);
@@ -202,4 +202,29 @@ void sl_codegen_import(sl_node_t *node, sl_binary_t *binary)
 
 void sl_codegen_class(sl_node_t *node, sl_binary_t *binary)
 {
+}
+
+void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary)
+{
+    int i = binary->index++;
+
+    char *lname = sl_mprintf("catch_%d", i);
+    char *lename = sl_mprintf("catchend_%d", i);
+
+    int adr = sl_bytecode_emitint(binary, SL_OPCODE_TRY, 0x22222222);
+    sl_bytecode_addtofill(binary, strdup(lname), adr + 1);
+
+    node->trycatch.tryblock->codegen(node->trycatch.tryblock, binary);
+
+    sl_bytecode_emitint(binary, SL_OPCODE_JMP, 0x22222222);
+    sl_bytecode_addtofill(binary, strdup(lename), adr + 1);
+
+    sl_bytecode_addlabel(binary, strdup(lname), binary->size);
+    // TODO: Add support for custom exception name
+    sl_bytecode_emitstr(binary, SL_OPCODE_STORE, strdup("exception"));
+    node->trycatch.tryblock->codegen(node->trycatch.catchblock, binary);
+    sl_bytecode_addlabel(binary, strdup(lename), binary->size);
+
+    free(lname);
+    free(lename);
 }
