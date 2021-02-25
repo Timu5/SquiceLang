@@ -95,9 +95,11 @@ int sl_gettoken(sl_lexer_t *lexer)
         else if (strcmp(lexer->buffer, "class") == 0)
             return SL_TOKEN_CLASS;
         else if (strcmp(lexer->buffer, "try") == 0)
-            return SL_TOKEN_CLASS;
+            return SL_TOKEN_TRY;
         else if (strcmp(lexer->buffer, "catch") == 0)
-            return SL_TOKEN_CLASS;
+            return SL_TOKEN_CATCH;
+        else if (strcmp(lexer->buffer, "throw") == 0)
+            return SL_TOKEN_THROW;
 
         return SL_TOKEN_IDENT;
     }
@@ -369,6 +371,7 @@ char *sl_tokenstr(int token)
         "SL_TOKEN_CLASS",
         "SL_TOKEN_TRY",
         "SL_TOKEN_CATCH",
+        "SL_TOKEN_THROW",
 
         "SL_TOKEN_COLON",     // :
         "SL_TOKEN_SEMICOLON", // ;

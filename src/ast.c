@@ -338,6 +338,22 @@ sl_node_t *node_trycatch(sl_node_t *tryblock, sl_node_t *catchblock)
     return node;
 }
 
+static void free_throw(sl_node_t *node)
+{
+    sl_node_free(node->throw);
+    free(node);
+}
+
+sl_node_t *node_throw(sl_node_t *expr)
+{
+    sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
+    node->type = SL_NODETYPE_THROW;
+    node->throw = expr;
+    node->codegen = sl_codegen_throw;
+    node->free = free_throw;
+    return node;
+}
+
 static void printtab(int n)
 {
     for (int i = 0; i < n; i++)

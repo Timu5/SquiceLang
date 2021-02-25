@@ -98,7 +98,8 @@ enum SL_NODETYPE
     SL_NODETYPE_MEMBER,
     SL_NODETYPE_IMPORT,
     SL_NODETYPE_CLASS,
-    SL_NODETYPE_TRYCATCH
+    SL_NODETYPE_TRYCATCH,
+    SL_NODETYPE_THROW,
 };
 
 struct sl_binary_s;
@@ -178,6 +179,7 @@ struct sl_node_s
             struct sl_node_s *tryblock;
             struct sl_node_s *catchblock;
         } trycatch;
+        struct sl_node_s *throw;
     };
 };
 
@@ -238,6 +240,7 @@ sl_node_t *node_member(sl_node_t *parent, char *name);
 sl_node_t *node_import(char *name);
 sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list);
 sl_node_t *node_trycatch(sl_node_t *tryblock, sl_node_t *catchblock);
+sl_node_t *node_throw(sl_node_t *expr);
 
 void sl_node_print(sl_node_t *node, int ind);
 
@@ -324,6 +327,7 @@ void sl_codegen_member(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_import(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_class(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary);
+void sl_codegen_throw(sl_node_t *node, sl_binary_t *binary);
 
 sl_ctx_t *sl_ctx_new(sl_ctx_t *parent);
 void sl_ctx_free(sl_ctx_t *ctx);
@@ -359,6 +363,7 @@ enum SL_TOKEN
     SL_TOKEN_CLASS,
     SL_TOKEN_TRY,
     SL_TOKEN_CATCH,
+    SL_TOKEN_THROW,
 
     SL_TOKEN_COLON,     // :
     SL_TOKEN_SEMICOLON, // ;

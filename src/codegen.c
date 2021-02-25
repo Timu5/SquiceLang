@@ -228,3 +228,9 @@ void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary)
     free(lname);
     free(lename);
 }
+
+void sl_codegen_throw(sl_node_t *node, sl_binary_t *binary)
+{
+    node->ret->codegen(node->throw, binary);
+    sl_bytecode_emit(binary, SL_OPCODE_THROW);
+}
