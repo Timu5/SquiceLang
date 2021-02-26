@@ -122,12 +122,21 @@ void dis(char *opcodes, long fsize)
 
     ip = 0;
 }
+
+struct tryptr
+{
+    int addr;
+    sl_ctx_t *ctx;
+};
+
+typedef struct tryptr tryptr_t;
+
 void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
     char *opcodes = binary->block;
     int size = binary->size;
     sl_vector(int) call_stack = NULL;
-    sl_vector(int) try_stack = NULL;
+    sl_vector(tryptr_t) try_stack = NULL;
 
     while (1)
     {
@@ -343,7 +352,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
         {
             // push adress onto try stack
             int adr = getint(opcodes, &ip);
-            sl_vector_push(try_stack, adr);
+            sl_vector_push(try_stack, ((tryptr_t){adr, context}));
             break;
         }
         case SL_OPCODE_ENDTRY:
@@ -370,7 +379,11 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             }
             else
             {
-                ip = sl_vector_pop(try_stack);
+                tryptr_t t = sl_vector_pop(try_stack); 
+                ip = t.addr;
+                context = t.ctx;
+                // TODO: Free orphan context
+                // TODO: Unwind stack
             }
 
             break;
