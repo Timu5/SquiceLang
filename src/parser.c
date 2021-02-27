@@ -457,7 +457,7 @@ sl_node_t *statment(sl_parser_t *parser)
             }
 
             // add code to conctructor
-            sl_vector_push(constructor, node_binary(20, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
+            sl_vector_push(constructor, node_binary(SL_TOKEN_ASSIGN, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
 
             free(old_name);
             node->func.name = new_name;
