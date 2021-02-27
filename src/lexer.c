@@ -12,8 +12,8 @@ sl_lexer_t *sl_lexer_new(char *input)
     lexer->buffer = (char *)malloc(255);
     lexer->number = 0;
     lexer->marker.index = 0;
-    lexer->marker.line = 0;
-    lexer->marker.column = 0;
+    lexer->marker.line = 1;
+    lexer->marker.column = 1;
     lexer->lastchar = ' ';
     return lexer;
 }
@@ -39,7 +39,7 @@ static int nextchar(sl_lexer_t *lexer)
     if (lexer->lastchar == '\n')
     {
         lexer->marker.line++;
-        lexer->marker.column = 0;
+        lexer->marker.column = 1;
     }
     else
     {
