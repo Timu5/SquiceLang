@@ -102,7 +102,7 @@ void sl_value_free_members(sl_value_t *val)
     else if (val->type == SL_VALUE_FN)
     {
         free(val->fn);
-    }   
+    }
 }
 
 void sl_value_free(sl_value_t *val)
@@ -225,6 +225,21 @@ static sl_value_t *binary_dict(int op, sl_value_t *a, sl_value_t *b)
     return sl_value_null();
 }
 
+static char *sl_valuetypestr(int token)
+{
+    if (token < 0 || token > SL_VALUE_REF)
+        return "WRONG VALUE!";
+    char *names[] = {
+        "SL_VALUE_NULL",
+        "SL_VALUE_NUMBER",
+        "SL_VALUE_STRING",
+        "SL_VALUE_ARRAY",
+        "SL_VALUE_DICT",
+        "SL_VALUE_FN",
+        "SL_VALUE_REF"};
+    return names[token];
+}
+
 sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
 {
     if (op == SL_TOKEN_ASSIGN)
@@ -239,7 +254,7 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
         b = b->ref;
 
     if (a->type != b->type)
-        throw("Type mismatch %d %d %d", op, a->type, b->type);
+        throw("Type mismatch %s %s %s", sl_tokenstr(op), sl_valuetypestr(a->type), sl_valuetypestr(b->type));
 
     switch (a->type)
     {
