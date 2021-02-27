@@ -40,7 +40,7 @@ typedef struct sl_vector_s sl_vector_t;
     ((VECTOR) ? sl_vector_meta(VECTOR)->allocated : 0)
 
 /* Resize [VECTOR] to accomodate [SIZE] more elements */
-#define sl_vector_resize(VECTOR, SIZE)                                          \
+#define sl_vector_resize(VECTOR, SIZE)                                             \
     (sl_vector_try_grow((VECTOR), (SIZE)), sl_vector_meta(VECTOR)->used += (SIZE), \
      &(VECTOR)[sl_vector_meta(VECTOR)->used - (SIZE)])
 
@@ -70,7 +70,7 @@ typedef struct sl_vector_s sl_vector_t;
 
 /* Remove from [VECTOR], [COUNT] elements starting from [INDEX] */
 #define sl_vector_remove(VECTOR, INDEX, COUNT)                                               \
-    ((void)(memmove((VECTOR) + (INDEX), (VECTOR) + (INDEX) + (COUNT),                     \
+    ((void)(memmove((VECTOR) + (INDEX), (VECTOR) + (INDEX) + (COUNT),                        \
                     sizeof(*(VECTOR)) * (sl_vector_meta(VECTOR)->used - (INDEX) - (COUNT))), \
             sl_vector_meta(VECTOR)->used -= (COUNT)))
 
@@ -102,14 +102,25 @@ enum SL_NODETYPE
     SL_NODETYPE_THROW,
 };
 
+struct sl_marker_s
+{
+    size_t index;
+    size_t line;
+    size_t column;
+};
+
+typedef struct sl_marker_s sl_marker_t;
+
 struct sl_binary_s;
 
 struct sl_node_s
 {
     enum SL_NODETYPE type;
+    sl_marker_t marker;
     void (*codegen)(struct sl_node_s *this, struct sl_binary_s *binary);
     void (*free)(struct sl_node_s *this);
-    union {
+    union
+    {
         struct
         {
             struct sl_node_s *funcs;
@@ -171,7 +182,7 @@ struct sl_node_s
         char *import;
         struct
         {
-            char* name;
+            char *name;
             sl_vector(struct sl_node_s *) methods;
         } class;
         struct
@@ -200,7 +211,7 @@ struct sl_ctx_s;
 struct sl_fn_s
 {
     int address;
-    int argc; 
+    int argc;
     struct sl_binary_s *binary; /* binary with function code */
     struct sl_ctx_s *ctx;
     void (*native)(struct sl_ctx_s *); // call if not NULL
@@ -221,26 +232,26 @@ typedef struct sl_ctx_s sl_ctx_t;
 
 #define sl_node_free(node) ((node)->free((node)))
 
-sl_node_t *node_root(sl_node_t *funcs, sl_node_t *stmts);
-sl_node_t *node_ident(char *name);
-sl_node_t *node_unary(int op, sl_node_t *val);
-sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b);
-sl_node_t *node_number(double number);
-sl_node_t *node_string(char *string);
-sl_node_t *node_call(sl_node_t *func, sl_node_t *args);
-sl_node_t *node_func(char *name, sl_vector(char *) args, sl_node_t *body);
-sl_node_t *node_return(sl_node_t *expr);
-sl_node_t *node_cond(sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody);
-sl_node_t *node_loop(sl_node_t *arg, sl_node_t *body);
-sl_node_t *node_break();
-sl_node_t *node_decl(sl_node_t *name, sl_node_t *value);
-sl_node_t *node_index(sl_node_t *var, sl_node_t *expr);
-sl_node_t *node_block(sl_vector(sl_node_t *) list);
-sl_node_t *node_member(sl_node_t *parent, char *name);
-sl_node_t *node_import(char *name);
-sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list);
-sl_node_t *node_trycatch(sl_node_t *tryblock, sl_node_t *catchblock);
-sl_node_t *node_throw(sl_node_t *expr);
+sl_node_t *node_root(sl_marker_t marker, sl_node_t *funcs, sl_node_t *stmts);
+sl_node_t *node_ident(sl_marker_t marker, char *name);
+sl_node_t *node_unary(sl_marker_t marker, int op, sl_node_t *val);
+sl_node_t *node_binary(sl_marker_t marker, int op, sl_node_t *a, sl_node_t *b);
+sl_node_t *node_number(sl_marker_t marker, double number);
+sl_node_t *node_string(sl_marker_t marker, char *string);
+sl_node_t *node_call(sl_marker_t marker, sl_node_t *func, sl_node_t *args);
+sl_node_t *node_func(sl_marker_t marker, char *name, sl_vector(char *) args, sl_node_t *body);
+sl_node_t *node_return(sl_marker_t marker, sl_node_t *expr);
+sl_node_t *node_cond(sl_marker_t marker, sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody);
+sl_node_t *node_loop(sl_marker_t marker, sl_node_t *arg, sl_node_t *body);
+sl_node_t *node_break(sl_marker_t marker);
+sl_node_t *node_decl(sl_marker_t marker, sl_node_t *name, sl_node_t *value);
+sl_node_t *node_index(sl_marker_t marker, sl_node_t *var, sl_node_t *expr);
+sl_node_t *node_block(sl_marker_t marker, sl_vector(sl_node_t *) list);
+sl_node_t *node_member(sl_marker_t marker, sl_node_t *parent, char *name);
+sl_node_t *node_import(sl_marker_t marker, char *name);
+sl_node_t *node_class(sl_marker_t marker, char *name, sl_vector(sl_node_t *) list);
+sl_node_t *node_trycatch(sl_marker_t marker, sl_node_t *tryblock, sl_node_t *catchblock);
+sl_node_t *node_throw(sl_marker_t marker, sl_node_t *expr);
 
 void sl_node_print(sl_node_t *node, int ind);
 
@@ -336,7 +347,7 @@ void sl_ctx_addvar(sl_ctx_t *ctx, char *name, struct sl_value_s *val);
 sl_fn_t *sl_ctx_getfn(sl_ctx_t *ctx, char *name);
 void sl_ctx_addfn(sl_ctx_t *ctx, sl_binary_t *binary, char *name, int argc, int address, void (*fn)(sl_ctx_t *));
 
-#define SL_ALLOC(type) (type*)sl_safe_alloc(sizeof(type))
+#define SL_ALLOC(type) (type *)sl_safe_alloc(sizeof(type))
 
 void *sl_safe_alloc(int size);
 struct sl_value_s *sl_gc_alloc_value();
@@ -383,13 +394,13 @@ enum SL_TOKEN
     SL_TOKEN_LCHEVR,    // <
     SL_TOKEN_RCHEVR,    // >
 
-    SL_TOKEN_LPAREN,        // (
-    SL_TOKEN_RPAREN,        // )
-    SL_TOKEN_LBRACE,        // {
-    SL_TOKEN_RBRACE,        // }
-    SL_TOKEN_LBRACK,        // [
-    SL_TOKEN_RBRACK,        // ]
-    SL_TOKEN_EXCLAM,        // !
+    SL_TOKEN_LPAREN, // (
+    SL_TOKEN_RPAREN, // )
+    SL_TOKEN_LBRACE, // {
+    SL_TOKEN_RBRACE, // }
+    SL_TOKEN_LBRACK, // [
+    SL_TOKEN_RBRACK, // ]
+    SL_TOKEN_EXCLAM, // !
 
     SL_TOKEN_EOF,
     SL_TOKEN_UNKOWN
@@ -398,12 +409,11 @@ enum SL_TOKEN
 struct sl_lexer_s
 {
     char *input;
-    int index;
     char *buffer;
     double number;
-    int line;
-    int col;
     int lastchar;
+    sl_marker_t startmarker;
+    sl_marker_t marker;
 };
 
 typedef struct sl_lexer_s sl_lexer_t;
@@ -443,8 +453,8 @@ char *sl_mprintf(char *fmt, ...);
 #define _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_NONSTDC_NO_DEPRECATE
-#pragma warning( disable : 4100)
-#pragma warning( disable : 4996)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4996)
 #endif
 
 enum SL_VALUE
@@ -466,7 +476,8 @@ struct sl_value_s
     int constant;
     int refs;
     int markbit;
-    union {
+    union
+    {
         double number;
         char *string;
         sl_vector(struct sl_value_s *) array;

@@ -10,10 +10,11 @@ static void free_root(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_root(sl_node_t *funcs, sl_node_t *stmts)
+sl_node_t *node_root(sl_marker_t marker, sl_node_t *funcs, sl_node_t *stmts)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_ROOT;
+    node->marker = marker;
     node->root.funcs = funcs;
     node->root.stmts = stmts;
     node->codegen = sl_codegen_root;
@@ -27,10 +28,11 @@ static void free_ident(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_ident(char *name)
+sl_node_t *node_ident(sl_marker_t marker, char *name)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_IDENT;
+    node->marker = marker;
     node->ident = name;
     node->codegen = sl_codegen_ident;
     node->free = free_ident;
@@ -43,10 +45,11 @@ static void free_unary(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_unary(int op, sl_node_t *val)
+sl_node_t *node_unary(sl_marker_t marker, int op, sl_node_t *val)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_UNARY;
+    node->marker = marker;
     node->unary.op = op;
     node->unary.val = val;
     node->codegen = sl_codegen_unary;
@@ -61,10 +64,11 @@ static void free_binary(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_binary(int op, sl_node_t *a, sl_node_t *b)
+sl_node_t *node_binary(sl_marker_t marker, int op, sl_node_t *a, sl_node_t *b)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_BINARY;
+    node->marker = marker;
     node->binary.op = op;
     node->binary.a = a;
     node->binary.b = b;
@@ -78,10 +82,11 @@ static void free_number(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_number(double number)
+sl_node_t *node_number(sl_marker_t marker, double number)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_NUMBER;
+    node->marker = marker;
     node->number = number;
     node->codegen = sl_codegen_double;
     node->free = free_number;
@@ -94,10 +99,11 @@ static void free_string(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_string(char *string)
+sl_node_t *node_string(sl_marker_t marker, char *string)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_STRING;
+    node->marker = marker;
     node->string = string;
     node->codegen = sl_codegen_string;
     node->free = free_string;
@@ -111,10 +117,11 @@ static void free_call(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_call(sl_node_t *func, sl_node_t *args)
+sl_node_t *node_call(sl_marker_t marker, sl_node_t *func, sl_node_t *args)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_CALL;
+    node->marker = marker;
     node->call.func = func;
     node->call.args = args;
     node->codegen = sl_codegen_call;
@@ -132,10 +139,11 @@ static void free_func(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_func(char *name, sl_vector(char *) args, sl_node_t *body)
+sl_node_t *node_func(sl_marker_t marker, char *name, sl_vector(char *) args, sl_node_t *body)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_FUNC;
+    node->marker = marker;
     node->func.name = name;
     node->func.args = args;
     node->func.body = body;
@@ -151,10 +159,11 @@ static void free_return(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_return(sl_node_t *expr)
+sl_node_t *node_return(sl_marker_t marker, sl_node_t *expr)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_RETURN;
+    node->marker = marker;
     node->ret = expr;
     node->codegen = sl_codegen_return;
     node->free = free_return;
@@ -170,10 +179,11 @@ static void free_cond(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_cond(sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody)
+sl_node_t *node_cond(sl_marker_t marker, sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_COND;
+    node->marker = marker;
     node->cond.arg = arg;
     node->cond.body = body;
     node->cond.elsebody = elsebody;
@@ -189,10 +199,11 @@ static void free_loop(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_loop(sl_node_t *arg, sl_node_t *body)
+sl_node_t *node_loop(sl_marker_t marker, sl_node_t *arg, sl_node_t *body)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_LOOP;
+    node->marker = marker;
     node->loop.arg = arg;
     node->loop.body = body;
     node->codegen = sl_codegen_loop;
@@ -205,10 +216,11 @@ static void free_break(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_break()
+sl_node_t *node_break(sl_marker_t marker)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_BREAK;
+    node->marker = marker;
     node->codegen = sl_codegen_break;
     node->free = free_break;
     return node;
@@ -221,10 +233,11 @@ static void free_decl(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_decl(sl_node_t *name, sl_node_t *value)
+sl_node_t *node_decl(sl_marker_t marker, sl_node_t *name, sl_node_t *value)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_DECL;
+    node->marker = marker;
     node->decl.name = name;
     node->decl.value = value;
     node->codegen = sl_codegen_decl;
@@ -239,10 +252,11 @@ static void free_index(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_index(sl_node_t *var, sl_node_t *expr)
+sl_node_t *node_index(sl_marker_t marker, sl_node_t *var, sl_node_t *expr)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_INDEX;
+    node->marker = marker;
     node->index.var = var;
     node->index.expr = expr;
     node->codegen = sl_codegen_index;
@@ -258,10 +272,11 @@ static void free_block(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_block(sl_vector(sl_node_t *) list)
+sl_node_t *node_block(sl_marker_t marker, sl_vector(sl_node_t *) list)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_BLOCK;
+    node->marker = marker;
     node->block = list;
     node->codegen = sl_codegen_block;
     node->free = free_block;
@@ -275,10 +290,11 @@ static void free_member(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_member(sl_node_t *parent, char *name)
+sl_node_t *node_member(sl_marker_t marker, sl_node_t *parent, char *name)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_MEMBER;
+    node->marker = marker;
     node->member.name = name;
     node->member.parent = parent;
     node->codegen = sl_codegen_member;
@@ -292,10 +308,11 @@ static void free_import(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_import(char *name)
+sl_node_t *node_import(sl_marker_t marker, char *name)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_MEMBER;
+    node->marker = marker;
     node->import = name;
     node->codegen = sl_codegen_import;
     node->free = free_import;
@@ -309,10 +326,11 @@ static void free_class(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_class(char *name, sl_vector(sl_node_t *) list)
+sl_node_t *node_class(sl_marker_t marker, char *name, sl_vector(sl_node_t *) list)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_CLASS;
+    node->marker = marker;
     node->class.name = name;
     node->class.methods = list;
     node->codegen = sl_codegen_class;
@@ -327,10 +345,11 @@ static void free_trycatch(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_trycatch(sl_node_t *tryblock, sl_node_t *catchblock)
+sl_node_t *node_trycatch(sl_marker_t marker, sl_node_t *tryblock, sl_node_t *catchblock)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_TRYCATCH;
+    node->marker = marker;
     node->trycatch.tryblock = tryblock;
     node->trycatch.catchblock = catchblock;
     node->codegen = sl_codegen_trycatch;
@@ -344,10 +363,11 @@ static void free_throw(sl_node_t *node)
     free(node);
 }
 
-sl_node_t *node_throw(sl_node_t *expr)
+sl_node_t *node_throw(sl_marker_t marker, sl_node_t *expr)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_THROW;
+    node->marker = marker;
     node->throw = expr;
     node->codegen = sl_codegen_throw;
     node->free = free_throw;

@@ -9,11 +9,11 @@ sl_lexer_t *sl_lexer_new(char *input)
 {
     sl_lexer_t *lexer = (sl_lexer_t *)malloc(sizeof(sl_lexer_t));
     lexer->input = input;
-    lexer->index = 0;
     lexer->buffer = (char *)malloc(255);
     lexer->number = 0;
-    lexer->line = 0;
-    lexer->col = 0;
+    lexer->marker.index = 0;
+    lexer->marker.line = 0;
+    lexer->marker.column = 0;
     lexer->lastchar = ' ';
     return lexer;
 }
@@ -26,24 +26,24 @@ void sl_lexer_free(sl_lexer_t *lexer)
 
 static int nextchar(sl_lexer_t *lexer)
 {
-    if (lexer->input[lexer->index] == 0)
+    if (lexer->input[lexer->marker.index] == 0)
     {
         lexer->lastchar = EOF;
     }
     else
     {
-        lexer->lastchar = lexer->input[lexer->index];
-        lexer->index++;
+        lexer->lastchar = lexer->input[lexer->marker.index];
+        lexer->marker.index++;
     }
 
     if (lexer->lastchar == '\n')
     {
-        lexer->line++;
-        lexer->col = 0;
+        lexer->marker.line++;
+        lexer->marker.column = 0;
     }
     else
     {
-        lexer->col++;
+        lexer->marker.column++;
     }
     if (lexer->lastchar < -1)
         lexer->lastchar = -1;
@@ -54,6 +54,8 @@ int sl_gettoken(sl_lexer_t *lexer)
 {
     while (isspace(lexer->lastchar))
         nextchar(lexer); // eaat white space
+
+    lexer->startmarker = lexer->marker;
 
     if (lexer->lastchar <= 0)
     {
@@ -271,8 +273,8 @@ int sl_gettoken(sl_lexer_t *lexer)
     case '/':
         if (nextchar(lexer) == '/')
         {
-            int l = lexer->line;
-            while (nextchar(lexer) >= 0 && l == lexer->line)
+            size_t l = lexer->marker.line;
+            while (nextchar(lexer) >= 0 && l == lexer->marker.line)
                 ;
             return sl_gettoken(lexer);
         }

@@ -26,7 +26,11 @@ static int nexttoken(sl_parser_t *parser)
 static void match(sl_parser_t *parser, int token)
 {
     if (parser->lasttoken != token)
-        throw("Unexpected token, expect %s got %s", sl_tokenstr(token), sl_tokenstr(parser->lasttoken));
+        throw("Unexpected token, expect %s got %s on line %d column %d",
+              sl_tokenstr(token),
+              sl_tokenstr(parser->lasttoken),
+              parser->lexer->startmarker.line,
+              parser->lexer->startmarker.column);
 }
 
 sl_node_t *expr(sl_parser_t *parser, int min);
@@ -37,19 +41,20 @@ sl_node_t *expr(sl_parser_t *parser, int min);
 sl_node_t *primary(sl_parser_t *parser)
 {
     sl_node_t *prim = NULL;
+    sl_marker_t marker = parser->lexer->startmarker;
     if (parser->lasttoken == SL_TOKEN_NUMBER)
     {
-        prim = node_number(parser->lexer->number);
+        prim = node_number(marker, parser->lexer->number);
         nexttoken(parser);
     }
     else if (parser->lasttoken == SL_TOKEN_STRING)
     {
-        prim = node_string(strdup(parser->lexer->buffer));
+        prim = node_string(marker, strdup(parser->lexer->buffer));
         nexttoken(parser);
     }
     else if (parser->lasttoken == SL_TOKEN_IDENT)
     {
-        prim = node_ident(strdup(parser->lexer->buffer));
+        prim = node_ident(marker, strdup(parser->lexer->buffer));
         nexttoken(parser);
     }
     else if (parser->lasttoken == SL_TOKEN_FSTRING)
@@ -105,7 +110,9 @@ sl_node_t *primary(sl_parser_t *parser)
             sl_vector_push(parts, cpy);
         }
         if (inexpr)
-            throw("Missing '}' in string interpolation");
+            throw("Missing '}' in string interpolation on line %d column %d",
+                  parser->lexer->startmarker.line,
+                  parser->lexer->startmarker.column);
 
         sl_vector(sl_node_t *) nodes = NULL;
         for (int i = 0; i < sl_vector_size(parts); i++)
@@ -120,12 +127,12 @@ sl_node_t *primary(sl_parser_t *parser)
 
                 sl_vector(sl_node_t *) node = NULL;
                 sl_vector_push(node, ex);
-                sl_vector_push(nodes, node_call(node_ident(strdup("str")), node_block(node)));
+                sl_vector_push(nodes, node_call(marker, node_ident(marker, strdup("str")), node_block(marker, node)));
             }
             else
             {
                 // check memory management!!!
-                sl_vector_push(nodes, node_string(parts[i]));
+                sl_vector_push(nodes, node_string(marker, parts[i]));
             }
         }
 
@@ -137,7 +144,7 @@ sl_node_t *primary(sl_parser_t *parser)
             sl_node_t *a = nodes[nodescnt - 2];
             sl_node_t *b = nodes[nodescnt - 1];
 
-            nodes[nodescnt - 2] = node_binary(SL_TOKEN_PLUS, a, b);
+            nodes[nodescnt - 2] = node_binary(marker, SL_TOKEN_PLUS, a, b);
 
             sl_vector_pop(nodes);
             nodescnt--;
@@ -157,7 +164,7 @@ sl_node_t *primary(sl_parser_t *parser)
         // UNARY_OP primary
         int op = parser->lasttoken;
         nexttoken(parser);
-        return node_unary(op, primary(parser));
+        return node_unary(marker, op, primary(parser));
     }
     else if (parser->lasttoken == SL_TOKEN_LBRACK)
     {
@@ -176,7 +183,7 @@ sl_node_t *primary(sl_parser_t *parser)
         nexttoken(parser);
 
         // syntax sugar, convert [1,2,3] to list(1,2,3)
-        prim = node_call(node_ident(strdup("list")), node_block(elements));
+        prim = node_call(marker, node_ident(marker, strdup("list")), node_block(marker, elements));
     }
     else if (parser->lasttoken == SL_TOKEN_LBRACE)
     {
@@ -187,8 +194,11 @@ sl_node_t *primary(sl_parser_t *parser)
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
             if (!(parser->lasttoken == SL_TOKEN_STRING || parser->lasttoken == SL_TOKEN_IDENT))
-                throw("Unexpected token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s", parser->lasttoken);
-            sl_vector_push(keys, node_string(strdup(parser->lexer->buffer)));
+                throw("Unexpected token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s on line %s column %s",
+                      sl_tokenstr(parser->lasttoken),
+                      parser->lexer->startmarker.line,
+                      parser->lexer->startmarker.column);
+            sl_vector_push(keys, node_string(marker, strdup(parser->lexer->buffer)));
 
             nexttoken(parser);
             match(parser, SL_TOKEN_COLON);
@@ -206,13 +216,13 @@ sl_node_t *primary(sl_parser_t *parser)
 
         // syntax sugar, convert {a:1, b:2+2} to dict(list('a', 'b'), list(1, 2+2))
         sl_vector(sl_node_t *) args = NULL;
-        sl_vector_push(args, node_call(node_ident(strdup("list")), node_block(keys)));
-        sl_vector_push(args, node_call(node_ident(strdup("list")), node_block(values)));
-        prim = node_call(node_ident(strdup("dict")), node_block(args));
+        sl_vector_push(args, node_call(marker, node_ident(marker, strdup("list")), node_block(marker, keys)));
+        sl_vector_push(args, node_call(marker, node_ident(marker, strdup("list")), node_block(marker, values)));
+        prim = node_call(marker, node_ident(marker, strdup("dict")), node_block(marker, args));
     }
     else
     {
-        throw("Unexpected token in primary");
+        throw("Unexpected token in primary line %d column %d", parser->lexer->startmarker.line, parser->lexer->startmarker.column);
     }
 
     while (parser->lasttoken == SL_TOKEN_DOT || parser->lasttoken == SL_TOKEN_LBRACK || parser->lasttoken == SL_TOKEN_LPAREN)
@@ -232,7 +242,7 @@ sl_node_t *primary(sl_parser_t *parser)
             }
             match(parser, SL_TOKEN_RPAREN);
             nexttoken(parser);
-            prim = node_call(prim, node_block(args));
+            prim = node_call(marker, prim, node_block(marker, args));
         }
         else if (parser->lasttoken == SL_TOKEN_LBRACK) // primary '[' expr ']'
         {
@@ -240,7 +250,7 @@ sl_node_t *primary(sl_parser_t *parser)
             sl_node_t *e = expr(parser, 0);
             match(parser, SL_TOKEN_RBRACK);
             nexttoken(parser);
-            prim = node_index(prim, e);
+            prim = node_index(marker, prim, e);
         }
         else if (parser->lasttoken == SL_TOKEN_DOT) // primary '.' ident
         {
@@ -248,7 +258,7 @@ sl_node_t *primary(sl_parser_t *parser)
             match(parser, SL_TOKEN_IDENT);
             char *name = strdup(parser->lexer->buffer);
             nexttoken(parser);
-            prim = node_member(prim, name);
+            prim = node_member(marker, prim, name);
         }
     }
     return prim;
@@ -273,16 +283,19 @@ sl_node_t *expr(sl_parser_t *parser, int min)
     sl_node_t *lhs = primary(parser);
     while (1)
     {
-        if (parser->lasttoken < SL_TOKEN_PLUS || parser->lasttoken > SL_TOKEN_RCHEVR || pre[parser->lasttoken - SL_TOKEN_PLUS] < min)
+        if (parser->lasttoken < SL_TOKEN_PLUS ||
+            parser->lasttoken > SL_TOKEN_RCHEVR ||
+            pre[parser->lasttoken - SL_TOKEN_PLUS] < min)
             break;
 
+        sl_marker_t marker = parser->lexer->startmarker;
         int op = parser->lasttoken;
         int prec = pre[parser->lasttoken - SL_TOKEN_PLUS];
-        int assoc = 0; // 0 left, 1 right
+        int assoc = (parser->lasttoken == SL_TOKEN_ASSIGN) ? 1 : 0; // 0 left, 1 right
         int nextmin = assoc ? prec : prec + 1;
         nexttoken(parser);
         sl_node_t *rhs = expr(parser, nextmin);
-        lhs = node_binary(op, lhs, rhs);
+        lhs = node_binary(marker, op, lhs, rhs);
     }
     return lhs;
 }
@@ -300,6 +313,7 @@ sl_node_t *expr(sl_parser_t *parser, int min)
 // statement := block | let | if | while | funca | return | break | import | class | try | expr ';'
 sl_node_t *statment(sl_parser_t *parser)
 {
+    sl_marker_t marker = parser->lexer->startmarker;
     switch (parser->lasttoken)
     {
     case SL_TOKEN_LBRACE:
@@ -314,7 +328,7 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_RBRACE);
 
         nexttoken(parser);
-        return node_block(list);
+        return node_block(marker, list);
     case SL_TOKEN_LET:
         nexttoken(parser);
         match(parser, SL_TOKEN_IDENT);
@@ -328,7 +342,7 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_SEMICOLON);
 
         nexttoken(parser);
-        return node_decl(node_ident(name), exp);
+        return node_decl(marker, node_ident(marker, name), exp);
     case SL_TOKEN_IF:
         nexttoken(parser);
         match(parser, SL_TOKEN_LPAREN);
@@ -347,7 +361,7 @@ sl_node_t *statment(sl_parser_t *parser)
             elsebody = statment(parser);
         }
 
-        return node_cond(arg, body, elsebody);
+        return node_cond(marker, arg, body, elsebody);
     case SL_TOKEN_WHILE:
         nexttoken(parser);
         match(parser, SL_TOKEN_LPAREN);
@@ -359,7 +373,7 @@ sl_node_t *statment(sl_parser_t *parser)
         nexttoken(parser);
         sl_node_t *body2 = statment(parser);
 
-        return node_loop(arg2, body2);
+        return node_loop(marker, arg2, body2);
     case SL_TOKEN_FN:
         nexttoken(parser);
         match(parser, SL_TOKEN_IDENT);
@@ -384,7 +398,7 @@ sl_node_t *statment(sl_parser_t *parser)
 
         sl_node_t *fnbody = statment(parser);
 
-        return node_func(fnname, args, fnbody);
+        return node_func(marker, fnname, args, fnbody);
     case SL_TOKEN_RETURN:
         nexttoken(parser);
 
@@ -395,13 +409,13 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_SEMICOLON);
         nexttoken(parser);
 
-        return node_return(retnode);
+        return node_return(marker, retnode);
     case SL_TOKEN_BREAK:
         nexttoken(parser);
         match(parser, SL_TOKEN_SEMICOLON);
         nexttoken(parser);
 
-        return node_break();
+        return node_break(marker);
     case SL_TOKEN_IMPORT:
         nexttoken(parser);
         match(parser, SL_TOKEN_IDENT);
@@ -411,7 +425,7 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_SEMICOLON);
 
         nexttoken(parser);
-        return node_import(module_name);
+        return node_import(marker, module_name);
     case SL_TOKEN_CLASS:
         nexttoken(parser);
         match(parser, SL_TOKEN_IDENT);
@@ -430,7 +444,11 @@ sl_node_t *statment(sl_parser_t *parser)
         // ...
         // return this;
 
-        sl_vector_push(constructor, node_decl(node_ident(strdup("this")), node_call(node_ident(strdup("dict")), node_block(NULL))));
+        sl_vector_push(constructor, node_decl(marker,
+                                              node_ident(marker, strdup("this")),
+                                              node_call(marker,
+                                                        node_ident(marker, strdup("dict")),
+                                                        node_block(marker, NULL))));
 
         sl_vector(sl_node_t *) constructors = NULL;
         sl_vector(sl_node_t *) methods_list = NULL;
@@ -438,7 +456,9 @@ sl_node_t *statment(sl_parser_t *parser)
         {
             if (parser->lasttoken != SL_TOKEN_FN)
             {
-                throw("Expect only methods inside class");
+                throw("Expect only methods inside class on line %s column %s",
+                      parser->lexer->startmarker.line,
+                      parser->lexer->startmarker.column);
             }
             sl_node_t *node = statment(parser);
 
@@ -457,7 +477,11 @@ sl_node_t *statment(sl_parser_t *parser)
             }
 
             // add code to conctructor
-            sl_vector_push(constructor, node_binary(SL_TOKEN_ASSIGN, node_member(node_ident(strdup("this")), strdup(old_name)), node_ident(strdup(new_name))));
+            sl_vector_push(constructor,
+                           node_binary(marker, SL_TOKEN_ASSIGN,
+                                       node_member(marker,
+                                                   node_ident(marker, strdup("this")), strdup(old_name)),
+                                       node_ident(marker, strdup(new_name))));
 
             free(old_name);
             node->func.name = new_name;
@@ -474,33 +498,48 @@ sl_node_t *statment(sl_parser_t *parser)
         {
             if (constructors[0]->func.body->type != SL_NODETYPE_BLOCK)
             {
-                throw("Constructor body need to be block");
+                throw("Constructor body need to be block on line %d colum %d",
+                      constructors[0]->func.body->marker.line,
+                      constructors[0]->func.body->marker.column);
             }
 
             sl_vector(sl_node_t *) args = NULL;
             for (int i = 0; i < sl_vector_size(constructors[0]->func.args); i++)
             {
-                sl_vector_push(args, node_ident(strdup(constructors[0]->func.args[i])));
+                sl_vector_push(args,
+                               node_ident(marker, strdup(constructors[0]->func.args[i])));
             }
 
-            sl_vector_push(constructor, node_call(node_member(node_ident(strdup("this")), strdup(class_name)), node_block(args)));
-            sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
+            sl_vector_push(constructor,
+                           node_call(marker,
+                                     node_member(marker,
+                                                 node_ident(marker, strdup("this")), strdup(class_name)),
+                                     node_block(marker, args)));
+            sl_vector_push(constructor,
+                           node_return(marker,
+                                       node_ident(marker, strdup("this"))));
 
             sl_vector(char *) args2 = NULL;
             for (int i = 0; i < sl_vector_size(constructors[0]->func.args); i++)
             {
                 sl_vector_push(args2, strdup(constructors[0]->func.args[i]));
             }
-            sl_vector_push(methods_list, node_func(strdup(class_name), args2, node_block(constructor)));
+            sl_vector_push(methods_list,
+                           node_func(marker, strdup(class_name), args2,
+                                     node_block(marker, constructor)));
         }
         else
         {
-            sl_vector_push(constructor, node_return(node_ident(strdup("this"))));
-            sl_vector_push(methods_list, node_func(strdup(class_name), NULL, node_block(constructor)));
+            sl_vector_push(constructor,
+                           node_return(marker,
+                                       node_ident(marker, strdup("this"))));
+            sl_vector_push(methods_list,
+                           node_func(marker, strdup(class_name), NULL,
+                                     node_block(marker, constructor)));
         }
 
         nexttoken(parser);
-        return node_class(class_name, methods_list);
+        return node_class(marker, class_name, methods_list);
     case SL_TOKEN_TRY:
         nexttoken(parser);
         match(parser, SL_TOKEN_LBRACE);
@@ -511,14 +550,14 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_LBRACE);
         sl_node_t *catchblock = statment(parser);
 
-        return node_trycatch(tryblock, catchblock);
+        return node_trycatch(marker, tryblock, catchblock);
     case SL_TOKEN_THROW:
     {
         nexttoken(parser);
         sl_node_t *e = expr(parser, 0);
         match(parser, SL_TOKEN_SEMICOLON);
         nexttoken(parser);
-        return node_throw(e);
+        return node_throw(marker, e);
     }
     default:;
         sl_node_t *e = expr(parser, 0);
@@ -533,6 +572,7 @@ sl_node_t *sl_parse(sl_parser_t *parser)
     nexttoken(parser);
     sl_vector(sl_node_t *) funcs = NULL;
     sl_vector(sl_node_t *) stmts = NULL;
+    sl_marker_t marker = parser->lexer->marker;
     while (parser->lasttoken != SL_TOKEN_EOF)
     {
         sl_node_t *n = statment(parser);
@@ -553,6 +593,6 @@ sl_node_t *sl_parse(sl_parser_t *parser)
             sl_vector_push(stmts, n);
         }
     }
-    sl_node_t *root = node_root(node_block(funcs), node_block(stmts));
+    sl_node_t *root = node_root(marker, node_block(marker, funcs), node_block(marker, stmts));
     return root;
 }
