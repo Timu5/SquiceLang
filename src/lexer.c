@@ -116,7 +116,9 @@ int sl_gettoken(sl_lexer_t *lexer)
             if (lexer->lastchar == 'x' || lexer->lastchar == 'X')
             {
                 nextchar(lexer);
-                while (isdigit(lexer->lastchar) || (lexer->lastchar >= 'A' && lexer->lastchar <= 'F') || (lexer->lastchar >= 'a' && lexer->lastchar <= 'f'))
+                while (isdigit(lexer->lastchar) ||
+                       (lexer->lastchar >= 'A' && lexer->lastchar <= 'F') ||
+                       (lexer->lastchar >= 'a' && lexer->lastchar <= 'f'))
                 {
                     if (lexer->lastchar >= 'a')
                         value = value * 16 + (lexer->lastchar - 'a' + 10);
@@ -231,7 +233,8 @@ int sl_gettoken(sl_lexer_t *lexer)
                     lexer->buffer[ptr++] = '\"';
                     break;
                 default:
-                    throw("Unexpected character after \\ in string");
+                    throw("Unexpected character after \\ in string on line %d column %d",
+                          lexer->marker.line, lexer->marker.column);
                     break;
                 }
             }
@@ -242,7 +245,8 @@ int sl_gettoken(sl_lexer_t *lexer)
             nextchar(lexer);
         }
         if (lexer->lastchar < 0)
-            throw("Unexpected end of file");
+            throw("Missing ending \" in string on line %d column %d",
+                  lexer->startmarker.line, lexer->startmarker.column);
 
         lexer->buffer[ptr] = 0;
         nextchar(lexer);
@@ -284,7 +288,8 @@ int sl_gettoken(sl_lexer_t *lexer)
             while (!(lexer->lastchar == '*' && nextchar(lexer) == '/'))
             {
                 if (lexer->lastchar < 0)
-                    throw("Unexpected end of file");
+                    throw("Missing \"*/\" in muliline comment starting at line %d colum %d",
+                          lexer->startmarker.line, lexer->startmarker.column);
                 nextchar(lexer);
             }
             nextchar(lexer);
