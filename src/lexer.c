@@ -351,6 +351,22 @@ int sl_gettoken(sl_lexer_t *lexer)
             return SL_TOKEN_RCHEVR;
         break;
     }
+    case '&':
+    {
+        if (nextchar(lexer) == '&')
+            tmp = SL_TOKEN_AND;
+        else
+            return SL_TOKEN_UNKOWN;
+        break;
+    }
+    case '|':
+    {
+        if (nextchar(lexer) == '|')
+            tmp = SL_TOKEN_OR;
+        else
+            return SL_TOKEN_UNKOWN;
+        break;
+    }
     }
 
     nextchar(lexer);
@@ -397,6 +413,8 @@ char *sl_tokenstr(int token)
         "SL_TOKEN_MOREEQUAL", // >=
         "SL_TOKEN_LCHEVR",    // <
         "SL_TOKEN_RCHEVR",    // >
+        "SL_TOKEN_AND",       // &&
+        "SL_TOKEN_OR",        // ||
 
         "SL_TOKEN_LPAREN", // (
         "SL_TOKEN_RPAREN", // )

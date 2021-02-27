@@ -393,6 +393,8 @@ enum SL_TOKEN
     SL_TOKEN_MOREEQUAL, // >=
     SL_TOKEN_LCHEVR,    // <
     SL_TOKEN_RCHEVR,    // >
+    SL_TOKEN_AND,       // &&
+    SL_TOKEN_OR,        // ||
 
     SL_TOKEN_LPAREN, // (
     SL_TOKEN_RPAREN, // )

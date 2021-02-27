@@ -187,6 +187,10 @@ static sl_value_t *binary_number(int op, sl_value_t *a, sl_value_t *b)
         return sl_value_number(a->number < b->number);
     case SL_TOKEN_RCHEVR:
         return sl_value_number(a->number > b->number);
+    case SL_TOKEN_AND:
+        return sl_value_number(a->number && b->number);
+    case SL_TOKEN_OR:
+        return sl_value_number(a->number || b->number);
     }
     throw("Unkown binary operation %d", op);
     return sl_value_null();
@@ -209,7 +213,7 @@ static sl_value_t *binary_string(int op, sl_value_t *a, sl_value_t *b)
     case SL_TOKEN_NOTEQUAL:
         return sl_value_number(strcmp(a->string, b->string) != 0);
     }
-    throw("Unkown binary operation %d", op);
+    throw("Unknown string binary operation %d", op);
     return sl_value_null();
 }
 

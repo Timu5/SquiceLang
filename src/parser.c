@@ -268,23 +268,25 @@ sl_node_t *primary(sl_parser_t *parser)
 sl_node_t *expr(sl_parser_t *parser, int min)
 {
     int pre[] = {
-        4, // +
-        4, // -
-        5, // /
-        5, // *
+        6, // +
+        6, // -
+        7, // /
+        7, // *
         1, // =
-        2, // ==
-        2, // !=
-        3, // <=
-        3, // >=
-        3, // <
-        3, // >
+        4, // ==
+        4, // !=
+        5, // <=
+        5, // >=
+        5, // <
+        5, // >
+        3, // &&
+        2  // ||
     };
     sl_node_t *lhs = primary(parser);
     while (1)
     {
         if (parser->lasttoken < SL_TOKEN_PLUS ||
-            parser->lasttoken > SL_TOKEN_RCHEVR ||
+            parser->lasttoken > SL_TOKEN_OR ||
             pre[parser->lasttoken - SL_TOKEN_PLUS] < min)
             break;
 
