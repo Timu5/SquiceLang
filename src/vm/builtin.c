@@ -6,10 +6,9 @@ static void print(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     int end = (int)sl_vector_size(ctx->stack);
-    int start = end - n;
-    for (int i = start; i < end; i++)
+    for (int i = 0; i < n; i++)
     {
-        sl_value_t *v = ctx->stack[i];
+        sl_value_t *v = sl_vector_pop(ctx->stack);
         if (v->type == SL_VALUE_NUMBER)
             printf("%g", v->number);
         else if (v->type == SL_VALUE_STRING)
