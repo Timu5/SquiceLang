@@ -1,0 +1,30 @@
+
+fn test() {
+    throw "some exception";
+    assert(0);
+}
+
+fn test2() {
+    test();
+    assert(0);
+}
+
+try
+{
+    test();
+    assert(0);
+}
+catch
+{
+    assert(exception == "some exception");
+}
+
+try
+{
+    test2();
+    assert(0);
+}
+catch
+{
+    assert(exception == "some exception");
+}
