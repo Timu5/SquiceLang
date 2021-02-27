@@ -60,7 +60,7 @@ sl_node_t *primary(sl_parser_t *parser)
         sl_vector(char *) parts = NULL;
         int ptr = 0;
         char *buffer = (char *)malloc(255);
-        int len = strlen(parser->lexer->buffer);
+        size_t len = strlen(parser->lexer->buffer);
         char *fstring = parser->lexer->buffer;
         int inexpr = 0;
         for (int i = 0; i < len; i++)
@@ -129,7 +129,7 @@ sl_node_t *primary(sl_parser_t *parser)
             }
         }
 
-        int nodescnt = sl_vector_size(nodes);
+        size_t nodescnt = sl_vector_size(nodes);
 
         // generate binary additions for all nodes
         while (sl_vector_size(nodes) > 1)
