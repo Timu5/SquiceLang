@@ -12,6 +12,7 @@ sl_binary_t *sl_binary_new()
     bin->symbols = NULL;
     bin->fadresses = NULL;
     bin->fsymbols = NULL;
+    bin->debug = NULL;
     bin->size = 0;
     bin->block = NULL;
     bin->index = 0;
@@ -22,13 +23,13 @@ sl_binary_t *sl_binary_new()
 void sl_binary_free(sl_binary_t *bin)
 {
     sl_vector_free(bin->adresses);
-    for(int i = 0; i < sl_vector_size(bin->symbols); i++)
+    for (int i = 0; i < sl_vector_size(bin->symbols); i++)
     {
         free(bin->symbols[i]);
     }
     sl_vector_free(bin->symbols);
     sl_vector_free(bin->fadresses);
-    for(int i = 0; i < sl_vector_size(bin->fsymbols); i++)
+    for (int i = 0; i < sl_vector_size(bin->fsymbols); i++)
     {
         free(bin->fsymbols[i]);
     }
@@ -116,4 +117,9 @@ int sl_bytecode_fill(sl_binary_t *bin)
         1;
     }
     return 0;
+}
+
+void sl_bytecode_adddebug(sl_binary_t *bin, sl_marker_t marker)
+{
+    sl_vector_push(bin->debug, ((sl_debug_symbol_t){bin->size, marker.line, marker.column}));
 }

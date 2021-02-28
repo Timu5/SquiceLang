@@ -291,6 +291,16 @@ enum SL_OPCODE
 #define sl_cleartrap(bin, ip) binary->block[ip] &= ~SL_OPCODE_TRAP_MASK;
 
 #endif
+
+struct sl_debug_symbol_s
+{
+    size_t addr;
+    size_t line;
+    size_t column;
+};
+
+typedef struct sl_debug_symbol_s sl_debug_symbol_t;
+
 // Structure to store bytecode in binary format
 struct sl_binary_s
 {
@@ -298,6 +308,7 @@ struct sl_binary_s
     sl_vector(char *) symbols;
     sl_vector(int) fadresses;
     sl_vector(char *) fsymbols;
+    sl_vector(sl_debug_symbol_t) debug;
     char *block;
     int size;
     int index; // free label index
@@ -318,6 +329,7 @@ int sl_bytecode_emitdouble(sl_binary_t *bin, int opcode, double number);
 int sl_bytecode_addlabel(sl_binary_t *bin, char *name, int adress);
 int sl_bytecode_addtofill(sl_binary_t *bin, char *name, int adress);
 int sl_bytecode_fill(sl_binary_t *bin);
+void sl_bytecode_adddebug(sl_binary_t *bin, sl_marker_t marker);
 
 void sl_codegen_root(sl_node_t *node, sl_binary_t *binary);
 void sl_codegen_ident(sl_node_t *node, sl_binary_t *binary);
@@ -513,6 +525,7 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a);
 
 void sl_value_free(sl_value_t *val);
 
+sl_marker_t sl_getmarker(sl_binary_t *binary, size_t ip);
 void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
 
 sl_binary_t *sl_compile_str(char *code);

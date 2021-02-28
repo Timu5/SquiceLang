@@ -31,12 +31,14 @@ void sl_codegen_root(sl_node_t *node, sl_binary_t *binary)
 }
 void sl_codegen_ident(sl_node_t *node, sl_binary_t *binary)
 {
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitstr(binary, SL_OPCODE_PUSHV, node->ident);
 }
 
 void sl_codegen_unary(sl_node_t *node, sl_binary_t *binary)
 {
     node->unary.val->codegen(node->unary.val, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitint(binary, SL_OPCODE_UNARY, node->unary.op);
 }
 
@@ -44,16 +46,19 @@ void sl_codegen_binary(sl_node_t *node, sl_binary_t *binary)
 {
     node->binary.a->codegen(node->binary.a, binary);
     node->binary.b->codegen(node->binary.b, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitint(binary, SL_OPCODE_BINARY, node->binary.op);
 }
 
 void sl_codegen_double(sl_node_t *node, sl_binary_t *binary)
 {
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitdouble(binary, SL_OPCODE_PUSHN, node->number);
 }
 
 void sl_codegen_string(sl_node_t *node, sl_binary_t *binary)
 {
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitstr(binary, SL_OPCODE_PUSHS, node->string);
 }
 
@@ -64,7 +69,7 @@ void sl_codegen_call(sl_node_t *node, sl_binary_t *binary)
         sl_node_t *n = node->call.args->block[i];
         n->codegen(n, binary);
     }
-
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitint(binary, SL_OPCODE_PUSHI, (int)sl_vector_size(node->call.args->block));
 
     node->call.func->codegen(node->call.func, binary);
@@ -86,6 +91,7 @@ void sl_codegen_func(sl_node_t *node, sl_binary_t *binary)
     char *name = sl_mprintf("func_%s", node->func.name);
     sl_bytecode_addlabel(binary, name, binary->size);
 
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitstr(binary, SL_OPCODE_STORE, "argc");
     for (int i = 0; i < (int)sl_vector_size(node->func.args); i++)
     {
@@ -101,10 +107,12 @@ void sl_codegen_return(sl_node_t *node, sl_binary_t *binary)
     if (node->ret != NULL)
     {
         node->ret->codegen(node->ret, binary);
+        sl_bytecode_adddebug(binary, node->marker);
         sl_bytecode_emit(binary, SL_OPCODE_RET);
     }
     else
     {
+        sl_bytecode_adddebug(binary, node->marker);
         sl_bytecode_emit(binary, SL_OPCODE_RETN);
     }
 }
@@ -112,6 +120,7 @@ void sl_codegen_return(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_cond(sl_node_t *node, sl_binary_t *binary)
 {
     node->cond.arg->codegen(node->cond.arg, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_BRZ, 0x22222222); // fill it later with adress!!!
     char *name = sl_mprintf("cond_%d", binary->index);
     char *ename = sl_mprintf("condend_%d", binary->index++);
@@ -145,6 +154,7 @@ void sl_codegen_loop(sl_node_t *node, sl_binary_t *binary)
 
     sl_bytecode_addlabel(binary, strdup(lname), binary->size);
     node->loop.arg->codegen(node->loop.arg, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_BRZ, 0x22222222);
     sl_bytecode_addtofill(binary, strdup(lename), adr + 1);
     node->loop.body->codegen(node->loop.body, binary);
@@ -160,10 +170,13 @@ void sl_codegen_loop(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_break(sl_node_t *node, sl_binary_t *binary)
 {
     if (binary->loop < 0)
-        throw("No loop to break from");
+        throw("No loop to break from at line %d column %d",
+              node->marker.line,
+              node->marker.column);
 
     char *lename = sl_mprintf("loopend_%d", binary->loop);
 
+    sl_bytecode_adddebug(binary, node->marker);
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_JMP, 0x22222222);
     sl_bytecode_addtofill(binary, lename, adr + 1);
 }
@@ -171,8 +184,11 @@ void sl_codegen_break(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_decl(sl_node_t *node, sl_binary_t *binary)
 {
     if (node->decl.name->type != SL_NODETYPE_IDENT)
-        throw("Declaration name must be identifier"); // error
+        throw("Declaration name must be identifier at line %d column %d",
+              node->marker.line,
+              node->marker.column);
     node->decl.value->codegen(node->decl.value, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->decl.name->ident);
 }
 
@@ -180,6 +196,7 @@ void sl_codegen_index(sl_node_t *node, sl_binary_t *binary)
 {
     node->index.var->codegen(node->index.var, binary);
     node->index.expr->codegen(node->index.expr, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emit(binary, SL_OPCODE_INDEX);
 }
 
@@ -192,11 +209,13 @@ void sl_codegen_block(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_member(sl_node_t *node, sl_binary_t *binary)
 {
     node->member.parent->codegen(node->member.parent, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitstr(binary, SL_OPCODE_MEMBER, node->member.name);
 }
 
 void sl_codegen_import(sl_node_t *node, sl_binary_t *binary)
 {
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emitstr(binary, SL_OPCODE_IMPORT, node->import);
 }
 
@@ -211,6 +230,7 @@ void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary)
     char *lname = sl_mprintf("catch_%d", i);
     char *lename = sl_mprintf("catchend_%d", i);
 
+    sl_bytecode_adddebug(binary, node->marker);
     int adr = sl_bytecode_emitint(binary, SL_OPCODE_TRY, 0x22222222);
     sl_bytecode_addtofill(binary, strdup(lname), adr + 1);
 
@@ -234,5 +254,6 @@ void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_throw(sl_node_t *node, sl_binary_t *binary)
 {
     node->ret->codegen(node->throw, binary);
+    sl_bytecode_adddebug(binary, node->marker);
     sl_bytecode_emit(binary, SL_OPCODE_THROW);
 }
