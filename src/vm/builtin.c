@@ -164,7 +164,7 @@ void sl_builtin_install(sl_ctx_t *ctx)
     sl_ctx_addfn(ctx, NULL, strdup("dict"), 0, 0, dict);
     sl_ctx_addfn(ctx, NULL, strdup("len"), 1, 0, len);
     sl_ctx_addfn(ctx, NULL, strdup("ord"), 1, 0, ord);
-    sl_ctx_addfn(ctx, NULL, strdup("chr"), 1, 0, ord);
+    sl_ctx_addfn(ctx, NULL, strdup("chr"), 1, 0, chr);
     sl_ctx_addfn(ctx, NULL, strdup("_super_"), 2, 0, super);
     sl_ctx_addfn(ctx, NULL, strdup("str"), 1, 0, str);
 }
