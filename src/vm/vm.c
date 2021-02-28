@@ -269,7 +269,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                         {
                             sl_ctx_addvar(context, strdup("this"), parent); // add "this" variable
                         }
-                        sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack)}));
+                        sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack) - 1 - (int)(argc->number)}));
                         //sl_vector_pop(global->stack);
                         ip = fn->address;
                     }

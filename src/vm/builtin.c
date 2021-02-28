@@ -16,6 +16,7 @@ static void print(sl_ctx_t *ctx)
     }
     printf("\n");
     fflush(stdout);
+    sl_vector_push(ctx->stack, sl_value_null());
 }
 
 static void list(sl_ctx_t *ctx)
