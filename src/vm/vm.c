@@ -132,6 +132,14 @@ struct tryptr
 
 typedef struct tryptr tryptr_t;
 
+struct callptr
+{
+    int addr;
+    size_t sp;
+};
+
+typedef struct callptr callptr_t;
+
 sl_marker_t sl_getmarker(sl_binary_t *binary, size_t ip)
 {
     for (size_t i = 0; i < sl_vector_size(binary->debug); i++)
@@ -146,7 +154,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 {
     char *opcodes = binary->block;
     int size = binary->size;
-    sl_vector(int) call_stack = NULL;
+    sl_vector(callptr_t) call_stack = NULL;
     sl_vector(tryptr_t) try_stack = NULL;
     int oldip = 0;
 
@@ -261,7 +269,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                         {
                             sl_ctx_addvar(context, strdup("this"), parent); // add "this" variable
                         }
-                        sl_vector_push(call_stack, ip);
+                        sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack)}));
                         //sl_vector_pop(global->stack);
                         ip = fn->address;
                     }
@@ -289,12 +297,16 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     // nothing to return
                     goto end;
                 }
-                int ret_adr = sl_vector_pop(call_stack);
+                callptr_t cp = sl_vector_pop(call_stack);
+                sl_value_t *val = sl_vector_pop(global->stack);
+                sl_vector_shrinkto(global->stack, cp.sp);
+                sl_vector_push(global->stack, val);
+                int ret_adr = cp.addr;
                 ip = ret_adr;
                 if (context->parent != NULL)
                 {
                     sl_ctx_t *parent = context->parent;
-                    sl_ctx_free(context);
+                    //sl_ctx_free(context);
                     context = parent;
                     //context->child->parent = NULL;
                     context->child = NULL;
@@ -371,6 +383,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             case SL_OPCODE_TRY:
             {
                 // push adress onto try stack
+                // TODO: Add stack pointer as well
                 int adr = getint(opcodes, &ip);
                 sl_vector_push(try_stack, ((tryptr_t){adr, sl_vector_size(call_stack), context}));
                 break;
@@ -400,8 +413,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 else
                 {
                     tryptr_t t = sl_vector_pop(try_stack);
-                tryptr_t t = sl_vector_pop(try_stack); 
-                    tryptr_t t = sl_vector_pop(try_stack);
                     ip = t.addr;
                     if (context != t.ctx)
                     {
@@ -422,7 +433,13 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
     catch
     {
         memcpy(__ex_buf__, old_try, sizeof(__ex_buf__));
-        char * msg = strdup(ex_msg);
+        char *msg = strdup(ex_msg);
+
+        for (int i = 0; i < sl_vector_size(call_stack); i++)
+        {
+            sl_marker_t marker = sl_getmarker(binary, call_stack[i].addr);
+            printf("callstack: %d\n", marker.line);
+        }
         sl_marker_t marker = sl_getmarker(binary, oldip);
         throw("%s at line %d", msg, marker.line);
         free(msg); // Will never be called :/
