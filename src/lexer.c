@@ -206,7 +206,7 @@ int sl_gettoken(sl_lexer_t *lexer)
                     lexer->buffer[ptr++] = '\b';
                     break;
                 case 'e':
-                    lexer->buffer[ptr++] = '\e';
+                    lexer->buffer[ptr++] = 0x1B;
                     break;
                 case 'f':
                     lexer->buffer[ptr++] = '\f';
