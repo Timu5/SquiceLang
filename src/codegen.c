@@ -242,7 +242,7 @@ void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary)
 
     sl_bytecode_addlabel(binary, strdup(lname), binary->size);
     // TODO: Add support for custom exception name
-    sl_bytecode_emitstr(binary, SL_OPCODE_STORE, strdup("exception"));
+    sl_bytecode_emitstr(binary, SL_OPCODE_STORE, "exception");
     node->trycatch.tryblock->codegen(node->trycatch.catchblock, binary);
     sl_bytecode_addtofill(binary, strdup(lename), adr + 1);
     sl_bytecode_addlabel(binary, strdup(lename), binary->size);
