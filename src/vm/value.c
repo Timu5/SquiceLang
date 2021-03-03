@@ -124,26 +124,34 @@ void sl_value_free(sl_value_t *val)
 
 void sl_value_assign(sl_value_t *a, sl_value_t *b)
 {
-    sl_value_t *olda = a;
-
-    //while (a->type == SL_VALUE_REF)
-    //    a = a->ref;
     while (b->type == SL_VALUE_REF)
         b = b->ref;
 
     if (a->constant)
         throw("Cannot assign to const value");
 
-    if (a->type == SL_VALUE_TUPLE)
+    if (a->type == SL_VALUE_TUPLE || b->type == SL_VALUE_TUPLE)
     {
-        // TODO: Implement this
-        return;   
-    }
+        sl_vector(sl_value_t *) tmp = NULL;
+        if (a->type != SL_VALUE_TUPLE)
+        {
+            // convert a to tuple
+            sl_vector_push(tmp, a);
+            a = sl_value_tuple(tmp);
+        }
+        else if (b->type != SL_VALUE_TUPLE)
+        {
+            // convert b to tuple
+            sl_vector_push(tmp, b);
+            b = sl_value_tuple(tmp);
+        }
 
-    if (b->type == SL_VALUE_TUPLE)
-    {
-        // TODO: Implement this
-        return;   
+        size_t maxb = sl_vector_size(b);
+        for (int i = 0; i < sl_vector_size(a); i++)
+        {
+            sl_value_assign(a->tuple[i], i >= maxb ? sl_value_null() : b->tuple[i]);
+        }
+        return;
     }
 
     if (a->type == SL_VALUE_STRING)
@@ -282,11 +290,18 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
 
     if (op == SL_TOKEN_COMMA)
     {
-        sl_vector(sl_node_t*) elements = NULL;
-        // unwrap again :/
-        // TODO: Implement this
-        //return sl_value_tuple(elements);
-        return sl_value_null();
+        sl_vector(sl_value_t *) tmp = NULL;
+        if (a->type != SL_VALUE_TUPLE)
+            sl_vector_push(tmp, a);
+        else
+            sl_vector_append(tmp, sl_vector_size(a->tuple), a->tuple);
+
+        if (b->type != SL_VALUE_TUPLE)
+            sl_vector_push(tmp, b);
+        else
+            sl_vector_append(tmp, sl_vector_size(b->tuple), b->tuple);
+
+        return sl_value_tuple(tmp);
     }
 
     if (a->type != b->type)
@@ -355,6 +370,6 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a)
         return a->dict.values[sl_vector_size(a->dict.values) - 1];
     }
 
-    throw("Cannot get member for this type");
+    throw("Cannot get member for type %s", sl_valuetypestr(a->type));
     return sl_value_null();
 }
