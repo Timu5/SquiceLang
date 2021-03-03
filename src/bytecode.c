@@ -34,6 +34,7 @@ void sl_binary_free(sl_binary_t *bin)
         free(bin->fsymbols[i]);
     }
     sl_vector_free(bin->fsymbols);
+    sl_vector_free(bin->debug);
     free(bin->block);
     free(bin);
 }

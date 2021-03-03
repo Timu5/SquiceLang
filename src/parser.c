@@ -59,8 +59,6 @@ sl_node_t *primary(sl_parser_t *parser)
     }
     else if (parser->lasttoken == SL_TOKEN_FSTRING)
     {
-        sl_lexer_t *lex = sl_lexer_new(parser->lexer->buffer);
-
         // split string into parts
         sl_vector(char *) parts = NULL;
         int ptr = 0;
@@ -124,10 +122,12 @@ sl_node_t *primary(sl_parser_t *parser)
                 sl_parser_t *pars = sl_parser_new(parts[i] + 2);
                 nexttoken(pars);
                 sl_node_t *ex = expr(pars, 0);
+                sl_parser_free(pars);
 
                 sl_vector(sl_node_t *) node = NULL;
                 sl_vector_push(node, ex);
                 sl_vector_push(nodes, node_call(marker, node_ident(marker, strdup("str")), node_block(marker, node)));
+                free(parts[i]);
             }
             else
             {
@@ -135,6 +135,7 @@ sl_node_t *primary(sl_parser_t *parser)
                 sl_vector_push(nodes, node_string(marker, parts[i]));
             }
         }
+        sl_vector_free(parts);
 
         size_t nodescnt = sl_vector_size(nodes);
 
@@ -150,7 +151,9 @@ sl_node_t *primary(sl_parser_t *parser)
             nodescnt--;
         }
         nexttoken(parser);
+        free(buffer);
         prim = nodes[0];
+        sl_vector_free(nodes);
     }
     else if (parser->lasttoken == SL_TOKEN_LPAREN) // '(' expr ')'
     {
@@ -440,6 +443,8 @@ sl_node_t *statment(sl_parser_t *parser)
 
         sl_vector(sl_node_t *) constructor = NULL;
 
+        // TODO: move most of this nonsense to codegen!
+
         // generated constructor code:
         // let this = dict();
         // this.old_name = __class_old_name_;
@@ -540,6 +545,7 @@ sl_node_t *statment(sl_parser_t *parser)
                                      node_block(marker, constructor)));
         }
 
+        sl_vector_free(constructors);
         nexttoken(parser);
         return node_class(marker, class_name, methods_list);
     case SL_TOKEN_TRY:
