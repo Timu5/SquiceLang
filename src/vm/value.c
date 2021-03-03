@@ -146,8 +146,8 @@ void sl_value_assign(sl_value_t *a, sl_value_t *b)
             b = sl_value_tuple(tmp);
         }
 
-        size_t maxb = sl_vector_size(b);
-        for (int i = 0; i < sl_vector_size(a); i++)
+        size_t maxb = sl_vector_size(b->tuple);
+        for (int i = 0; i < sl_vector_size(a->tuple); i++)
         {
             sl_value_assign(a->tuple[i], i >= maxb ? sl_value_null() : b->tuple[i]);
         }
