@@ -33,26 +33,10 @@ static void match(sl_parser_t *parser, int token)
               parser->lexer->startmarker.column);
 }
 
-static sl_vector(sl_node_t *) unwrap(sl_node_t *expr)
-{
-    sl_vector(sl_node_t *) elements = NULL;
+sl_node_t *expr(sl_parser_t *parser, int min, int mintok);
 
-    if (expr->type == SL_NODETYPE_BINARY && expr->binary.op == SL_TOKEN_COMMA)
-    {
-        sl_vector(sl_node_t *) a = unwrap(expr->binary.a);
-        sl_vector(sl_node_t *) b = unwrap(expr->binary.b);
-        sl_vector_append(elements, sl_vector_size(a), a);
-        sl_vector_append(elements, sl_vector_size(b), b);
-    }
-    else
-    {
-        sl_vector_push(elements, expr);
-    }
-
-    return elements;
-}
-
-sl_node_t *expr(sl_parser_t *parser, int min);
+#define expr_norm(p) expr(p, 0, SL_TOKEN_PLUS)
+#define expr_tuple(p) expr(p, 0, SL_TOKEN_COMMA)
 
 // primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary |
 //             array | dict | fstring
@@ -140,7 +124,7 @@ sl_node_t *primary(sl_parser_t *parser)
                 // create parser and parse this string!!!
                 sl_parser_t *pars = sl_parser_new(parts[i] + 2);
                 nexttoken(pars);
-                sl_node_t *ex = expr(pars, 0);
+                sl_node_t *ex = expr_norm(pars);
                 sl_parser_free(pars);
 
                 sl_vector(sl_node_t *) node = NULL;
@@ -177,7 +161,7 @@ sl_node_t *primary(sl_parser_t *parser)
     else if (parser->lasttoken == SL_TOKEN_LPAREN) // '(' expr ')'
     {
         nexttoken(parser);
-        prim = expr(parser, 0);
+        prim = expr_norm(parser);
         match(parser, SL_TOKEN_RPAREN);
         nexttoken(parser);
     }
@@ -193,10 +177,13 @@ sl_node_t *primary(sl_parser_t *parser)
         // new array
         nexttoken(parser);
         sl_vector(sl_node_t *) elements = NULL;
-        if (parser->lasttoken != SL_TOKEN_RBRACK)
+        while (parser->lasttoken != SL_TOKEN_RBRACK)
         {
-            sl_node_t *e = expr(parser, 0);
-            elements = unwrap(e);
+            sl_node_t *e = expr_norm(parser);
+            sl_vector_push(elements, e);
+            if (parser->lasttoken != SL_TOKEN_COMMA)
+                break;
+            nexttoken(parser);
         }
         match(parser, SL_TOKEN_RBRACK);
         nexttoken(parser);
@@ -223,7 +210,7 @@ sl_node_t *primary(sl_parser_t *parser)
             match(parser, SL_TOKEN_COLON);
             nexttoken(parser);
 
-            sl_node_t *e = expr(parser, 0);
+            sl_node_t *e = expr_norm(parser);
             sl_vector_push(values, e);
 
             if (parser->lasttoken != SL_TOKEN_COMMA)
@@ -250,11 +237,14 @@ sl_node_t *primary(sl_parser_t *parser)
         {
             nexttoken(parser);
             sl_vector(sl_node_t *) args = NULL;
-            if (parser->lasttoken != SL_TOKEN_RPAREN)
+            while (parser->lasttoken != SL_TOKEN_RPAREN)
             {
-                sl_node_t *e = expr(parser, 0);
-                // unwrap expr into args!
-                args = unwrap(e);
+                sl_node_t *e = expr_norm(parser);
+                sl_vector_push(args, e);
+
+                if (parser->lasttoken != SL_TOKEN_COMMA)
+                    break;
+                nexttoken(parser);
             }
 
             match(parser, SL_TOKEN_RPAREN);
@@ -264,7 +254,7 @@ sl_node_t *primary(sl_parser_t *parser)
         else if (parser->lasttoken == SL_TOKEN_LBRACK) // primary '[' expr ']'
         {
             nexttoken(parser);
-            sl_node_t *e = expr(parser, 0);
+            sl_node_t *e = expr_norm(parser);
             match(parser, SL_TOKEN_RBRACK);
             nexttoken(parser);
             prim = node_index(marker, prim, e);
@@ -282,7 +272,7 @@ sl_node_t *primary(sl_parser_t *parser)
 }
 
 // expr := primary |  expr OP expr
-sl_node_t *expr(sl_parser_t *parser, int min)
+sl_node_t *expr(sl_parser_t *parser, int min, int mintok)
 {
     int pre[] = {
         1, // ,
@@ -303,9 +293,9 @@ sl_node_t *expr(sl_parser_t *parser, int min)
     sl_node_t *lhs = primary(parser);
     while (1)
     {
-        if (parser->lasttoken < SL_TOKEN_COMMA ||
+        if (parser->lasttoken < mintok ||
             parser->lasttoken > SL_TOKEN_OR ||
-            pre[parser->lasttoken - SL_TOKEN_PLUS] < min)
+            pre[parser->lasttoken - SL_TOKEN_COMMA] < min)
             break;
 
         sl_marker_t marker = parser->lexer->startmarker;
@@ -314,7 +304,7 @@ sl_node_t *expr(sl_parser_t *parser, int min)
         int assoc = (parser->lasttoken == SL_TOKEN_ASSIGN) ? 1 : 0; // 0 left, 1 right
         int nextmin = assoc ? prec : prec + 1;
         nexttoken(parser);
-        sl_node_t *rhs = expr(parser, nextmin);
+        sl_node_t *rhs = expr(parser, nextmin, mintok);
         lhs = node_binary(marker, op, lhs, rhs);
     }
     return lhs;
@@ -368,7 +358,7 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_LPAREN);
 
         nexttoken(parser);
-        sl_node_t *arg = expr(parser, 0);
+        sl_node_t *arg = expr_norm(parser);
         match(parser, SL_TOKEN_RPAREN);
 
         nexttoken(parser);
@@ -387,7 +377,7 @@ sl_node_t *statment(sl_parser_t *parser)
         match(parser, SL_TOKEN_LPAREN);
 
         nexttoken(parser);
-        sl_node_t *arg2 = expr(parser, 0);
+        sl_node_t *arg2 = expr_norm(parser);
         match(parser, SL_TOKEN_RPAREN);
 
         nexttoken(parser);
@@ -424,7 +414,7 @@ sl_node_t *statment(sl_parser_t *parser)
 
         sl_node_t *retnode = NULL;
         if (parser->lasttoken != SL_TOKEN_SEMICOLON)
-            retnode = expr(parser, 0);
+            retnode = expr_tuple(parser);
 
         match(parser, SL_TOKEN_SEMICOLON);
         nexttoken(parser);
@@ -577,13 +567,13 @@ sl_node_t *statment(sl_parser_t *parser)
     case SL_TOKEN_THROW:
     {
         nexttoken(parser);
-        sl_node_t *e = expr(parser, 0);
+        sl_node_t *e = expr_norm(parser);
         match(parser, SL_TOKEN_SEMICOLON);
         nexttoken(parser);
         return node_throw(marker, e);
     }
     default:;
-        sl_node_t *e = expr(parser, 0);
+        sl_node_t *e = expr_tuple(parser);
         match(parser, SL_TOKEN_SEMICOLON);
         nexttoken(parser);
         return e;
