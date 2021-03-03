@@ -390,8 +390,8 @@ enum SL_TOKEN
 
     SL_TOKEN_COLON,     // :
     SL_TOKEN_SEMICOLON, // ;
-    SL_TOKEN_COMMA,     // ,
     SL_TOKEN_DOT,       // .
+    SL_TOKEN_COMMA,     // ,
 
     SL_TOKEN_PLUS,     // +
     SL_TOKEN_MINUS,    // -
@@ -477,6 +477,7 @@ enum SL_VALUE
     SL_VALUE_NUMBER,
     SL_VALUE_STRING,
     SL_VALUE_ARRAY,
+    SL_VALUE_TUPLE,
     SL_VALUE_DICT,
     SL_VALUE_FN,
     SL_VALUE_REF
@@ -495,6 +496,7 @@ struct sl_value_s
         double number;
         char *string;
         sl_vector(struct sl_value_s *) array;
+        sl_vector(struct sl_value_s *) tuple;
         struct
         {
             sl_vector(char *) names;
@@ -511,6 +513,7 @@ sl_value_t *sl_value_null();
 sl_value_t *sl_value_number(double val);
 sl_value_t *sl_value_string(char *val);
 sl_value_t *sl_value_array(sl_vector(sl_value_t *) arr);
+sl_value_t *sl_value_tuple(sl_vector(sl_value_t *) tuple);
 sl_value_t *sl_value_dict(sl_vector(char *) names, sl_vector(sl_value_t *) values);
 sl_value_t *sl_value_fn(struct sl_fn_s *fn);
 sl_value_t *sl_value_ref(sl_value_t *val);

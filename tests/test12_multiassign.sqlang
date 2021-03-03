@@ -1,0 +1,19 @@
+a, b = 1, 2;
+
+assert(a == 1);
+assert(b == 2);
+
+a, b = 1;
+
+assert(a == 1);
+assert(b == null);
+
+fn test()
+{
+    return 3, 4;
+}
+
+c, d = test();
+
+assert(c == 3);
+assert(d == 4);

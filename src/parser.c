@@ -33,6 +33,25 @@ static void match(sl_parser_t *parser, int token)
               parser->lexer->startmarker.column);
 }
 
+static sl_vector(sl_node_t *) unwrap(sl_node_t *expr)
+{
+    sl_vector(sl_node_t *) elements = NULL;
+
+    if (expr->type == SL_NODETYPE_BINARY && expr->binary.op == SL_TOKEN_COMMA)
+    {
+        sl_vector(sl_node_t *) a = unwrap(expr->binary.a);
+        sl_vector(sl_node_t *) b = unwrap(expr->binary.b);
+        sl_vector_append(elements, sl_vector_size(a), a);
+        sl_vector_append(elements, sl_vector_size(b), b);
+    }
+    else
+    {
+        sl_vector_push(elements, expr);
+    }
+
+    return elements;
+}
+
 sl_node_t *expr(sl_parser_t *parser, int min);
 
 // primary :=  ident | number | string | '(' expr ')' | UNARY_OP primary |
@@ -174,13 +193,10 @@ sl_node_t *primary(sl_parser_t *parser)
         // new array
         nexttoken(parser);
         sl_vector(sl_node_t *) elements = NULL;
-        while (parser->lasttoken != SL_TOKEN_RBRACK)
+        if (parser->lasttoken != SL_TOKEN_RBRACK)
         {
             sl_node_t *e = expr(parser, 0);
-            sl_vector_push(elements, e);
-            if (parser->lasttoken != SL_TOKEN_COMMA)
-                break;
-            nexttoken(parser);
+            elements = unwrap(e);
         }
         match(parser, SL_TOKEN_RBRACK);
         nexttoken(parser);
@@ -234,15 +250,13 @@ sl_node_t *primary(sl_parser_t *parser)
         {
             nexttoken(parser);
             sl_vector(sl_node_t *) args = NULL;
-            while (parser->lasttoken != SL_TOKEN_RPAREN)
+            if (parser->lasttoken != SL_TOKEN_RPAREN)
             {
                 sl_node_t *e = expr(parser, 0);
-                sl_vector_push(args, e);
-
-                if (parser->lasttoken != SL_TOKEN_COMMA)
-                    break;
-                nexttoken(parser);
+                // unwrap expr into args!
+                args = unwrap(e);
             }
+
             match(parser, SL_TOKEN_RPAREN);
             nexttoken(parser);
             prim = node_call(marker, prim, node_block(marker, args));
@@ -271,11 +285,12 @@ sl_node_t *primary(sl_parser_t *parser)
 sl_node_t *expr(sl_parser_t *parser, int min)
 {
     int pre[] = {
+        1, // ,
         6, // +
         6, // -
         7, // /
         7, // *
-        1, // =
+        0, // =
         4, // ==
         4, // !=
         5, // <=
@@ -288,14 +303,14 @@ sl_node_t *expr(sl_parser_t *parser, int min)
     sl_node_t *lhs = primary(parser);
     while (1)
     {
-        if (parser->lasttoken < SL_TOKEN_PLUS ||
+        if (parser->lasttoken < SL_TOKEN_COMMA ||
             parser->lasttoken > SL_TOKEN_OR ||
             pre[parser->lasttoken - SL_TOKEN_PLUS] < min)
             break;
 
         sl_marker_t marker = parser->lexer->startmarker;
         int op = parser->lasttoken;
-        int prec = pre[parser->lasttoken - SL_TOKEN_PLUS];
+        int prec = pre[parser->lasttoken - SL_TOKEN_COMMA];
         int assoc = (parser->lasttoken == SL_TOKEN_ASSIGN) ? 1 : 0; // 0 left, 1 right
         int nextmin = assoc ? prec : prec + 1;
         nexttoken(parser);

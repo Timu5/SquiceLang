@@ -199,7 +199,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_value_t *val = sl_ctx_getvar(context, name);
                 if (val == NULL)
                 {
-                    throw("No variable named '%s'", name);
+                    sl_ctx_addvar(context, strdup(name), sl_value_null());
                 }
                 sl_vector_push(global->stack, val);
                 free(name);

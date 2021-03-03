@@ -46,6 +46,17 @@ sl_value_t *sl_value_array(sl_vector(sl_value_t *) arr)
     return v;
 }
 
+sl_value_t *sl_value_tuple(sl_vector(sl_value_t *) tuple)
+{
+    sl_value_t *v = sl_gc_alloc_value();
+    v->type = SL_VALUE_TUPLE;
+    v->constant = 0;
+    v->refs = 0;
+    v->tuple = tuple;
+    v->markbit = 0;
+    return v;
+}
+
 sl_value_t *sl_value_dict(sl_vector(char *) names, sl_vector(sl_value_t *) values)
 {
     sl_value_t *v = sl_gc_alloc_value();
@@ -122,6 +133,18 @@ void sl_value_assign(sl_value_t *a, sl_value_t *b)
 
     if (a->constant)
         throw("Cannot assign to const value");
+
+    if (a->type == SL_VALUE_TUPLE)
+    {
+        // TODO: Implement this
+        return;   
+    }
+
+    if (b->type == SL_VALUE_TUPLE)
+    {
+        // TODO: Implement this
+        return;   
+    }
 
     if (a->type == SL_VALUE_STRING)
         free(a->string);
@@ -256,6 +279,15 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
         a = a->ref;
     while (b->type == SL_VALUE_REF)
         b = b->ref;
+
+    if (op == SL_TOKEN_COMMA)
+    {
+        sl_vector(sl_node_t*) elements = NULL;
+        // unwrap again :/
+        // TODO: Implement this
+        //return sl_value_tuple(elements);
+        return sl_value_null();
+    }
 
     if (a->type != b->type)
         throw("Type mismatch %s %s %s", sl_tokenstr(op), sl_valuetypestr(a->type), sl_valuetypestr(b->type));

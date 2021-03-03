@@ -398,8 +398,8 @@ char *sl_tokenstr(int token)
 
         "SL_TOKEN_COLON",     // :
         "SL_TOKEN_SEMICOLON", // ;
-        "SL_TOKEN_COMMA",     // ,
         "SL_TOKEN_DOT",       // .
+        "SL_TOKEN_COMMA",     // ,
 
         "SL_TOKEN_PLUS",     // +
         "SL_TOKEN_MINUS",    // -
