@@ -339,20 +339,6 @@ sl_node_t *statment(sl_parser_t *parser)
 
         nexttoken(parser);
         return node_block(marker, list);
-    case SL_TOKEN_LET:
-        nexttoken(parser);
-        match(parser, SL_TOKEN_IDENT);
-        char *name = strdup(parser->lexer->buffer);
-
-        nexttoken(parser);
-        match(parser, SL_TOKEN_ASSIGN);
-        nexttoken(parser);
-
-        sl_node_t *exp = expr(parser, 0);
-        match(parser, SL_TOKEN_SEMICOLON);
-
-        nexttoken(parser);
-        return node_decl(marker, node_ident(marker, name), exp);
     case SL_TOKEN_IF:
         nexttoken(parser);
         match(parser, SL_TOKEN_LPAREN);

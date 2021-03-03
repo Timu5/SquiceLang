@@ -1,6 +1,6 @@
 
-let a = 10;
-let b = 0;
+a = 10;
+b = 0;
 while(a > 0)
 {
     a = a - 1;

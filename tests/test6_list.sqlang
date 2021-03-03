@@ -1,4 +1,5 @@
-let l = [1,2,3,4];
+l = [1,2,3,4];
+
 assert(len(l) == 4);
 assert(l[0] == 1);
 assert(l[1] == 2);
