@@ -68,6 +68,8 @@ static void len(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *v = sl_vector_pop(ctx->stack);
+    while (v->type == SL_VALUE_REF)
+        v = v->ref;
     if (v->type == SL_VALUE_STRING)
     {
         sl_vector_push(ctx->stack, sl_value_number((double)strlen(v->string)));
