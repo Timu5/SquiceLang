@@ -156,10 +156,13 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
     int size = binary->size;
     sl_vector(callptr_t) call_stack = NULL;
     sl_vector(tryptr_t) try_stack = NULL;
+    sl_vector(sl_ctx_t *) ctx_stack = NULL;
     int oldip = 0;
 
     jmp_buf old_try; // TODO: Add real recursive try support
     memcpy(old_try, __ex_buf__, sizeof(__ex_buf__));
+
+    sl_vector_push(ctx_stack, global);
 
     try
     {
@@ -264,13 +267,15 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     if (binary == fn_binary)
                     {
                         // same module :)
-                        context = sl_ctx_new(context);
+                        sl_vector_push(ctx_stack, context);
+                        context = sl_ctx_new(NULL);
+                        context->parent = global;
+
                         if (byte == SL_OPCODE_CALLM)
                         {
                             sl_ctx_addvar(context, strdup("this"), parent); // add "this" variable
                         }
                         sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack) - 1 - (int)(argc->number)}));
-                        //sl_vector_pop(global->stack);
                         ip = fn->address;
                     }
                     else
@@ -303,14 +308,9 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_vector_push(global->stack, val);
                 int ret_adr = cp.addr;
                 ip = ret_adr;
-                if (context->parent != NULL)
-                {
-                    sl_ctx_t *parent = context->parent;
-                    //sl_ctx_free(context);
-                    context = parent;
-                    //context->child->parent = NULL;
-                    context->child = NULL;
-                }
+                context->parent = NULL;
+                context = sl_vector_pop(ctx_stack);
+                context->child = NULL;
                 break;
             case SL_OPCODE_JMP:
                 ip = getint(opcodes, &ip);
@@ -414,13 +414,9 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 {
                     tryptr_t t = sl_vector_pop(try_stack);
                     ip = t.addr;
-                    if (context != t.ctx)
-                    {
-                        context = t.ctx;
-                        context->child->parent = NULL;
-                        context->child = NULL;
-                    }
+                    context = t.ctx;
                     sl_vector_shrinkto(call_stack, t.calls);
+                    sl_vector_shrinkto(ctx_stack, t.calls + 1);
                     // TODO: Free orphan context
                     // TODO: Unwind stack
                 }
