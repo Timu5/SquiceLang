@@ -360,8 +360,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     throw("Cannot find %s module", name);
 
                 sl_ctx_t *module_ctx = sl_ctx_new(NULL);
-                sl_builtin_install(module_ctx);
-                module_ctx = sl_ctx_new(module_ctx);
+                module_ctx->parent = global;
                 sl_exec(module_ctx, module_ctx, module, 0, load_module, trap);
 
                 // load it's context into dictionary value
