@@ -1,5 +1,5 @@
-a = 1000;
-b = [0];
+let a = 1000;
+let b = [0];
 
 while(a > 0)
 {
@@ -13,11 +13,3 @@ assert(b[2] == 3);
 assert(b[3] == 4);
 assert(b[8] == 9);
 assert(b[9] == 10);
-
-fn fib(x)
-{
-    if(x < 2) return x;
-    return fib(x - 1) + fib(x - 2);
-}
-
-assert(fib(10) == 55);

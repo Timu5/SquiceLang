@@ -84,6 +84,8 @@ int sl_gettoken(sl_lexer_t *lexer)
             return SL_TOKEN_ELSE;
         else if (strcmp(lexer->buffer, "while") == 0)
             return SL_TOKEN_WHILE;
+        else if (strcmp(lexer->buffer, "let") == 0)
+            return SL_TOKEN_LET;
         else if (strcmp(lexer->buffer, "fn") == 0)
             return SL_TOKEN_FN;
         else if (strcmp(lexer->buffer, "return") == 0)
@@ -383,6 +385,7 @@ char *sl_tokenstr(int token)
 
         "SL_TOKEN_FN",
         "SL_TOKEN_RETURN",
+        "SL_TOKEN_LET",
         "SL_TOKEN_IF",
         "SL_TOKEN_ELSE",
         "SL_TOKEN_WHILE",

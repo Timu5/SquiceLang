@@ -53,18 +53,18 @@ class bar {
     }
 }
 
-xyz = test();
+let xyz = test();
 
 assert(xyz.a() == 1);
 assert(xyz.name == 1);
 assert(xyz.b(1) == 2);
 assert(xyz.name == 2);
 
-t2 = yz();
+let t2 = yz();
 
 assert(t2.name == "Not super :(");
 
-b = bar();
+let b = bar();
 
 assert(b.name == "bar");
 assert(b.smth == "foo");
