@@ -342,17 +342,28 @@ sl_node_t *statment(sl_parser_t *parser)
     case SL_TOKEN_LET:
         nexttoken(parser);
         match(parser, SL_TOKEN_IDENT);
+        sl_vector(char *) names = NULL;
         char *name = strdup(parser->lexer->buffer);
+        sl_vector_push(names, name);
 
         nexttoken(parser);
+        while (parser->lasttoken == SL_TOKEN_COMMA)
+        {
+            nexttoken(parser);
+            match(parser, SL_TOKEN_IDENT);
+            char *name2 = strdup(parser->lexer->buffer);
+            sl_vector_push(names, name2);
+            nexttoken(parser);
+        }
+
         match(parser, SL_TOKEN_ASSIGN);
         nexttoken(parser);
 
-        sl_node_t *exp = expr(parser, 0);
+        sl_node_t *exp = expr_tuple(parser);
         match(parser, SL_TOKEN_SEMICOLON);
 
         nexttoken(parser);
-        return node_decl(marker, node_ident(marker, name), exp);
+        return node_decl(marker, names, exp);
     case SL_TOKEN_IF:
         nexttoken(parser);
         match(parser, SL_TOKEN_LPAREN);
@@ -456,8 +467,10 @@ sl_node_t *statment(sl_parser_t *parser)
         // ...
         // return this;
 
+        sl_vector(char *) this_name = NULL;
+        sl_vector_push(this_name, strdup("this"));
         sl_vector_push(constructor, node_decl(marker,
-                                              node_ident(marker, strdup("this")),
+                                              this_name,
                                               node_call(marker,
                                                         node_ident(marker, strdup("dict")),
                                                         node_block(marker, NULL))));

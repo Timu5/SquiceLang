@@ -183,13 +183,33 @@ void sl_codegen_break(sl_node_t *node, sl_binary_t *binary)
 
 void sl_codegen_decl(sl_node_t *node, sl_binary_t *binary)
 {
-    if (node->decl.name->type != SL_NODETYPE_IDENT)
-        throw("Declaration name must be identifier at line %d column %d",
-              node->marker.line,
-              node->marker.column);
-    node->decl.value->codegen(node->decl.value, binary);
-    sl_bytecode_adddebug(binary, node->marker);
-    sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->decl.name->ident);
+    if (sl_vector_size(node->decl.names) == 1)
+    {
+        node->decl.value->codegen(node->decl.value, binary);
+        sl_bytecode_adddebug(binary, node->marker);
+        sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->decl.names[0]);
+    }
+    else
+    {
+        sl_bytecode_adddebug(binary, node->marker);
+        for (int i = 0; i < sl_vector_size(node->decl.names); i++)
+        {
+            sl_bytecode_emitint(binary, SL_OPCODE_PUSHI, 0);
+            sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->decl.names[i]);
+        }
+
+        sl_bytecode_adddebug(binary, node->marker);
+        for (int i = 0; i < sl_vector_size(node->decl.names); i++)
+        {
+            // make tuple out of variables
+            sl_bytecode_emitstr(binary, SL_OPCODE_PUSHV, node->decl.names[i]);
+            if (i >= 1)
+                sl_bytecode_emitint(binary, SL_OPCODE_BINARY, SL_TOKEN_COMMA);
+        }
+        node->decl.value->codegen(node->decl.value, binary);
+
+        sl_bytecode_emitint(binary, SL_OPCODE_BINARY, SL_TOKEN_ASSIGN);
+    }
 }
 
 void sl_codegen_index(sl_node_t *node, sl_binary_t *binary)

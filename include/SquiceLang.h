@@ -165,7 +165,7 @@ struct sl_node_s
         } loop;
         struct
         {
-            struct sl_node_s *name;
+            sl_vector(char *) names;
             struct sl_node_s *value;
         } decl;
         struct
@@ -244,7 +244,7 @@ sl_node_t *node_return(sl_marker_t marker, sl_node_t *expr);
 sl_node_t *node_cond(sl_marker_t marker, sl_node_t *arg, sl_node_t *body, sl_node_t *elsebody);
 sl_node_t *node_loop(sl_marker_t marker, sl_node_t *arg, sl_node_t *body);
 sl_node_t *node_break(sl_marker_t marker);
-sl_node_t *node_decl(sl_marker_t marker, sl_node_t *name, sl_node_t *value);
+sl_node_t *node_decl(sl_marker_t marker, sl_vector(char *) names, sl_node_t *value);
 sl_node_t *node_index(sl_marker_t marker, sl_node_t *var, sl_node_t *expr);
 sl_node_t *node_block(sl_marker_t marker, sl_vector(sl_node_t *) list);
 sl_node_t *node_member(sl_marker_t marker, sl_node_t *parent, char *name);

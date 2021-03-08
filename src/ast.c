@@ -228,17 +228,18 @@ sl_node_t *node_break(sl_marker_t marker)
 
 static void free_decl(sl_node_t *node)
 {
-    sl_node_free(node->decl.name);
+    // TODO: iterate node->decl.names and free strings!
+    sl_vector_free(node->decl.names);
     sl_node_free(node->decl.value);
     free(node);
 }
 
-sl_node_t *node_decl(sl_marker_t marker, sl_node_t *name, sl_node_t *value)
+sl_node_t *node_decl(sl_marker_t marker, sl_vector(char *) names, sl_node_t *value)
 {
     sl_node_t *node = (sl_node_t *)malloc(sizeof(sl_node_t));
     node->type = SL_NODETYPE_DECL;
     node->marker = marker;
-    node->decl.name = name;
+    node->decl.names = names;
     node->decl.value = value;
     node->codegen = sl_codegen_decl;
     node->free = free_decl;
@@ -462,7 +463,8 @@ void sl_node_print(sl_node_t *node, int ind)
         printf("decl\n");
         printtab(ind);
         printf("->name:\n");
-        sl_node_print(node->decl.name, ind + 1);
+        // TODO: fix me!!!!
+        //sl_node_print(node->decl.name, ind + 1);
         printtab(ind);
         printf("->value:\n");
         sl_node_print(node->decl.value, ind + 1);

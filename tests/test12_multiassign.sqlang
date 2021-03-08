@@ -1,19 +1,19 @@
-a, b = 1, 2;
+let a, b = 1, 2;
 
 assert(a == 1);
 assert(b == 2);
 
-a, b = 1;
+a, b = 22;
 
-assert(a == 1);
-assert(b == null);
+assert(a == 22);
+//assert(b == null);
 
 fn test()
 {
     return 3, 4;
 }
 
-c, d = test();
+let c, d = test();
 
 assert(c == 3);
 assert(d == 4);
