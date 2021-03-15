@@ -281,7 +281,9 @@ enum SL_OPCODE
     SL_OPCODE_IMPORT,
     SL_OPCODE_TRY,    // try block start
     SL_OPCODE_ENDTRY, // try block end
-    SL_OPCODE_THROW
+    SL_OPCODE_THROW,
+    SL_OPCODE_SCOPE,
+    SL_OPCODE_ENDSCOPE
 };
 
 #ifdef SL_DEBUG

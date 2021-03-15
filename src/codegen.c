@@ -222,8 +222,12 @@ void sl_codegen_index(sl_node_t *node, sl_binary_t *binary)
 
 void sl_codegen_block(sl_node_t *node, sl_binary_t *binary)
 {
+    sl_bytecode_emit(binary, SL_OPCODE_SCOPE);
+    
     for (int i = 0; i < sl_vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
+    
+    sl_bytecode_emit(binary, SL_OPCODE_ENDSCOPE);
 }
 
 void sl_codegen_member(sl_node_t *node, sl_binary_t *binary)

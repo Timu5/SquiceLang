@@ -112,6 +112,12 @@ void dis(char *opcodes, long fsize)
         case SL_OPCODE_THROW:
             printf("throw");
             break;
+        case SL_OPCODE_SCOPE:
+            printf("scope");
+            break;
+        case SL_OPCODE_ENDSCOPE:
+            printf("endscope");
+            break;
         default:
             printf("data %x", byte);
             break;
@@ -421,6 +427,16 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 
                 break;
             }
+            case SL_OPCODE_SCOPE:
+                sl_vector_push(ctx_stack, context);
+                context = sl_ctx_new(NULL);
+                context->parent = global;
+                break;
+            case SL_OPCODE_ENDSCOPE:
+                context->parent = NULL;
+                context = sl_vector_pop(ctx_stack);
+                context->child = NULL;
+                break;
             }
         }
     }
