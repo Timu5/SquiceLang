@@ -92,6 +92,7 @@ void sl_codegen_func(sl_node_t *node, sl_binary_t *binary)
     sl_bytecode_addlabel(binary, name, binary->size);
 
     sl_bytecode_adddebug(binary, node->marker);
+    sl_bytecode_emit(binary, SL_OPCODE_SCOPE);
     sl_bytecode_emitstr(binary, SL_OPCODE_STORE, "argc");
     for (int i = 0; i < (int)sl_vector_size(node->func.args); i++)
     {
@@ -99,6 +100,9 @@ void sl_codegen_func(sl_node_t *node, sl_binary_t *binary)
     }
 
     node->func.body->codegen(node->func.body, binary);
+
+    sl_bytecode_emit(binary, SL_OPCODE_ENDSCOPE);
+
     sl_bytecode_emit(binary, SL_OPCODE_RETN);
 }
 
@@ -185,9 +189,14 @@ void sl_codegen_decl(sl_node_t *node, sl_binary_t *binary)
 {
     if (sl_vector_size(node->decl.names) == 1)
     {
-        node->decl.value->codegen(node->decl.value, binary);
         sl_bytecode_adddebug(binary, node->marker);
+        sl_bytecode_emitint(binary, SL_OPCODE_PUSHI, 0);
         sl_bytecode_emitstr(binary, SL_OPCODE_STORE, node->decl.names[0]);
+
+        sl_bytecode_adddebug(binary, node->marker);
+        sl_bytecode_emitstr(binary, SL_OPCODE_PUSHV, node->decl.names[0]);
+        node->decl.value->codegen(node->decl.value, binary);
+        sl_bytecode_emitint(binary, SL_OPCODE_BINARY, SL_TOKEN_ASSIGN);
     }
     else
     {
@@ -223,10 +232,8 @@ void sl_codegen_index(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_block(sl_node_t *node, sl_binary_t *binary)
 {
     sl_bytecode_emit(binary, SL_OPCODE_SCOPE);
-    
     for (int i = 0; i < sl_vector_size(node->block); i++)
         node->block[i]->codegen(node->block[i], binary);
-    
     sl_bytecode_emit(binary, SL_OPCODE_ENDSCOPE);
 }
 
@@ -266,8 +273,11 @@ void sl_codegen_trycatch(sl_node_t *node, sl_binary_t *binary)
 
     sl_bytecode_addlabel(binary, strdup(lname), binary->size);
     // TODO: Add support for custom exception name
+    sl_bytecode_emit(binary, SL_OPCODE_SCOPE);
     sl_bytecode_emitstr(binary, SL_OPCODE_STORE, "exception");
     node->trycatch.tryblock->codegen(node->trycatch.catchblock, binary);
+    sl_bytecode_emit(binary, SL_OPCODE_ENDSCOPE);
+
     sl_bytecode_addtofill(binary, strdup(lename), adr + 1);
     sl_bytecode_addlabel(binary, strdup(lename), binary->size);
 

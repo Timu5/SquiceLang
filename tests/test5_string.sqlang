@@ -5,12 +5,12 @@ assert(a=="a1");
 assert(b=="b2");
 assert(a+b=="a1b2");
 
-let a = "abc\r\n\b\"";
-assert(ord(a[0]) == 97);
-assert(ord(a[1]) == 98);
-assert(ord(a[2]) == 99);
-assert(ord(a[3]) == 13);
-assert(ord(a[4]) == 10);
-assert(ord(a[5]) == 8);
-assert(ord(a[6]) == 34);
+let c = "abc\r\n\b\"";
+assert(ord(c[0]) == 97);
+assert(ord(c[1]) == 98);
+assert(ord(c[2]) == 99);
+assert(ord(c[3]) == 13);
+assert(ord(c[4]) == 10);
+assert(ord(c[5]) == 8);
+assert(ord(c[6]) == 34);
 

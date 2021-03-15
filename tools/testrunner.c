@@ -21,8 +21,10 @@ char *tests[] = {
     "tests/test8_gc.sqlang",
     "tests/test9_class.sqlang",
     "tests/test10_fstring.sqlang",
-    "tests/test11_trycatch.sqlang"
-    };
+    "tests/test11_trycatch.sqlang",
+    "tests/test12_multiassign.sqlang",
+    "tests/test13_scope.sqlang"
+};
 
 sl_ctx_t *global;
 

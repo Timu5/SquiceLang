@@ -353,7 +353,7 @@ sl_value_t *sl_value_get(int i, sl_value_t *a)
 
 sl_value_t *sl_value_member(char *name, sl_value_t *a)
 {
-    if (a->type == SL_VALUE_REF)
+    while (a->type == SL_VALUE_REF)
         a = a->ref;
 
     if (a->type == SL_VALUE_DICT)

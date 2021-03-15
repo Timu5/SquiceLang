@@ -134,6 +134,7 @@ struct tryptr
     int addr;
     size_t calls;
     sl_ctx_t *ctx;
+    size_t ctx_size;
 };
 
 typedef struct tryptr tryptr_t;
@@ -142,6 +143,8 @@ struct callptr
 {
     int addr;
     size_t sp;
+    sl_ctx_t *ctx;
+    size_t ctx_size;
 };
 
 typedef struct callptr callptr_t;
@@ -210,6 +213,8 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 {
                     throw("No variable named '%s'", name);
                 }
+                if (val->type == SL_VALUE_ARRAY || val->type == SL_VALUE_DICT || val->type == SL_VALUE_FN)
+                    val = sl_value_ref(val);
                 sl_vector_push(global->stack, val);
                 break;
             }
@@ -224,8 +229,19 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 break;
             }
             case SL_OPCODE_STORE:
-                sl_ctx_addvar(context, getstr(opcodes, &ip), sl_vector_pop(global->stack));
+            {
+                char *name = getstr(opcodes, &ip);
+                sl_ctx_t *parent = context->parent;
+                context->parent = NULL;
+                sl_value_t *val = sl_ctx_getvar(context, name);
+                context->parent = parent;
+                if (val != NULL)
+                {
+                    throw("Variable redefinition '%s'", name);
+                }
+                sl_ctx_addvar(context, name, sl_vector_pop(global->stack));
                 break;
+            }
             case SL_OPCODE_UNARY:
             {
                 sl_value_t *a = sl_vector_pop(global->stack);
@@ -272,6 +288,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     if (binary == fn_binary)
                     {
                         // same module :)
+                        sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack) - 1 - (int)(argc->number), context, sl_vector_size(ctx_stack)}));
                         sl_vector_push(ctx_stack, context);
                         context = sl_ctx_new(NULL);
                         context->parent = global;
@@ -280,7 +297,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                         {
                             sl_ctx_addvar(context, strdup("this"), parent); // add "this" variable
                         }
-                        sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack) - 1 - (int)(argc->number)}));
                         ip = fn->address;
                     }
                     else
@@ -310,12 +326,13 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 callptr_t cp = sl_vector_pop(call_stack);
                 sl_value_t *val = sl_vector_pop(global->stack);
                 sl_vector_shrinkto(global->stack, cp.sp);
+                sl_vector_shrinkto(ctx_stack, cp.ctx_size);
                 sl_vector_push(global->stack, val);
                 int ret_adr = cp.addr;
                 ip = ret_adr;
-                context->parent = NULL;
-                context = sl_vector_pop(ctx_stack);
-                context->child = NULL;
+                //context->parent = NULL;
+                context = cp.ctx;
+                //context->child = NULL;
                 break;
             case SL_OPCODE_JMP:
                 ip = getint(opcodes, &ip);
@@ -389,7 +406,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 // push adress onto try stack
                 // TODO: Add stack pointer as well
                 int adr = getint(opcodes, &ip);
-                sl_vector_push(try_stack, ((tryptr_t){adr, sl_vector_size(call_stack), context}));
+                sl_vector_push(try_stack, ((tryptr_t){adr, sl_vector_size(call_stack), context, sl_vector_size(context)}));
                 break;
             }
             case SL_OPCODE_ENDTRY:
@@ -420,7 +437,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     ip = t.addr;
                     context = t.ctx;
                     sl_vector_shrinkto(call_stack, t.calls);
-                    sl_vector_shrinkto(ctx_stack, t.calls + 1);
+                    sl_vector_shrinkto(ctx_stack, t.ctx_size);
                     // TODO: Free orphan context
                     // TODO: Unwind stack
                 }
@@ -429,8 +446,9 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             }
             case SL_OPCODE_SCOPE:
                 sl_vector_push(ctx_stack, context);
-                context = sl_ctx_new(NULL);
-                context->parent = global;
+                //sl_ctx_t *parent = context;
+                context = sl_ctx_new(context);
+                //context->parent = parent;
                 break;
             case SL_OPCODE_ENDSCOPE:
                 context->parent = NULL;

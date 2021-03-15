@@ -88,13 +88,16 @@ static void ord(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *v = sl_vector_pop(ctx->stack);
+    while (v->type == SL_VALUE_REF)
+        v = v->ref;
+
     if (v->type == SL_VALUE_STRING)
     {
         sl_vector_push(ctx->stack, sl_value_number(v->string[0]));
         return;
     }
 
-    throw("Function ord need argument of type string.");
+    throw("Function ord need argument of type string");
 }
 
 static void chr(sl_ctx_t *ctx)
@@ -117,6 +120,12 @@ static void super(sl_ctx_t *ctx)
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *a = sl_vector_pop(ctx->stack);
     sl_value_t *b = sl_vector_pop(ctx->stack);
+    while (a->type == SL_VALUE_REF)
+        a = a->ref;
+
+    while (b->type == SL_VALUE_REF)
+        b = b->ref;
+
     if (a->type == SL_VALUE_DICT && b->type == SL_VALUE_DICT)
     {
         for (int i = 0; i < sl_vector_size(b->dict.names); i++)
