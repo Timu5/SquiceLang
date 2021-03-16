@@ -406,7 +406,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 // push adress onto try stack
                 // TODO: Add stack pointer as well
                 int adr = getint(opcodes, &ip);
-                sl_vector_push(try_stack, ((tryptr_t){adr, sl_vector_size(call_stack), context, sl_vector_size(context)}));
+                sl_vector_push(try_stack, ((tryptr_t){adr, sl_vector_size(call_stack), context, sl_vector_size(ctx_stack)}));
                 break;
             }
             case SL_OPCODE_ENDTRY:
