@@ -368,6 +368,7 @@ struct sl_value_s *sl_gc_alloc_value();
 struct sl_ctx_s *sl_gc_alloc_ctx();
 void sl_gc_collect(sl_ctx_t *ctx);
 void sl_gc_freeall();
+void sl_gc_trigger();
 
 enum SL_TOKEN
 {

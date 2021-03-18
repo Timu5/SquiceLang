@@ -159,13 +159,15 @@ sl_marker_t sl_getmarker(sl_binary_t *binary, size_t ip)
     return (sl_marker_t){0, 0, 0};
 }
 
+sl_vector(sl_ctx_t *) ctx_stack = NULL;
+
 void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
     char *opcodes = binary->block;
     int size = binary->size;
     sl_vector(callptr_t) call_stack = NULL;
     sl_vector(tryptr_t) try_stack = NULL;
-    sl_vector(sl_ctx_t *) ctx_stack = NULL;
+    ctx_stack = NULL;
     int oldip = 0;
 
     jmp_buf old_try; // TODO: Add real recursive try support
@@ -198,12 +200,15 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 break;
             case SL_OPCODE_PUSHN:
                 sl_vector_push(global->stack, sl_value_number(getdouble(opcodes, &ip)));
+                sl_gc_trigger();
                 break;
             case SL_OPCODE_PUSHI:
                 sl_vector_push(global->stack, sl_value_number(getint(opcodes, &ip)));
+                sl_gc_trigger();
                 break;
             case SL_OPCODE_PUSHS:
                 sl_vector_push(global->stack, sl_value_string(getstr(opcodes, &ip)));
+                sl_gc_trigger();
                 break;
             case SL_OPCODE_PUSHV:
             {
@@ -216,6 +221,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 if (val->type == SL_VALUE_ARRAY || val->type == SL_VALUE_DICT || val->type == SL_VALUE_FN)
                     val = sl_value_ref(val);
                 sl_vector_push(global->stack, val);
+                sl_gc_trigger();
                 break;
             }
             case SL_OPCODE_POP:
@@ -246,6 +252,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             {
                 sl_value_t *a = sl_vector_pop(global->stack);
                 sl_vector_push(global->stack, sl_value_unary(getint(opcodes, &ip), a));
+                sl_gc_trigger();
                 break;
             }
             case SL_OPCODE_BINARY:
@@ -253,6 +260,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_value_t *b = sl_vector_pop(global->stack);
                 sl_value_t *a = sl_vector_pop(global->stack);
                 sl_vector_push(global->stack, sl_value_binary(getint(opcodes, &ip), a, b));
+                sl_gc_trigger();
                 break;
             }
             case SL_OPCODE_CALL:
@@ -330,9 +338,9 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_vector_push(global->stack, val);
                 int ret_adr = cp.addr;
                 ip = ret_adr;
-                //context->parent = NULL;
+                context->parent = NULL;
                 context = cp.ctx;
-                //context->child = NULL;
+                context->child = NULL;
                 break;
             case SL_OPCODE_JMP:
                 ip = getint(opcodes, &ip);
@@ -404,7 +412,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             case SL_OPCODE_TRY:
             {
                 // push adress onto try stack
-                // TODO: Add stack pointer as well
                 int adr = getint(opcodes, &ip);
                 sl_vector_push(try_stack, ((tryptr_t){adr, sl_vector_size(call_stack), context, sl_vector_size(ctx_stack)}));
                 break;
@@ -446,9 +453,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             }
             case SL_OPCODE_SCOPE:
                 sl_vector_push(ctx_stack, context);
-                //sl_ctx_t *parent = context;
                 context = sl_ctx_new(context);
-                //context->parent = parent;
                 break;
             case SL_OPCODE_ENDSCOPE:
                 context->parent = NULL;
