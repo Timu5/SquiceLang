@@ -9,6 +9,7 @@ size_t maxmem = 128;
 size_t usedmem = 0;
 
 extern sl_ctx_t *global;
+extern sl_ctx_t **current;
 extern sl_vector(sl_ctx_t *) ctx_stack;
 
 void *sl_safe_alloc(int size)
@@ -45,6 +46,28 @@ sl_ctx_t *sl_gc_alloc_ctx()
     return ctx;
 }
 
+static void gc_mark(sl_value_t *val);
+
+static void gc_markctx(sl_ctx_t *c)
+{
+    while (c)
+    {
+        if (c->markbit != 1)
+        {
+            c->markbit = 1;
+            for (int i = 0; i < sl_vector_size(c->vars); i++)
+            {
+                gc_mark(c->vars[i]->val);
+            }
+            for (int i = 0; i < sl_vector_size(c->stack); i++)
+            {
+                gc_mark(c->stack[i]);
+            }
+        }
+        c = c->parent;
+    }
+}
+
 static void gc_mark(sl_value_t *val)
 {
     if (val->markbit == 1)
@@ -74,20 +97,7 @@ static void gc_mark(sl_value_t *val)
     else if (val->type == SL_VALUE_FN)
     {
         // mark function context variables
-        sl_ctx_t *c = val->fn->ctx;
-        while (c)
-        {
-            c->markbit = 1;
-            for (int i = 0; i < sl_vector_size(c->vars); i++)
-            {
-                gc_mark(c->vars[i]->val);
-            }
-            for (int i = 0; i < sl_vector_size(c->stack); i++)
-            {
-                gc_mark(c->stack[i]);
-            }
-            c = c->parent;
-        }
+        gc_markctx(val->fn->ctx);
     }
 }
 
@@ -96,43 +106,35 @@ void sl_gc_collect(sl_ctx_t *ctx)
     for (size_t i = 0; i < sl_vector_size(ctx_stack); i++)
     {
         sl_ctx_t *c = ctx_stack[i];
-        while (c)
-        {
-            ctx->markbit = 1;
-            for (int i = 0; i < sl_vector_size(c->vars); i++)
-            {
-                gc_mark(c->vars[i]->val);
-            }
-            for (int i = 0; i < sl_vector_size(c->stack); i++)
-            {
-                gc_mark(c->stack[i]);
-            }
-            c = c->parent;
-        }
+        gc_markctx(c);
     }
 
-    int l = (int)sl_vector_size(values) - 1;
+    gc_markctx(*current);
+
     for (int i = (int)sl_vector_size(values) - 1; i >= 0; i--)
     {
-        if (values[i]->markbit == 0)
+        sl_value_t *v = values[i];
+
+        if (v->markbit == 0)
         {
-            sl_value_free(values[i]);
+            sl_value_free(v);
+            int l = (int)sl_vector_size(values) - 1;
             if (i != l)
                 values[i] = values[l];
             sl_vector_pop(values);
         }
         else
         {
-            values[i]->markbit = 0;
+            v->markbit = 0;
         }
     }
 
-    /*l = (int)sl_vector_size(ctxs) - 1;
     for (int i = (int)sl_vector_size(ctxs) - 1; i >= 0; i--)
     {
         if (ctxs[i]->markbit == 0)
         {
             sl_ctx_free(ctxs[i]);
+            int l = (int)sl_vector_size(ctxs) - 1;
             if (i != l)
                 ctxs[i] = ctxs[l];
             sl_vector_pop(ctxs);
@@ -141,7 +143,7 @@ void sl_gc_collect(sl_ctx_t *ctx)
         {
             ctxs[i]->markbit = 0;
         }
-    }*/
+    }
 }
 
 void sl_gc_freeall()

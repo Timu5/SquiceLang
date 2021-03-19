@@ -160,6 +160,7 @@ sl_marker_t sl_getmarker(sl_binary_t *binary, size_t ip)
 }
 
 sl_vector(sl_ctx_t *) ctx_stack = NULL;
+sl_ctx_t **current = NULL;
 
 void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
@@ -169,6 +170,8 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
     sl_vector(tryptr_t) try_stack = NULL;
     ctx_stack = NULL;
     int oldip = 0;
+
+    current = &context;
 
     jmp_buf old_try; // TODO: Add real recursive try support
     memcpy(old_try, __ex_buf__, sizeof(__ex_buf__));
@@ -340,7 +343,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 ip = ret_adr;
                 context->parent = NULL;
                 context = cp.ctx;
-                context->child = NULL;
                 break;
             case SL_OPCODE_JMP:
                 ip = getint(opcodes, &ip);
@@ -458,7 +460,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             case SL_OPCODE_ENDSCOPE:
                 context->parent = NULL;
                 context = sl_vector_pop(ctx_stack);
-                context->child = NULL;
                 break;
             }
         }

@@ -222,7 +222,6 @@ typedef struct sl_fn_s sl_fn_t;
 struct sl_ctx_s
 {
     struct sl_ctx_s *parent;
-    struct sl_ctx_s *child;
     sl_vector(struct sl_var_s *) vars;
     sl_vector(struct sl_value_s *) stack;
     int markbit;

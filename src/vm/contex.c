@@ -4,35 +4,22 @@ sl_ctx_t *sl_ctx_new(sl_ctx_t *parent)
 {
     sl_ctx_t *ctx = (sl_ctx_t *)sl_gc_alloc_ctx();
     ctx->parent = parent;
-    if (parent)
-        parent->child = ctx;
-    ctx->child = NULL;
     ctx->vars = NULL;
     ctx->stack = NULL;
+    ctx->markbit = 0;
     return ctx;
 }
 
 void sl_ctx_free(sl_ctx_t *ctx)
 {
-    /*if (ctx->child)
-    {
-        ctx->child->parent = NULL;
-    }
-    if (ctx->parent)
-    {
-        ctx->parent->child = NULL;
-    }*/   
 
     for (int i = 0; i < sl_vector_size(ctx->vars); i++)
     {
         free(ctx->vars[i]->name);
-        //sl_value_free(ctx->vars[i]->val, 1);
         free(ctx->vars[i]);
     }
     sl_vector_free(ctx->vars);
 
-    /* while(sl_vector_size(ctx->stack))
-        sl_value_free(sl_vector_pop(ctx->stack), 1);*/
     sl_vector_free(ctx->stack);
 
     free(ctx);
