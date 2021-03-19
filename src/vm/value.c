@@ -99,9 +99,11 @@ void sl_value_free_members(sl_value_t *val)
     }
     else if (val->type == SL_VALUE_ARRAY)
     {
-        //for (int i = 0; i < sl_vector_size(val->array); i++)
-        //    sl_value_free(val->array[i]);
         sl_vector_free(val->array);
+    }
+    else if (val->type == SL_VALUE_TUPLE)
+    {
+        sl_vector_free(val->tuple);
     }
     else if (val->type == SL_VALUE_DICT)
     {

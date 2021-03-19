@@ -228,7 +228,10 @@ sl_node_t *node_break(sl_marker_t marker)
 
 static void free_decl(sl_node_t *node)
 {
-    // TODO: iterate node->decl.names and free strings!
+    for (int i = 0; i < sl_vector_size(node->decl.names); i++)
+    {
+        free(node->decl.names[i]);
+    }
     sl_vector_free(node->decl.names);
     sl_node_free(node->decl.value);
     free(node);

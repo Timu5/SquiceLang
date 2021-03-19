@@ -225,6 +225,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     val = sl_value_ref(val);
                 sl_vector_push(global->stack, val);
                 sl_gc_trigger();
+                free(name);
                 break;
             }
             case SL_OPCODE_POP:
@@ -480,4 +481,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
     }
 end:
     sl_vector_free(call_stack);
+    sl_vector_free(try_stack);
+    sl_vector_free(ctx_stack);
 }
