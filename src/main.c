@@ -3,7 +3,7 @@
 #ifdef SL_IMPLEMENTATION
 
 #include "vm/builtin.c"
-#include "vm/contex.c"
+#include "vm/context.c"
 #include "vm/gc.c"
 #include "vm/value.c"
 #include "vm/vm.c"
@@ -52,6 +52,8 @@ sl_binary_t *sl_compile_file(char *filename)
     string[r] = 0;
     
     sl_binary_t *bin = sl_compile_str(string);
+
+    //sl_dis_str(NULL, string, NULL, NULL);
 
     free(string);
 

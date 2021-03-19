@@ -473,7 +473,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
         for (int i = 0; i < sl_vector_size(call_stack); i++)
         {
             sl_marker_t marker = sl_getmarker(binary, call_stack[i].addr);
-            printf("callstack: %d\n", marker.line);
+            printf("callstack: %zd\n", marker.line);
         }
         sl_marker_t marker = sl_getmarker(binary, oldip);
         throw("%s at line %d", msg, marker.line);
