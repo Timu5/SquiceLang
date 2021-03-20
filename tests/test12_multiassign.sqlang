@@ -6,7 +6,8 @@ assert(b == 2);
 a, b = 22;
 
 assert(a == 22);
-//assert(b == null);
+assert(isnull(b));
+
 
 fn test()
 {

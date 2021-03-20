@@ -169,6 +169,13 @@ static void str(sl_ctx_t *ctx)
     sl_vector_push(ctx->stack, sl_value_string(str));
 }
 
+static void isnull(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    sl_value_t *val = sl_vector_pop(ctx->stack);
+    sl_vector_push(ctx->stack, sl_value_number(val->type == SL_VALUE_NULL));
+}
+
 void sl_builtin_install(sl_ctx_t *ctx)
 {
     sl_ctx_addfn(ctx, NULL, strdup("print"), 0, 0, print);
@@ -179,4 +186,5 @@ void sl_builtin_install(sl_ctx_t *ctx)
     sl_ctx_addfn(ctx, NULL, strdup("chr"), 1, 0, chr);
     sl_ctx_addfn(ctx, NULL, strdup("_super_"), 2, 0, super);
     sl_ctx_addfn(ctx, NULL, strdup("str"), 1, 0, str);
+    sl_ctx_addfn(ctx, NULL, strdup("isnull"), 1, 0, isnull);
 }
