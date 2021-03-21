@@ -8,9 +8,6 @@
 #include "SquiceLang.h"
 #include "main.c"
 
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define RESET "\033[0m"
 
 sl_ctx_t *global;
 
@@ -47,7 +44,7 @@ static void binding_SDL_CreateWindow(sl_ctx_t *ctx)
     int h = (int)sl_vector_pop(ctx->stack)->number;
     int flags = (int)sl_vector_pop(ctx->stack)->number;
     SDL_Window *window = SDL_CreateWindow(title, x, y, w, h, flags);
-    sl_vector_push(ctx->stack, sl_value_ref(window));
+    sl_vector_push(ctx->stack, sl_value_native(window));
 }
 
 static void binding_SDL_DestroyWindow(sl_ctx_t *ctx)
@@ -65,14 +62,14 @@ static void binding_SDL_CreateRenderer(sl_ctx_t *ctx)
     int index = (int)sl_vector_pop(ctx->stack)->number;
     int flags = (int)sl_vector_pop(ctx->stack)->number;
     SDL_Renderer *ren = SDL_CreateRenderer(window, index, flags);
-    sl_vector_push(ctx->stack, sl_value_ref(ren));
+    sl_vector_push(ctx->stack, sl_value_native(ren));
 }
 
 static void binding_SDL_DestroyRenderer(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *ren = sl_vector_pop(ctx->stack);
-    SDL_Renderer *renderer = (SDL_Renderer *)(win->ref);
+    SDL_Renderer *renderer = (SDL_Renderer *)(ren->ref);
     SDL_DestroyRenderer(renderer);
 }
 
@@ -80,7 +77,7 @@ static void binding_SDL_RenderClear(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *ren = sl_vector_pop(ctx->stack);
-    SDL_Renderer *renderer = (SDL_Renderer *)(win->ref);
+    SDL_Renderer *renderer = (SDL_Renderer *)(ren->ref);
     SDL_RenderClear(renderer);
 }
 
@@ -88,8 +85,74 @@ static void binding_SDL_RenderPresent(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *ren = sl_vector_pop(ctx->stack);
-    SDL_Renderer *renderer = (SDL_Renderer *)(win->ref);
+    SDL_Renderer *renderer = (SDL_Renderer *)(ren->ref);
     SDL_RenderPresent(renderer);
+}
+
+//SDL_LoadBMP(string)
+static void binding_SDL_LoadBMP(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    char *file = sl_vector_pop(ctx->stack)->string;
+    SDL_Surface *surface = SDL_LoadBMP(file);
+    sl_vector_push(ctx->stack, sl_value_native(surface));
+}
+
+//SDL_CreateTextureFromSurface(ren, bmp);
+static void binding_SDL_CreateTextureFromSurface(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    SDL_Renderer *ren = (SDL_Renderer *)sl_vector_pop(ctx->stack)->ref;
+    SDL_Surface *sur = (SDL_Surface *)sl_vector_pop(ctx->stack)->ref;
+    SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, sur);
+    sl_vector_push(ctx->stack, sl_value_native(tex));
+}
+
+//SDL_RenderCopy(ren, tex, NULL, NULL);
+static void binding_SDL_RenderCopy(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    SDL_Renderer *ren = (SDL_Renderer *)sl_vector_pop(ctx->stack)->ref;
+    SDL_Texture *tex = (SDL_Texture *)sl_vector_pop(ctx->stack)->ref;
+    int x = (int)sl_vector_pop(ctx->stack)->number;
+    int y = (int)sl_vector_pop(ctx->stack)->number;
+    int w = (int)sl_vector_pop(ctx->stack)->number;
+    int h = (int)sl_vector_pop(ctx->stack)->number;
+    SDL_Rect dst = {x, y, w, h};
+    //sl_value_t *src = sl_vector_pop(ctx->stack);
+    //sl_value_t *dst = sl_vector_pop(ctx->stack);
+    SDL_RenderCopy(ren, tex, NULL, &dst);
+}
+
+//SDL_PollEvent(&test_event)
+static void binding_SDL_PollEvent(sl_ctx_t *ctx)
+{
+    int n = (int)sl_vector_pop(ctx->stack)->number;
+    SDL_Event event;
+    if (!SDL_PollEvent(&event))
+    {
+        sl_vector_push(ctx->stack, sl_value_null());
+        return;
+    }
+
+    sl_vector(char *) names = NULL;
+    sl_vector(sl_vector_t *) values = NULL;
+
+    sl_vector_push(names, strdup("type"));
+    sl_vector_push(values, sl_value_number(event.type));
+
+    switch (event.type)
+    {
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+        sl_vector_push(names, strdup("key"));
+        sl_vector_push(values, sl_value_number(event.key.keysym.scancode));
+        break;
+    case SDL_QUIT:
+        break;
+    }
+
+    sl_vector_push(ctx->stack, sl_value_dict(names, values));
 }
 
 sl_binary_t *load_module(char *name)
@@ -124,15 +187,22 @@ int main(void)
     sl_ctx_addfn(ctx, NULL, strdup("sdl_createrenderer"), 1, 0, binding_SDL_CreateRenderer);
     sl_ctx_addfn(ctx, NULL, strdup("sdl_destroyrenderer"), 1, 0, binding_SDL_DestroyRenderer);
     sl_ctx_addfn(ctx, NULL, strdup("sdl_renderclear"), 1, 0, binding_SDL_RenderClear);
-    sl_ctx_addfn(ctx, NULL, strdup("sdl_renderpreset"), 1, 0, binding_SDL_RenderPresent);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_renderpresent"), 1, 0, binding_SDL_RenderPresent);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_loadbmp"), 1, 0, binding_SDL_LoadBMP);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_createtexturefromsurface"), 1, 0, binding_SDL_CreateTextureFromSurface);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_rendercopy"), 1, 0, binding_SDL_RenderCopy);
+    sl_ctx_addfn(ctx, NULL, strdup("sdl_pollevent"), 0, 0, binding_SDL_PollEvent);
 
     sl_ctx_addvar(ctx, strdup("sdl_init_everything"), sl_value_number(SDL_INIT_EVERYTHING));
     sl_ctx_addvar(ctx, strdup("sdl_renderer_accelerated"), sl_value_number(SDL_RENDERER_ACCELERATED));
     sl_ctx_addvar(ctx, strdup("sdl_renderer_presentvsync"), sl_value_number(SDL_RENDERER_PRESENTVSYNC));
+    sl_ctx_addvar(ctx, strdup("sdl_keydown"), sl_value_number(SDL_KEYDOWN));
+    sl_ctx_addvar(ctx, strdup("sdl_keyup"), sl_value_number(SDL_KEYUP));
+    sl_ctx_addvar(ctx, strdup("sdl_quit_"), sl_value_number(SDL_QUIT));
 
     try
     {
-        sl_eval_file(ctx, script, load_module);
+        sl_eval_file(ctx, script, load_module, NULL);
     }
     catch
     {

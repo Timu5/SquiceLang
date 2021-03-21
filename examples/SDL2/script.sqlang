@@ -1,7 +1,74 @@
 SDL_Init(SDL_INIT_EVERYTHING);
 let window = SDL_CreateWindow("test", 0, 0, 640, 480, 0);
 let renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
-SDL_Delay(3000);
+
+let bmp = SDL_LoadBMP("test.bmp");
+let texture = SDL_CreateTextureFromSurface(renderer, bmp);
+//SDL_FreeSurface(bmp);
+
+let running = 1;
+
+let leftDown = 0;
+let rightDown = 0;
+let spaceDown = 0;
+let x = 0;
+
+while(running)
+{
+    let event = null;
+    while(!isnull(event = SDL_PollEvent()))
+    {
+        if(event.type == SDL_KEYDOWN)
+        {
+            if(event.key == 4) // A
+            {
+                leftDown = 1;
+            }
+            else if(event.key == 7) // D
+            {
+                rightDown = 1;
+            }
+            else if(event.key == 44) // Space
+            {
+                spaceDown = 1;
+            }
+        }
+        else if(event.type == SDL_KEYUP)
+        {
+            if(event.key == 4) // A
+            {
+                leftDown = 0;
+            }
+            else if(event.key == 7) // D
+            {
+                rightDown = 0;
+            }
+            else if(event.key == 44) // Space
+            {
+                spaceDown = 0;
+            }
+        } 
+        else if(event.type == SDL_QUIT_)
+        {
+            print("Quit");
+            running = 0;
+        }
+    }
+    if(rightDown)
+    {
+        x = x + 4;
+    }
+    if(leftDown)
+    {
+        x = x - 4;
+    }
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, x, 300, 100, 100);
+    SDL_RenderPresent(renderer);
+    SDL_Delay(30);
+}
+
+//SDL_DestroyTexture(tex);
 SDL_DestroyRenderer(renderer);
 SDL_DestroyWindow(window);
 SDL_Quit();
