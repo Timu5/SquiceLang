@@ -482,7 +482,8 @@ enum SL_VALUE
     SL_VALUE_TUPLE,
     SL_VALUE_DICT,
     SL_VALUE_FN,
-    SL_VALUE_REF
+    SL_VALUE_REF,
+    SL_VALUE_NATIVE,
 };
 
 struct sl_fn_s;
@@ -519,6 +520,7 @@ sl_value_t *sl_value_tuple(sl_vector(sl_value_t *) tuple);
 sl_value_t *sl_value_dict(sl_vector(char *) names, sl_vector(sl_value_t *) values);
 sl_value_t *sl_value_fn(struct sl_fn_s *fn);
 sl_value_t *sl_value_ref(sl_value_t *val);
+sl_value_t *sl_value_native(void *val);
 
 void sl_value_assign(sl_value_t *a, sl_value_t *b);
 

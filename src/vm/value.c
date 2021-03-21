@@ -91,6 +91,16 @@ sl_value_t *sl_value_ref(sl_value_t *val)
     return v;
 }
 
+sl_value_t *sl_value_native(void *val)
+{
+    sl_value_t *v = sl_gc_alloc_value();
+    v->type = SL_VALUE_NATIVE;
+    v->refs = 0;
+    v->ref = val;
+    v->markbit = 0;
+    return v;
+}
+
 void sl_value_free_members(sl_value_t *val)
 {
     if (val->type == SL_VALUE_STRING)
