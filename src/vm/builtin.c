@@ -187,4 +187,8 @@ void sl_builtin_install(sl_ctx_t *ctx)
     sl_ctx_addfn(ctx, NULL, strdup("_super_"), 2, 0, super);
     sl_ctx_addfn(ctx, NULL, strdup("str"), 1, 0, str);
     sl_ctx_addfn(ctx, NULL, strdup("isnull"), 1, 0, isnull);
+
+    sl_ctx_addvar(ctx, strdup("null"), sl_value_null());
+    sl_ctx_addvar(ctx, strdup("true"), sl_value_number(1.0));
+    sl_ctx_addvar(ctx, strdup("false"), sl_value_number(0.0));
 }
