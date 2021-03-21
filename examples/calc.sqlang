@@ -1,0 +1,259 @@
+let Token = 
+{
+    IDENT  : 1,
+    NUMBER : 2,
+
+    PLUS     : 3, // +
+    MINUS    : 4, // -
+    SLASH    : 5, // /
+    ASTERISK : 6, // *
+
+    LPAREN : 7, // (
+    RPAREN : 8, // )
+
+    EOF    : 9,
+    UNKOWN : 10
+};
+
+fn isspace(ch) 
+{
+    if(ch == " " || ch == "\t" || ch == "\r" || ch == "\n")
+        return 1;
+    return 0;
+}
+
+fn isdigit(ch)
+{
+    if(ord(ch) >= ord("0") && ord(ch) <= ord("9"))
+        return 1;
+    return 0;
+}
+
+fn isalpha(ch) 
+{
+    if(ord(ch) >= ord("a") && ord(ch) <= ord("z"))
+        return 1;
+    if(ord(ch) >= ord("A") && ord(ch) <= ord("Z"))
+        return 1;
+    return 0;
+}
+
+class Lexer
+{
+    fn Lexer(input)
+    {
+        this.input = input;
+        this.index = 0;
+        this.number = 0;
+        this.lastchar = " ";
+    }
+
+    fn nextchar()
+    {
+        if (this.index >= len(this.input))
+        {
+            this.lastchar = chr(0);
+        }
+        else
+        {
+            this.lastchar = this.input[this.index];
+            this.index = this.index + 1;
+        }
+
+        return this.lastchar;
+    }
+
+    fn gettokken()
+    {
+        while (isspace(this.lastchar)) {
+            this.nextchar(); // eaat white space
+        }
+
+        if (this.lastchar == chr(0))
+        {
+            return Token.EOF;
+        }
+        else if (isdigit(this.lastchar))
+        {
+            let value = 0.0;
+
+            while (isdigit(this.lastchar))
+            {
+                value = value * 10 + (ord(this.lastchar) - ord("0"));
+                this.nextchar();
+            }
+
+            this.number = value;
+
+            return Token.NUMBER;
+        }
+
+        let tmp = Token.UNKOWN;
+
+        if(this.lastchar == "+")
+        {
+            tmp = Token.PLUS;
+        }   
+        else if(this.lastchar == "-")
+        {
+            tmp = Token.MINUS;
+        }   
+        else if(this.lastchar == "/") 
+        {
+            tmp = Token.SLASH;
+        }
+        else if(this.lastchar == "*") 
+        {
+            tmp = Token.ASTERISK;
+        }
+        else if(this.lastchar == "(")
+        {
+            tmp = Token.LPAREN;
+        }   
+        else if(this.lastchar == ")")
+        {
+            tmp = Token.RPAREN;
+        }
+        this.nextchar();
+        return tmp;  
+    }
+}
+
+class NumberNode
+{
+    fn NumberNode(value)
+    {
+        this.value = value;
+    }
+
+    fn run()
+    {
+        return this.value;
+    }
+
+    fn print() 
+    {
+        print("number ", this.value);
+    }
+}
+
+class BinaryNode
+{
+    fn BinaryNode(op, lhs, rhs)
+    {
+        this.op = op;
+        this.lhs = lhs;
+        this.rhs = rhs;
+    }
+
+    fn run() 
+    {
+        let lhs = this.lhs.run();
+        let rhs = this.rhs.run();
+        if(this.op == Token.PLUS)
+            return lhs + rhs;
+        else if(this.op == Token.MINUS)
+            return lhs - rhs;
+        else if(this.op == Token.ASTERISK)
+            return lhs * rhs;
+        else if(this.op == Token.SLASH)
+            return lhs / rhs;
+        
+        throw("Unexpected operator");
+    }
+
+    fn print() 
+    {
+        print("binary ", this.op);
+        this.lhs.print();
+        this.rhs.print();
+    }
+}
+
+class Parser
+{
+    fn Parser(input)
+    {
+        this.lexer = Lexer(input);
+        this.lasttoken = 0;
+        this.lexer.nextchar();
+        this.nexttoken();
+    }
+
+    fn nexttoken()
+    {
+        this.lasttoken = this.lexer.gettokken();
+        return this.lasttoken;
+    }
+
+    fn match(token)
+    {
+        if (this.lasttoken != token)
+            throw("Unexpected token");
+    }
+
+    fn primary()
+    {
+        if (this.lasttoken == Token.NUMBER)
+        {
+            let prim = NumberNode(this.lexer.number);
+            this.nexttoken();
+            return prim;
+        }
+        else if (this.lasttoken == Token.LPAREN)
+        {
+            this.nexttoken();
+            let prim = this.expr(0);
+            this.match(Token.RPAREN);
+            this.nexttoken();
+            return prim;
+        }
+        else 
+        {
+            throw("Not a primary");
+        }
+    }
+
+    fn expr(min)
+    {
+        let pre = [
+            1, // +
+            2, // -
+            3, // /
+            3  // *
+        ];
+        
+        let lhs = this.primary();
+
+        while (1)
+        {
+            if (this.lasttoken < Token.PLUS  ||
+                this.lasttoken > Token.ASTERISK)
+                break;
+            if(pre[this.lasttoken - Token.PLUS] < min)
+                break;
+            let op = this.lasttoken;
+            let prec = pre[this.lasttoken - Token.PLUS];
+            this.nexttoken();
+            let rhs = this.expr(prec + 1);
+            lhs = BinaryNode(op, lhs, rhs);
+        }
+        
+        return lhs;
+    }
+}
+
+fn calc(input)
+{
+    let p = Parser(input);
+    let e = p.expr(0);
+    return e.run();
+}
+
+while(true) 
+{
+    let text = input(">");
+    if(text == "quit")
+        break;
+    print(calc(text));
+}
