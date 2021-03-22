@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>SquiceLang DEMO</title>
+  <style>
+    body {
+      font-family: arial;
+      margin: 0;
+      padding: none;
+    }
+
+    .emscripten {
+      padding-right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+
+    div.emscripten {
+      text-align: center;
+    }
+
+    div.emscripten_border {
+      border: 1px solid black;
+    }
+
+    /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+    canvas.emscripten {
+      border: 0px none;
+      background-color: black;
+    }
+
+    #emscripten_logo {
+      display: inline-block;
+      margin: 0;
+    }
+
+    .spinner {
+      height: 30px;
+      width: 30px;
+      margin: 0;
+      margin-top: 20px;
+      margin-left: 20px;
+      display: inline-block;
+      vertical-align: top;
+
+      -webkit-animation: rotation .8s linear infinite;
+      -moz-animation: rotation .8s linear infinite;
+      -o-animation: rotation .8s linear infinite;
+      animation: rotation 0.8s linear infinite;
+
+      border-left: 5px solid rgb(235, 235, 235);
+      border-right: 5px solid rgb(235, 235, 235);
+      border-bottom: 5px solid rgb(235, 235, 235);
+      border-top: 5px solid rgb(120, 120, 120);
+
+      border-radius: 100%;
+      background-color: rgb(189, 215, 46);
+    }
+
+    @-webkit-keyframes rotation {
+      from {
+        -webkit-transform: rotate(0deg);
+      }
+
+      to {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @-moz-keyframes rotation {
+      from {
+        -moz-transform: rotate(0deg);
+      }
+
+      to {
+        -moz-transform: rotate(360deg);
+      }
+    }
+
+    @-o-keyframes rotation {
+      from {
+        -o-transform: rotate(0deg);
+      }
+
+      to {
+        -o-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes rotation {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #status {
+      display: inline-block;
+      vertical-align: top;
+      margin-top: 30px;
+      margin-left: 20px;
+      font-weight: bold;
+      color: rgb(120, 120, 120);
+    }
+
+    #progress {
+      height: 20px;
+      width: 300px;
+    }
+
+    #controls {
+      display: inline-block;
+      float: right;
+      vertical-align: top;
+      margin-top: 30px;
+      margin-right: 20px;
+    }
+
+    #output {
+      width: 100%;
+      height: 200px;
+      margin: 0 auto;
+      border-left: 0px;
+      border-right: 0px;
+      padding-left: 0px;
+      padding-right: 0px;
+      display: block;
+      background-color: black;
+      color: white;
+      font-family: 'Lucida Console', Monaco, monospace;
+      outline: none;
+    }
+
+
+    .left,
+    .right {
+      height: 100%;
+      width: 50%;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      overflow-x: hidden;
+      padding-top: 20px;
+    }
+
+    .left {
+      left: 0;
+    }
+
+    .right {
+      right: 0;
+    }
+
+    .left button {
+      width: 150px;
+      height: 40px;
+    }
+
+    .codewrap {
+      height: 90%;
+    }
+
+    .CodeMirror {
+      height: 90% !important;
+    }
+
+    #output {
+      height: 90%;
+    }
+  </style>
+  <link rel="stylesheet" href="codemirror.css">
+  <script src="codemirror.js"></script>
+  <script src="javascript.js"></script>
+</head>
+
+<body>
+
+  <!--<span id='controls'>
+  <span><input type="checkbox" id="resize">Resize canvas</span>
+  <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
+  <span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
+                                                                            document.getElementById('resize').checked)">
+  </span>
+</span>-->
+
+
+
+  <div class="emscripten_border" style="display: none">
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+  </div>
+
+  <div class="left">
+    SquiceLang DEMO
+
+
+
+    <div class="spinner" id='spinner'></div>
+    <div class="emscripten" id="status">Downloading...</div>
+
+
+
+    <div class="emscripten">
+      <progress value="0" max="100" id="progress" hidden=1></progress>
+    </div>
+
+
+    <label for="cars">Examples:</label>
+    <select name="cars" id="example" onchange="loadExample()">
+      <option>Calculator</option>
+      <option>HelloWorld</option>
+      <option>Class inheritance</option>
+      <option>Basic features</option>
+    </select>
+
+    <label for="cars">Mode:</label>
+    <select name="cars" id="mode" onchange="setMode()">
+      <option>Eval</option>
+      <option>AST</option>
+      <option>ByteCode</option>
+    </select>
+
+    <button onclick="runCode()">Run</button>
+
+
+    <div class="codewrap">
+      <textarea id="code" rows="8"></textarea>
+    </div>
+  </div>
+
+  <div class="right">
+    <textarea id="output" rows="8" readonly></textarea>
+  </div>
+
+
+  <script type='text/javascript'>
+  var examples = ["let Token = \r\n{\r\n    IDENT  : 1,\r\n    NUMBER : 2,\r\n\r\n    PLUS     : 3, \/\/ +\r\n    MINUS    : 4, \/\/ -\r\n    SLASH    : 5, \/\/ \/\r\n    ASTERISK : 6, \/\/ *\r\n\r\n    LPAREN : 7, \/\/ (\r\n    RPAREN : 8, \/\/ )\r\n\r\n    EOF    : 9,\r\n    UNKOWN : 10\r\n};\r\n\r\nfn isspace(ch) \r\n{\r\n    if(ch == \" \" || ch == \"\\t\" || ch == \"\\r\" || ch == \"\\n\")\r\n        return true;\r\n    return false;\r\n}\r\n\r\nfn isdigit(ch)\r\n{\r\n    if(ord(ch) >= ord(\"0\") && ord(ch) <= ord(\"9\"))\r\n        return true;\r\n    return false;\r\n}\r\n\r\nfn isalpha(ch) \r\n{\r\n    if(ord(ch) >= ord(\"a\") && ord(ch) <= ord(\"z\"))\r\n        return true;\r\n    if(ord(ch) >= ord(\"A\") && ord(ch) <= ord(\"Z\"))\r\n        return true;\r\n    return false;\r\n}\r\n\r\nclass Lexer\r\n{\r\n    fn Lexer(input)\r\n    {\r\n        this.input = input;\r\n        this.index = 0;\r\n        this.number = 0;\r\n        this.lastchar = \" \";\r\n    }\r\n\r\n    fn nextchar()\r\n    {\r\n        if (this.index >= len(this.input))\r\n        {\r\n            this.lastchar = chr(0);\r\n        }\r\n        else\r\n        {\r\n            this.lastchar = this.input[this.index];\r\n            this.index = this.index + 1;\r\n        }\r\n\r\n        return this.lastchar;\r\n    }\r\n\r\n    fn gettokken()\r\n    {\r\n        while (isspace(this.lastchar)) {\r\n            this.nextchar(); \/\/ eaat white space\r\n        }\r\n\r\n        if (this.lastchar == chr(0))\r\n        {\r\n            return Token.EOF;\r\n        }\r\n        else if (isdigit(this.lastchar))\r\n        {\r\n            let value = 0.0;\r\n\r\n            while (isdigit(this.lastchar))\r\n            {\r\n                value = value * 10 + (ord(this.lastchar) - ord(\"0\"));\r\n                this.nextchar();\r\n            }\r\n\r\n            this.number = value;\r\n\r\n            return Token.NUMBER;\r\n        }\r\n\r\n        let tmp = Token.UNKOWN;\r\n\r\n        if(this.lastchar == \"+\")\r\n        {\r\n            tmp = Token.PLUS;\r\n        }   \r\n        else if(this.lastchar == \"-\")\r\n        {\r\n            tmp = Token.MINUS;\r\n        }   \r\n        else if(this.lastchar == \"\/\") \r\n        {\r\n            tmp = Token.SLASH;\r\n        }\r\n        else if(this.lastchar == \"*\") \r\n        {\r\n            tmp = Token.ASTERISK;\r\n        }\r\n        else if(this.lastchar == \"(\")\r\n        {\r\n            tmp = Token.LPAREN;\r\n        }   \r\n        else if(this.lastchar == \")\")\r\n        {\r\n            tmp = Token.RPAREN;\r\n        }\r\n        this.nextchar();\r\n        return tmp;  \r\n    }\r\n}\r\n\r\nclass NumberNode\r\n{\r\n    fn NumberNode(value)\r\n    {\r\n        this.value = value;\r\n    }\r\n\r\n    fn run()\r\n    {\r\n        return this.value;\r\n    }\r\n\r\n    fn print() \r\n    {\r\n        print(\"number \", this.value);\r\n    }\r\n}\r\n\r\nclass BinaryNode\r\n{\r\n    fn BinaryNode(op, lhs, rhs)\r\n    {\r\n        this.op = op;\r\n        this.lhs = lhs;\r\n        this.rhs = rhs;\r\n    }\r\n\r\n    fn run() \r\n    {\r\n        let lhs = this.lhs.run();\r\n        let rhs = this.rhs.run();\r\n        if(this.op == Token.PLUS)\r\n            return lhs + rhs;\r\n        else if(this.op == Token.MINUS)\r\n            return lhs - rhs;\r\n        else if(this.op == Token.ASTERISK)\r\n            return lhs * rhs;\r\n        else if(this.op == Token.SLASH)\r\n            return lhs \/ rhs;\r\n        \r\n        throw(\"Unexpected operator\");\r\n    }\r\n\r\n    fn print() \r\n    {\r\n        print(\"binary \", this.op);\r\n        this.lhs.print();\r\n        this.rhs.print();\r\n    }\r\n}\r\n\r\nclass Parser\r\n{\r\n    fn Parser(input)\r\n    {\r\n        this.lexer = Lexer(input);\r\n        this.lasttoken = 0;\r\n        this.lexer.nextchar();\r\n        this.nexttoken();\r\n    }\r\n\r\n    fn nexttoken()\r\n    {\r\n        this.lasttoken = this.lexer.gettokken();\r\n        return this.lasttoken;\r\n    }\r\n\r\n    fn match(token)\r\n    {\r\n        if (this.lasttoken != token)\r\n            throw(\"Unexpected token\");\r\n    }\r\n\r\n    fn primary()\r\n    {\r\n        if (this.lasttoken == Token.NUMBER)\r\n        {\r\n            let prim = NumberNode(this.lexer.number);\r\n            this.nexttoken();\r\n            return prim;\r\n        }\r\n        else if (this.lasttoken == Token.LPAREN)\r\n        {\r\n            this.nexttoken();\r\n            let prim = this.expr(0);\r\n            this.match(Token.RPAREN);\r\n            this.nexttoken();\r\n            return prim;\r\n        }\r\n        else \r\n        {\r\n            throw(\"Not a primary\");\r\n        }\r\n    }\r\n\r\n    fn expr(min)\r\n    {\r\n        let pre = [\r\n            6, \/\/ +\r\n            6, \/\/ -\r\n            7, \/\/ \/\r\n            7  \/\/ *\r\n        ];\r\n        \r\n        let lhs = this.primary();\r\n\r\n        while (1)\r\n        {\r\n            if (this.lasttoken < Token.PLUS  ||\r\n                this.lasttoken > Token.ASTERISK)\r\n                break;\r\n            if(pre[this.lasttoken - Token.PLUS] < min)\r\n                break;\r\n            let op = this.lasttoken;\r\n            let prec = pre[this.lasttoken - Token.PLUS];\r\n            this.nexttoken();\r\n            let rhs = this.expr(prec + 1);\r\n            lhs = BinaryNode(op, lhs, rhs);\r\n        }\r\n        \r\n        return lhs;\r\n    }\r\n}\r\n\r\nfn calc(input)\r\n{\r\n    let p = Parser(input);\r\n    let e = p.expr(0);\r\n    return e.run();\r\n}\r\n\r\nprint(calc(\"2+3\"));",
+"let a = \"World\";\r\nprint(f\"Hello ${a}!\");",
+"class foo {\r\n    fn foo() {\r\n        this.name = \"foo\";\r\n        this.smth = \"foo\";\r\n    }\r\n\r\n    fn do() {\r\n        return \"foo\";\r\n    }\r\n\r\n    fn dont() {\r\n        return \"foo\";\r\n    }\r\n}\r\n\r\nclass bar {\r\n    fn bar() {\r\n        _super_(this, foo());\r\n        this.name = \"bar\";\r\n    }\r\n\r\n    fn do() {\r\n        return \"bar\";\r\n    }\r\n}\r\n\r\nlet b = bar();\r\n\r\nprint(b.name);\r\nprint(b.smth);\r\nprint(b.do());\r\nprint(b.dont());",
+"1+2;\r\n\r\nlet a = 2 * 2;\r\nlet b = a * 4;\r\n\r\nlet c, d = 3, 5;\r\n\r\nprint(\"Hello world :)\");\r\n\r\n\/\/ single line comment\r\n\r\nprint(a);\r\nprint(b);\r\nprint(c);\r\nprint(d);\r\n\r\n\/*\r\n******************\r\nmulti line comment\r\n******************\r\n*\/\r\n\r\nprint(\"a = \", a);\r\nprint(f\"b = ${b}\");\r\n\r\nif(b > 0) print(\"b > 0\");\r\n\r\nif(b >= a)\r\n{\r\n    print(\"b >= a\");\r\n}\r\nelse\r\n{\r\n    print(\"b < a\");\r\n}\r\n\r\nlet i = 0;\r\nwhile(i < 10)\r\n{\r\n    print(i);\r\n    i = i + 1;\r\n\tif(i == 8)\r\n\t\tbreak;\r\n}\r\n\r\nlet array = [1, 2, 3, 4, 5, 6];\r\n\/\/or\r\n\/\/let array = list(1, 2, 3, 4, 5, 6);\r\n\r\nprint(\"lenght or array = \", len(array));\r\n\r\ni = 0;\r\nwhile(i < len(array))\r\n{\r\n    print(\"array[\", i, \"] = \", array[i]);\r\n    i = i + 1;\r\n}\r\n\r\nfn fib(x)\r\n{\r\n    if(x == 0) return 0;\r\n    if(x == 1) return 1;\r\n    return fib(x - 1) + fib(x - 2);\r\n}\r\n\r\ni = 0;\r\nwhile(i < 10)\r\n{\r\n    i = i + 1;\r\n    print(f\"fib(${i}) = \", fib(i));\r\n}\r\n\r\nlet d = dict();\r\nd.field = 1;\r\nd.field2 = 2;\r\n\r\nprint(\"d.field = \", d.field);\r\nprint(\"d.field2 = \", d.field2);\r\n\r\nd.field2 = 100;\r\nprint(\"d.field2 = \", d.field2);\r\n\r\nd.fib = fib;\r\nprint(\"d.fib(8) = \", d.fib(8));\r\n\r\nfn test()\r\n{\r\n\tprint(\"this.field2 = \", this.field2);\r\n}\r\n\r\nd.test = test;\r\nd.test();\r\n\r\nlet a = { a:1, b:2 };\r\n\r\nprint(a.a);\r\nprint(a.b);"];
+
+
+    var statusElement = document.getElementById('status');
+    var progressElement = document.getElementById('progress');
+    var spinnerElement = document.getElementById('spinner');
+
+    window.js_eval = function (str) { alert("Error engine is not ready"); }
+
+    var mode = "Eval";
+
+    function loadExample() {
+      window.editor.setValue(examples[document.getElementById('example').selectedIndex]);
+    }
+
+    function setMode() {
+      //alert(document.getElementById('mode').value)
+      mode = document.getElementById('mode').value;
+    }
+
+    function runCode() {
+      document.getElementById('output').value = "";
+      if (mode == "Eval")
+        window.js_eval(window.editor.getValue())
+      else if (mode == "AST")
+        window.js_print(window.editor.getValue())
+      else
+        window.js_dis(window.editor.getValue())
+    }
+
+    window.editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+      lineNumbers: true,
+      mode: "javascript",
+      viewportMargin: 1000
+    });
+
+    loadExample();
+    setMode();
+
+    var Module = {
+      onRuntimeInitialized: function () {
+        window.js_eval = Module.cwrap('js_eval', null, ['string']);
+        window.js_dis = Module.cwrap('js_dis', null, ['string']);
+        window.js_print = Module.cwrap('js_print', null, ['string']);
+      },
+      preRun: [],
+      postRun: [],
+      print: (function () {
+        var element = document.getElementById('output');
+        if (element) element.value = ''; // clear browser cache
+        return function (text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          // These replacements are necessary if you render to raw HTML
+          //text = text.replace(/&/g, "&amp;");
+          //text = text.replace(/</g, "&lt;");
+          //text = text.replace(/>/g, "&gt;");
+          //text = text.replace('\n', '<br>', 'g');
+          console.log(text);
+          if (element) {
+            element.value += text + "\n";
+            element.scrollTop = element.scrollHeight; // focus on bottom
+          }
+        };
+      })(),
+      printErr: function (text) {
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        console.error(text);
+      },
+      canvas: (function () {
+        var canvas = document.getElementById('canvas');
+
+        // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+        // application robust, you may want to override this behavior before shipping!
+        // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+        canvas.addEventListener("webglcontextlost", function (e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+        return canvas;
+      })(),
+      setStatus: function (text) {
+        if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+        if (text === Module.setStatus.last.text) return;
+        var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+        var now = Date.now();
+        if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+        Module.setStatus.last.time = now;
+        Module.setStatus.last.text = text;
+        if (m) {
+          text = m[1];
+          progressElement.value = parseInt(m[2]) * 100;
+          progressElement.max = parseInt(m[4]) * 100;
+          progressElement.hidden = false;
+          spinnerElement.hidden = false;
+        } else {
+          progressElement.value = null;
+          progressElement.max = null;
+          progressElement.hidden = true;
+          if (!text) spinnerElement.style.display = 'none';
+        }
+        statusElement.innerHTML = text;
+      },
+      totalDependencies: 0,
+      monitorRunDependencies: function (left) {
+        this.totalDependencies = Math.max(this.totalDependencies, left);
+        Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+      }
+    };
+    Module.setStatus('Downloading...');
+    window.onerror = function (event) {
+      // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+      Module.setStatus('Exception thrown, see JavaScript console');
+      spinnerElement.style.display = 'none';
+      Module.setStatus = function (text) {
+        if (text) Module.printErr('[post-exception status] ' + text);
+      };
+    };
+  </script>
+  <script async type="text/javascript" src="hello.js"></script>
+</body>
+
+</html>
