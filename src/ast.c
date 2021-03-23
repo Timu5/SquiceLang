@@ -378,10 +378,24 @@ sl_node_t *node_throw(sl_marker_t marker, sl_node_t *expr)
     return node;
 }
 
+static void printescape(char *str)
+{
+    while (*str != NULL)
+    {
+        if (*str == '\n')
+            printf("\\n");
+        else if (*str == '\r')
+            printf("\\r");
+        else
+            putchar(*str);
+        str++;
+    }
+}
+
 static void printtab(int n)
 {
     for (int i = 0; i < n; i++)
-        putchar('\t');
+        printf("  ");
 }
 
 void sl_node_print(sl_node_t *node, int ind)
@@ -417,12 +431,16 @@ void sl_node_print(sl_node_t *node, int ind)
         printf("num %g\n", node->number);
         break;
     case SL_NODETYPE_STRING:
-        printf("string \"%s\"\n", node->string);
+        printf("string \"");
+        printescape(node->string);
+        printf("\"\n");
         break;
     case SL_NODETYPE_CALL:
         printf("call\n");
+        printtab(ind);
         printf("->func:\n");
         sl_node_print(node->call.func, ind + 1);
+        printtab(ind);
         printf("->args:\n");
         sl_node_print(node->call.args, ind + 1);
         break;
@@ -436,6 +454,7 @@ void sl_node_print(sl_node_t *node, int ind)
         }
         printf(")\n");
         sl_node_print(node->func.body, ind + 1);
+        break;
     case SL_NODETYPE_RETURN:
         printf("return\n");
         if (node->ret)
@@ -466,8 +485,11 @@ void sl_node_print(sl_node_t *node, int ind)
         printf("decl\n");
         printtab(ind);
         printf("->name:\n");
-        // TODO: fix me!!!!
-        //sl_node_print(node->decl.name, ind + 1);
+        for (int i = 0; i < sl_vector_size(node->decl.names); i++)
+        {
+            printtab(ind + 1);
+            printf("%s\n", node->decl.names[i]);
+        }
         printtab(ind);
         printf("->value:\n");
         sl_node_print(node->decl.value, ind + 1);
