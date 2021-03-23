@@ -30,7 +30,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       "if": kw("if"), "while": A, "with": A, "else": B, "do": B, "try": B, "finally": B,
       "return": D, "break": D, "continue": D, "new": kw("new"), "delete": C, "void": C, "throw": C,
       "debugger": kw("debugger"), "var": kw("var"), "const": kw("var"), "let": kw("var"),
-      "function": kw("function"), "catch": kw("catch"),
+      "fn": kw("fn"), "catch": kw("catch"),
       "for": kw("for"), "switch": kw("switch"), "case": kw("case"), "default": kw("default"),
       "in": operator, "typeof": operator, "instanceof": operator,
       "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom, "Infinity": atom,
