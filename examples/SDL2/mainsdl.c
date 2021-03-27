@@ -200,14 +200,10 @@ int main(void)
     sl_ctx_addvar(ctx, strdup("sdl_keyup"), sl_value_number(SDL_KEYUP));
     sl_ctx_addvar(ctx, strdup("sdl_quit_"), sl_value_number(SDL_QUIT));
 
-    try
-    {
-        sl_eval_file(ctx, script, load_module, NULL);
-    }
-    catch
-    {
+    if (!sl_eval_file(ctx, script, load_module, NULL))
+
         printf(RED "Error: " RESET "(%s)\n", ex_msg);
-    }
+
     sl_gc_freeall();
     for (int i = 0; i < sl_vector_size(modules); i++)
     {

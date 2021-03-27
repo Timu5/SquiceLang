@@ -26,7 +26,7 @@ static int nexttoken(sl_parser_t *parser)
 static void match(sl_parser_t *parser, int token)
 {
     if (parser->lasttoken != token)
-        throw("Unexpected token, expect %s got %s on line %d column %d",
+        sl_throw("Unexpected token, expect %s got %s on line %d column %d",
               sl_tokenstr(token),
               sl_tokenstr(parser->lasttoken),
               parser->lexer->startmarker.line,
@@ -111,7 +111,7 @@ sl_node_t *primary(sl_parser_t *parser)
             sl_vector_push(parts, cpy);
         }
         if (inexpr)
-            throw("Missing '}' in string interpolation on line %d column %d",
+            sl_throw("Missing '}' in string interpolation on line %d column %d",
                   parser->lexer->startmarker.line,
                   parser->lexer->startmarker.column);
 
@@ -200,7 +200,7 @@ sl_node_t *primary(sl_parser_t *parser)
         while (parser->lasttoken != SL_TOKEN_RBRACE)
         {
             if (!(parser->lasttoken == SL_TOKEN_STRING || parser->lasttoken == SL_TOKEN_IDENT))
-                throw("Unexpected token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s on line %s column %s",
+                sl_throw("Unexpected token, expect SL_TOKEN_STRING or SL_TOKEN_IDENT got %s on line %s column %s",
                       sl_tokenstr(parser->lasttoken),
                       parser->lexer->startmarker.line,
                       parser->lexer->startmarker.column);
@@ -228,7 +228,7 @@ sl_node_t *primary(sl_parser_t *parser)
     }
     else
     {
-        throw("Unexpected token in primary line %d column %d", parser->lexer->startmarker.line, parser->lexer->startmarker.column);
+        sl_throw("Unexpected token in primary line %d column %d", parser->lexer->startmarker.line, parser->lexer->startmarker.column);
     }
 
     while (parser->lasttoken == SL_TOKEN_DOT || parser->lasttoken == SL_TOKEN_LBRACK || parser->lasttoken == SL_TOKEN_LPAREN)
@@ -481,7 +481,7 @@ sl_node_t *statment(sl_parser_t *parser)
         {
             if (parser->lasttoken != SL_TOKEN_FN)
             {
-                throw("Expect only methods inside class on line %s column %s",
+                sl_throw("Expect only methods inside class on line %s column %s",
                       parser->lexer->startmarker.line,
                       parser->lexer->startmarker.column);
             }
@@ -517,13 +517,13 @@ sl_node_t *statment(sl_parser_t *parser)
 
         if (sl_vector_size(constructors) > 1)
         {
-            throw("Class %s has more than one constructor", class_name);
+            sl_throw("Class %s has more than one constructor", class_name);
         }
         else if (sl_vector_size(constructors) == 1)
         {
             if (constructors[0]->func.body->type != SL_NODETYPE_BLOCK)
             {
-                throw("Constructor body need to be block on line %d colum %d",
+                sl_throw("Constructor body need to be block on line %d colum %d",
                       constructors[0]->func.body->marker.line,
                       constructors[0]->func.body->marker.column);
             }

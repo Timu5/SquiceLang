@@ -140,7 +140,7 @@ void sl_value_assign(sl_value_t *a, sl_value_t *b)
         b = b->ref;
 
     if (a->constant)
-        throw("Cannot assign to const value");
+        sl_throw("Cannot assign to const value");
 
     if (a->type == SL_VALUE_TUPLE || b->type == SL_VALUE_TUPLE)
     {
@@ -191,7 +191,7 @@ sl_value_t *sl_value_unary(int op, sl_value_t *a)
         a = a->ref;
 
     if (a->type != SL_VALUE_NUMBER)
-        throw("Cannot perform unary operation on non numbers");
+        sl_throw("Cannot perform unary operation on non numbers");
 
     switch (op)
     {
@@ -202,7 +202,7 @@ sl_value_t *sl_value_unary(int op, sl_value_t *a)
     case SL_TOKEN_EXCLAM:
         return sl_value_number(!a->number);
     }
-    throw("Unkown unary operation %d", op);
+    sl_throw("Unkown unary operation %d", op);
     return sl_value_null();
 }
 
@@ -235,7 +235,7 @@ static sl_value_t *binary_number(int op, sl_value_t *a, sl_value_t *b)
     case SL_TOKEN_OR:
         return sl_value_number(a->number || b->number);
     }
-    throw("Unkown binary operation %d", op);
+    sl_throw("Unkown binary operation %d", op);
     return sl_value_null();
 }
 
@@ -256,19 +256,19 @@ static sl_value_t *binary_string(int op, sl_value_t *a, sl_value_t *b)
     case SL_TOKEN_NOTEQUAL:
         return sl_value_number(strcmp(a->string, b->string) != 0);
     }
-    throw("Unknown string binary operation %d", op);
+    sl_throw("Unknown string binary operation %d", op);
     return sl_value_null();
 }
 
 static sl_value_t *binary_array(int op, sl_value_t *a, sl_value_t *b)
 {
-    throw("Cannot perform any binary operation on type array");
+    sl_throw("Cannot perform any binary operation on type array");
     return sl_value_null();
 }
 
 static sl_value_t *binary_dict(int op, sl_value_t *a, sl_value_t *b)
 {
-    throw("Cannot perform any binary operation on type dict");
+    sl_throw("Cannot perform any binary operation on type dict");
     return sl_value_null();
 }
 
@@ -317,12 +317,12 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
     }
 
     if (a->type != b->type)
-        throw("Type mismatch %s %s %s", sl_tokenstr(op), sl_valuetypestr(a->type), sl_valuetypestr(b->type));
+        sl_throw("Type mismatch %s %s %s", sl_tokenstr(op), sl_valuetypestr(a->type), sl_valuetypestr(b->type));
 
     switch (a->type)
     {
     case SL_VALUE_NULL:
-        throw("Cannot perform operation on null");
+        sl_throw("Cannot perform operation on null");
     case SL_VALUE_NUMBER:
         return binary_number(op, a, b);
     case SL_VALUE_STRING:
@@ -332,7 +332,7 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
     case SL_VALUE_DICT:
         return binary_dict(op, a, b);
     }
-    throw("Unkown value type");
+    sl_throw("Unkown value type");
     return sl_value_null();
 }
 
@@ -345,7 +345,7 @@ sl_value_t *sl_value_get(int i, sl_value_t *a)
     {
         int len = (int)strlen(a->string);
         if (i >= len)
-            throw("Index out of range");
+            sl_throw("Index out of range");
 
         char buf[2];
         buf[0] = a->string[i];
@@ -355,11 +355,11 @@ sl_value_t *sl_value_get(int i, sl_value_t *a)
     else if (a->type == SL_VALUE_ARRAY)
     {
         if (i >= sl_vector_size(a->array))
-            throw("Index out of range");
+            sl_throw("Index out of range");
         return a->array[i];
     }
 
-    throw("Cannot index value of this type");
+    sl_throw("Cannot index value of this type");
     return sl_value_null();
 }
 
@@ -382,6 +382,6 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a)
         return a->dict.values[sl_vector_size(a->dict.values) - 1];
     }
 
-    throw("Cannot get member for type %s", sl_valuetypestr(a->type));
+    sl_throw("Cannot get member for type %s", sl_valuetypestr(a->type));
     return sl_value_null();
 }

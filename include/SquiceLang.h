@@ -365,7 +365,7 @@ void sl_ctx_addfn(sl_ctx_t *ctx, sl_binary_t *binary, char *name, int argc, int 
 void *sl_safe_alloc(int size);
 struct sl_value_s *sl_gc_alloc_value();
 struct sl_ctx_s *sl_gc_alloc_ctx();
-void sl_gc_collect(sl_ctx_t *ctx);
+void sl_gc_collect();
 void sl_gc_freeall();
 void sl_gc_trigger();
 
@@ -455,13 +455,13 @@ sl_node_t *sl_parse(sl_parser_t *parser);
 
 #include <setjmp.h>
 
-extern jmp_buf __ex_buf__;
-extern char ex_msg[256];
+extern jmp_buf __sl_ex_buf__;
+extern char sl_ex_msg[256];
 
-#define try if (!setjmp(__ex_buf__))
-#define catch else
+#define sl_try if (!setjmp(__sl_ex_buf__))
+#define sl_catch else
 
-void throw(char *msg, ...);
+void sl_throw(char *msg, ...);
 
 char *sl_mprintf(char *fmt, ...);
 
@@ -538,8 +538,8 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 sl_binary_t *sl_compile_str(char *code);
 sl_binary_t *sl_compile_file(char *filename);
 
-void sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
-void sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
-void sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
+int sl_eval_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
+int sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
+int sl_dis_str(sl_ctx_t *ctx, char *code, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx));
 
 #endif

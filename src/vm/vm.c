@@ -174,11 +174,11 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
     current = &context;
 
     jmp_buf old_try; // TODO: Add real recursive try support
-    memcpy(old_try, __ex_buf__, sizeof(__ex_buf__));
+    memcpy(old_try, __sl_ex_buf__, sizeof(__sl_ex_buf__));
 
     sl_vector_push(ctx_stack, global);
 
-    try
+    sl_try
     {
         while (1)
         {
@@ -219,7 +219,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_value_t *val = sl_ctx_getvar(context, name);
                 if (val == NULL)
                 {
-                    throw("No variable named '%s'", name);
+                    sl_throw("No variable named '%s'", name);
                 }
                 if (val->type == SL_VALUE_ARRAY || val->type == SL_VALUE_DICT || val->type == SL_VALUE_FN)
                     val = sl_value_ref(val);
@@ -247,7 +247,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 context->parent = parent;
                 if (val != NULL)
                 {
-                    throw("Variable redefinition '%s'", name);
+                    sl_throw("Variable redefinition '%s'", name);
                 }
                 sl_ctx_addvar(context, name, sl_vector_pop(global->stack));
                 break;
@@ -275,7 +275,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     fn_value = fn_value->ref;
                 if (fn_value->type != SL_VALUE_FN)
                 {
-                    throw("Can only call functions");
+                    sl_throw("Can only call functions");
                 }
                 sl_fn_t *fn = fn_value->fn;
                 sl_value_t *parent = NULL;
@@ -287,7 +287,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 
                 if ((int)(argc->number) < fn->argc)
                 {
-                    throw("To little arguments for function, expect %d got %d", fn->argc, (int)(argc->number));
+                    sl_throw("To little arguments for function, expect %d got %d", fn->argc, (int)(argc->number));
                 }
                 sl_vector_push(global->stack, argc);
                 if (fn->native != NULL)
@@ -385,12 +385,12 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 // eval module
                 char *name = getstr(opcodes, &ip);
                 if (load_module == NULL)
-                    throw("Module loading not supported");
+                    sl_throw("Module loading not supported");
 
                 // TODO: cache loaded module and it's context
                 sl_binary_t *module = load_module(name);
                 if (module == NULL)
-                    throw("Cannot find %s module", name);
+                    sl_throw("Cannot find %s module", name);
 
                 sl_ctx_t *module_ctx = sl_ctx_new(NULL);
                 module_ctx->parent = global;
@@ -423,7 +423,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             {
                 // pop adress from try stack
                 if (sl_vector_size(try_stack) == 0)
-                    throw("No try to end!");
+                    sl_throw("No try to end!");
 
                 sl_vector_pop(try_stack);
                 break;
@@ -438,7 +438,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     }
                     else
                     {
-                        throw("Exception not handled!");
+                        sl_throw("Exception not handled!");
                     }
                 }
                 else
@@ -465,10 +465,10 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             }
         }
     }
-    catch
+    sl_catch
     {
-        memcpy(__ex_buf__, old_try, sizeof(__ex_buf__));
-        char *msg = strdup(ex_msg);
+        memcpy(__sl_ex_buf__, old_try, sizeof(__sl_ex_buf__));
+        char *msg = strdup(sl_ex_msg);
 
         for (int i = 0; i < sl_vector_size(call_stack); i++)
         {
@@ -476,7 +476,7 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             printf("callstack: %zd\n", marker.line);
         }
         sl_marker_t marker = sl_getmarker(binary, oldip);
-        throw("%s at line %d", msg, marker.line);
+        sl_throw("%s at line %d", msg, marker.line);
         free(msg); // Will never be called :/
     }
 end:

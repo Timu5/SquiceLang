@@ -113,7 +113,7 @@ int sl_bytecode_fill(sl_binary_t *bin)
                 goto end;
             }
         }
-        throw("Symbol not found: %s\n", bin->fsymbols[i]);
+        sl_throw("Symbol not found: %s\n", bin->fsymbols[i]);
     end:
         1;
     }

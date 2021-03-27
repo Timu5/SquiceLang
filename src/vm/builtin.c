@@ -36,7 +36,7 @@ static void dict(sl_ctx_t *ctx)
 {
     int n = (int)sl_vector_pop(ctx->stack)->number;
     if (n != 0 && n != 2)
-        throw("Function dict() takes 0 or 2 arguments");
+        sl_throw("Function dict() takes 0 or 2 arguments");
 
     if (n == 0)
         sl_vector_push(ctx->stack, sl_value_dict(NULL, NULL));
@@ -45,13 +45,13 @@ static void dict(sl_ctx_t *ctx)
         sl_value_t *k = sl_vector_pop(ctx->stack);
         sl_value_t *v = sl_vector_pop(ctx->stack);
         if (v->type != SL_VALUE_ARRAY || k->type != SL_VALUE_ARRAY)
-            throw("Function dict takes arguments of type array");
+            sl_throw("Function dict takes arguments of type array");
         sl_vector(char *) keys = NULL;
         for (int i = 0; i < sl_vector_size(k->array); i++)
         {
             sl_value_t *key = sl_value_get(i, k);
             if (key->type != SL_VALUE_STRING)
-                throw("Key of dictionary must be a string");
+                sl_throw("Key of dictionary must be a string");
             sl_vector_push(keys, strdup(key->string));
         }
         sl_vector(sl_value_t *) values = NULL;
@@ -81,7 +81,7 @@ static void len(sl_ctx_t *ctx)
         return;
     }
 
-    throw("Function len() need argument of type string or array.");
+    sl_throw("Function len() need argument of type string or array.");
 }
 
 static void ord(sl_ctx_t *ctx)
@@ -97,7 +97,7 @@ static void ord(sl_ctx_t *ctx)
         return;
     }
 
-    throw("Function ord need argument of type string");
+    sl_throw("Function ord need argument of type string");
 }
 
 static void chr(sl_ctx_t *ctx)
@@ -112,7 +112,7 @@ static void chr(sl_ctx_t *ctx)
         return;
     }
 
-    throw("Function chr need argument of type number.");
+    sl_throw("Function chr need argument of type number.");
 }
 
 static void super(sl_ctx_t *ctx)
@@ -147,7 +147,7 @@ static void super(sl_ctx_t *ctx)
         return;
     }
 
-    throw("Function _super_ need arguments of type dict.");
+    sl_throw("Function _super_ need arguments of type dict.");
 }
 
 static void str(sl_ctx_t *ctx)

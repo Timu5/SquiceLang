@@ -8,7 +8,6 @@ sl_vector(sl_ctx_t *) ctxs;
 size_t maxmem = 128;
 size_t usedmem = 0;
 
-extern sl_ctx_t *global;
 extern sl_ctx_t **current;
 extern sl_vector(sl_ctx_t *) ctx_stack;
 
@@ -16,7 +15,7 @@ void *sl_safe_alloc(int size)
 {
     void *data = malloc(size);
     if (!data)
-        throw("Cannot alloc memory!");
+        sl_throw("Cannot alloc memory!");
     return data;
 }
 
@@ -32,7 +31,7 @@ void sl_gc_trigger()
 {
     if (usedmem >= maxmem)
     {
-        sl_gc_collect(global);
+        sl_gc_collect();
         usedmem = sl_vector_size(values);
         if (usedmem >= maxmem)
             maxmem = maxmem * 2;
@@ -101,7 +100,7 @@ static void gc_mark(sl_value_t *val)
     }
 }
 
-void sl_gc_collect(sl_ctx_t *ctx)
+void sl_gc_collect()
 {
     for (size_t i = 0; i < sl_vector_size(ctx_stack); i++)
     {

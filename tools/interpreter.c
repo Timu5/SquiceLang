@@ -5,7 +5,6 @@
 #include "main.c"
 
 char input_buffer[255];
-sl_ctx_t *global;
 
 int balanced()
 {
@@ -17,12 +16,24 @@ int balanced()
     {
         switch (input_buffer[i])
         {
-            case '(': par++; break;
-            case ')': par--; break;
-            case '[': squ++; break;
-            case ']': squ--; break;
-            case '{': bra++; break;
-            case '}': bra--; break;
+        case '(':
+            par++;
+            break;
+        case ')':
+            par--;
+            break;
+        case '[':
+            squ++;
+            break;
+        case ']':
+            squ--;
+            break;
+        case '{':
+            bra++;
+            break;
+        case '}':
+            bra--;
+            break;
         }
         i++;
     }
@@ -44,10 +55,10 @@ void getstring()
 sl_binary_t *load_module(char *name)
 {
     FILE *fd;
-    char fullname[255] = { 0 };
+    char fullname[255] = {0};
     strcpy(fullname, name);
     strcat(fullname, ".sqlang");
-    if((fd = fopen(fullname, "r")) != NULL)
+    if ((fd = fopen(fullname, "r")) != NULL)
     {
         fclose(fd);
         return sl_compile_file(fullname);
@@ -59,17 +70,12 @@ int main(int argc, char **argv)
 {
     sl_ctx_t *ctx = sl_ctx_new(NULL);
     sl_builtin_install(ctx);
-    global = ctx;
 
     while (1)
     {
-        try
-        {
-            getstring();
-            sl_dis_str(ctx, input_buffer, load_module, NULL);
-            sl_eval_str(ctx, input_buffer, load_module, NULL);
-        }
-        catch
+        getstring();
+        sl_dis_str(ctx, input_buffer, load_module, NULL);
+        if (!sl_eval_file(ctx, input_buffer, load_module, NULL))
         {
             puts(ex_msg);
         }

@@ -174,7 +174,7 @@ void sl_codegen_loop(sl_node_t *node, sl_binary_t *binary)
 void sl_codegen_break(sl_node_t *node, sl_binary_t *binary)
 {
     if (binary->loop < 0)
-        throw("No loop to break from at line %d column %d",
+        sl_throw("No loop to break from at line %d column %d",
               node->marker.line,
               node->marker.column);
 

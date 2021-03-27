@@ -5,17 +5,17 @@
 
 #include "SquiceLang.h"
 
-jmp_buf __ex_buf__;
-char ex_msg[256];
+jmp_buf __sl_ex_buf__;
+char sl_ex_msg[256];
 
-void throw(char *msg, ...)
+void sl_throw(char *msg, ...)
 {
     va_list args;
     va_start(args, msg);
-    vsnprintf(ex_msg, 256, msg, args);
+    vsnprintf(sl_ex_msg, 256, msg, args);
     va_end(args);
 
-    longjmp(__ex_buf__, 1);
+    longjmp(__sl_ex_buf__, 1);
 }
 
 char *sl_mprintf(char *fmt, ...)
