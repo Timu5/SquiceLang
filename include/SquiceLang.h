@@ -214,7 +214,7 @@ struct sl_fn_s
     int argc;
     struct sl_binary_s *binary; /* binary with function code */
     struct sl_ctx_s *ctx;
-    void (*native)(struct sl_ctx_s *); // call if not NULL
+    void (*native)(int, struct sl_ctx_s *); // call if not NULL
 };
 
 typedef struct sl_fn_s sl_fn_t;
@@ -358,7 +358,7 @@ void sl_ctx_free(sl_ctx_t *ctx);
 struct sl_value_s *sl_ctx_getvar(sl_ctx_t *ctx, char *name);
 void sl_ctx_addvar(sl_ctx_t *ctx, char *name, struct sl_value_s *val);
 sl_fn_t *sl_ctx_getfn(sl_ctx_t *ctx, char *name);
-void sl_ctx_addfn(sl_ctx_t *ctx, sl_binary_t *binary, char *name, int argc, int address, void (*fn)(sl_ctx_t *));
+void sl_ctx_addfn(sl_ctx_t *ctx, sl_binary_t *binary, char *name, int argc, int address, void (*fn)(int, sl_ctx_t *));
 
 #define SL_ALLOC(type) (type *)sl_safe_alloc(sizeof(type))
 

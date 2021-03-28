@@ -56,7 +56,10 @@ sl_binary_t *sl_compile_file(char *filename)
 {
     FILE *fd = fopen(filename, "r");
     if (!fd)
-        sl_throw("Cannot open file %s", filename);
+    {
+        sprintf(sl_ex_msg, "Cannor open file %s", filename);
+        return NULL;
+    }
 
     fseek(fd, 0, SEEK_END);
     long fsize = ftell(fd);
@@ -80,6 +83,7 @@ int sl_eval_file(sl_ctx_t *ctx, char *filename, sl_binary_t *(*load_module)(char
     sl_binary_t *bin = sl_compile_file(filename);
     if (!bin)
         return 0;
+
     sl_try
     {
         sl_exec(ctx, ctx, bin, 0, load_module, trap);

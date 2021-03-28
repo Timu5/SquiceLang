@@ -2,11 +2,10 @@
 
 #include "SquiceLang.h"
 
-static void print(sl_ctx_t *ctx)
+static void print(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     int end = (int)sl_vector_size(ctx->stack);
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < argc; i++)
     {
         sl_value_t *v = sl_vector_pop(ctx->stack);
         if (v->type == SL_VALUE_NUMBER)
@@ -19,26 +18,24 @@ static void print(sl_ctx_t *ctx)
     sl_vector_push(ctx->stack, sl_value_null());
 }
 
-static void list(sl_ctx_t *ctx)
+static void list(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_vector(sl_value_t *) arr = NULL;
-    for (int i = (int)sl_vector_size(ctx->stack) - 1; i >= (int)sl_vector_size(ctx->stack) - n; i--)
+    for (int i = (int)sl_vector_size(ctx->stack) - 1; i >= (int)sl_vector_size(ctx->stack) - argc; i--)
     {
         sl_vector_push(arr, ctx->stack[i]);
     }
-    sl_vector_shrinkby(ctx->stack, n);
+    sl_vector_shrinkby(ctx->stack, argc);
 
     sl_vector_push(ctx->stack, sl_value_array(arr));
 }
 
-static void dict(sl_ctx_t *ctx)
+static void dict(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
-    if (n != 0 && n != 2)
+    if (argc != 0 && argc != 2)
         sl_throw("Function dict() takes 0 or 2 arguments");
 
-    if (n == 0)
+    if (argc == 0)
         sl_vector_push(ctx->stack, sl_value_dict(NULL, NULL));
     else
     {
@@ -47,7 +44,7 @@ static void dict(sl_ctx_t *ctx)
         if (v->type != SL_VALUE_ARRAY || k->type != SL_VALUE_ARRAY)
             sl_throw("Function dict takes arguments of type array");
         sl_vector(char *) keys = NULL;
-        for (int i = 0; i < sl_vector_size(k->array); i++)
+        for (size_t i = 0; i < sl_vector_size(k->array); i++)
         {
             sl_value_t *key = sl_value_get(i, k);
             if (key->type != SL_VALUE_STRING)
@@ -55,7 +52,7 @@ static void dict(sl_ctx_t *ctx)
             sl_vector_push(keys, strdup(key->string));
         }
         sl_vector(sl_value_t *) values = NULL;
-        for (int i = 0; i < sl_vector_size(v->array); i++)
+        for (size_t i = 0; i < sl_vector_size(v->array); i++)
         {
             sl_vector_push(values, sl_value_get(i, v));
         }
@@ -64,9 +61,8 @@ static void dict(sl_ctx_t *ctx)
     }
 }
 
-static void len(sl_ctx_t *ctx)
+static void len(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *v = sl_vector_pop(ctx->stack);
     while (v->type == SL_VALUE_REF)
         v = v->ref;
@@ -84,9 +80,8 @@ static void len(sl_ctx_t *ctx)
     sl_throw("Function len() need argument of type string or array.");
 }
 
-static void ord(sl_ctx_t *ctx)
+static void ord(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *v = sl_vector_pop(ctx->stack);
     while (v->type == SL_VALUE_REF)
         v = v->ref;
@@ -100,9 +95,8 @@ static void ord(sl_ctx_t *ctx)
     sl_throw("Function ord need argument of type string");
 }
 
-static void chr(sl_ctx_t *ctx)
+static void chr(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_NUMBER)
     {
@@ -115,9 +109,8 @@ static void chr(sl_ctx_t *ctx)
     sl_throw("Function chr need argument of type number.");
 }
 
-static void super(sl_ctx_t *ctx)
+static void super(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *a = sl_vector_pop(ctx->stack);
     sl_value_t *b = sl_vector_pop(ctx->stack);
     while (a->type == SL_VALUE_REF)
@@ -128,10 +121,10 @@ static void super(sl_ctx_t *ctx)
 
     if (a->type == SL_VALUE_DICT && b->type == SL_VALUE_DICT)
     {
-        for (int i = 0; i < sl_vector_size(b->dict.names); i++)
+        for (size_t i = 0; i < sl_vector_size(b->dict.names); i++)
         {
             int flag = 0;
-            for (int j = 0; j < sl_vector_size(a->dict.names); j++)
+            for (size_t j = 0; j < sl_vector_size(a->dict.names); j++)
             {
                 if (strcmp(a->dict.names[j], b->dict.names[i]) == 0)
                 {
@@ -150,9 +143,8 @@ static void super(sl_ctx_t *ctx)
     sl_throw("Function _super_ need arguments of type dict.");
 }
 
-static void str(sl_ctx_t *ctx)
+static void str(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *v = sl_vector_pop(ctx->stack);
     if (v->type == SL_VALUE_STRING)
     {
@@ -169,17 +161,15 @@ static void str(sl_ctx_t *ctx)
     sl_vector_push(ctx->stack, sl_value_string(str));
 }
 
-static void isnull(sl_ctx_t *ctx)
+static void isnull(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     sl_value_t *val = sl_vector_pop(ctx->stack);
     sl_vector_push(ctx->stack, sl_value_number(val->type == SL_VALUE_NULL));
 }
 
-static void input(sl_ctx_t *ctx)
+static void input(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
-    if (n > 0)
+    if (argc > 0)
     {
         sl_value_t *v = sl_vector_pop(ctx->stack);
         printf("%s", v->string);

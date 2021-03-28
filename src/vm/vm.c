@@ -289,13 +289,14 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 {
                     sl_throw("To little arguments for function, expect %d got %d", fn->argc, (int)(argc->number));
                 }
-                sl_vector_push(global->stack, argc);
+                
                 if (fn->native != NULL)
                 {
-                    fn->native(global);
+                    fn->native((int)(argc->number), global);
                 }
                 else
                 {
+                    sl_vector_push(global->stack, argc);
                     sl_binary_t *fn_binary = fn->binary;
                     if (binary == fn_binary)
                     {

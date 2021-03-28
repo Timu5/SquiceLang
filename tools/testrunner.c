@@ -27,9 +27,8 @@ char *tests[] = {
     "tests/test12_multiassign.sqlang",
     "tests/test13_scope.sqlang"};
 
-static void assertfn(sl_ctx_t *ctx)
+static void assertfn(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     int b = (int)sl_vector_pop(ctx->stack)->number;
     if (!b)
     {
@@ -43,38 +42,41 @@ sl_binary_t *load_module(char *name)
 {
     FILE *fd;
     char fullname[255] = {0};
+    sl_binary_t *module;
     strcpy(fullname, "../../tests/");
     strcat(fullname, name);
     strcat(fullname, ".sqlang");
     if ((fd = fopen(fullname, "r")) != NULL)
     {
         fclose(fd);
-        sl_binary_t *module = sl_compile_file(fullname);
+        module = sl_compile_file(fullname);
         sl_vector_push(modules, module);
         return module;
     }
     return NULL;
 }
 
-static void stop(sl_ctx_t *ctx)
+static void stop(int argc, sl_ctx_t *ctx)
 {
-    int n = (int)sl_vector_pop(ctx->stack)->number;
     printf("stop\n");
 }
 
-static void ptr(sl_ctx_t *ctx)
+static void ptr(int argc, sl_ctx_t *ctx)
 {
+    (void)argc;
+    (void)ctx;
 }
 
 int main(void)
 {
-    for (int i = 0; i < sizeof(tests) / sizeof(char *); i++)
+
+    for (size_t i = 0; i < sizeof(tests) / sizeof(char *); i++)
     {
         printf("Running %s: ", tests[i]);
 
         sl_ctx_t *ctx = sl_ctx_new(NULL);
         sl_builtin_install(ctx);
-        
+
         sl_ctx_addfn(ctx, NULL, strdup("assert"), 1, 0, assertfn);
         sl_ctx_addfn(ctx, NULL, strdup("stop"), 0, 0, stop);
         sl_ctx_addfn(ctx, NULL, strdup("ptr"), 1, 0, ptr);
@@ -82,7 +84,6 @@ int main(void)
         char fullname[255] = {0};
         strcpy(fullname, "./");
         strcat(fullname, tests[i]);
-        //strcat(fullname, ".sqlang");
 
         if (sl_eval_file(ctx, fullname, load_module, NULL))
         {
@@ -94,10 +95,10 @@ int main(void)
         }
 
         sl_gc_freeall();
-        //sl_ctx_free(ctx);
-        for (int i = 0; i < sl_vector_size(modules); i++)
+
+        for (size_t j = 0; j < sl_vector_size(modules); j++)
         {
-            sl_binary_free(modules[i]);
+            sl_binary_free(modules[j]);
         }
         sl_vector_free(modules);
     }
