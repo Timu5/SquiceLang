@@ -117,7 +117,7 @@ void sl_value_free_members(sl_value_t *val)
     }
     else if (val->type == SL_VALUE_DICT)
     {
-        for (int i = 0; i < sl_vector_size(val->dict.names); i++)
+        for (size_t i = 0; i < sl_vector_size(val->dict.names); i++)
             free(val->dict.names[i]);
         sl_vector_free(val->dict.names);
         sl_vector_free(val->dict.values);
@@ -331,6 +331,10 @@ sl_value_t *sl_value_binary(int op, sl_value_t *a, sl_value_t *b)
         return binary_string(op, a, b);
     case SL_VALUE_DICT:
         return binary_dict(op, a, b);
+    case SL_VALUE_TUPLE:
+    case SL_VALUE_FN:
+    case SL_VALUE_NATIVE:
+        break;
     }
     sl_throw("Unkown value type");
     return sl_value_null();
@@ -370,7 +374,7 @@ sl_value_t *sl_value_member(char *name, sl_value_t *a)
 
     if (a->type == SL_VALUE_DICT)
     {
-        for (int i = 0; i < sl_vector_size(a->dict.names); i++)
+        for (size_t i = 0; i < sl_vector_size(a->dict.names); i++)
         {
             if (strcmp(a->dict.names[i], name) == 0)
                 return a->dict.values[i];

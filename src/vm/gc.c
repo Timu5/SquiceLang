@@ -54,11 +54,11 @@ static void gc_markctx(sl_ctx_t *c)
         if (c->markbit != 1)
         {
             c->markbit = 1;
-            for (int i = 0; i < sl_vector_size(c->vars); i++)
+            for (size_t i = 0; i < sl_vector_size(c->vars); i++)
             {
                 gc_mark(c->vars[i]->val);
             }
-            for (int i = 0; i < sl_vector_size(c->stack); i++)
+            for (size_t i = 0; i < sl_vector_size(c->stack); i++)
             {
                 gc_mark(c->stack[i]);
             }
@@ -147,12 +147,12 @@ void sl_gc_collect()
 
 void sl_gc_freeall()
 {
-    for (int i = 0; i < sl_vector_size(ctxs); i++)
+    for (size_t i = 0; i < sl_vector_size(ctxs); i++)
     {
         sl_ctx_free(ctxs[i]);
     }
     sl_vector_free(ctxs);
-    for (int i = 0; i < sl_vector_size(values); i++)
+    for (size_t i = 0; i < sl_vector_size(values); i++)
     {
         sl_value_free(values[i]);
     }

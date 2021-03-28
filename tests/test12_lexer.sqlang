@@ -1,0 +1,5 @@
+class a {fn a(test) {this.b = 123;}}
+
+class c{fn c(){this.e = a(1);this.f = this.e.b;}}
+
+let cc = c();

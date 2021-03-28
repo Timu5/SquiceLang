@@ -4,3 +4,10 @@ assert(l[0] == 1);
 assert(l[1] == 2);
 assert(l[2] == 3);
 assert(l[3] == 4);
+
+let test = {};
+test.l = 1234;
+let test2 = test.l;
+assert(test2 == 1234);
+test.l = 0;
+assert(test2 == 1234);

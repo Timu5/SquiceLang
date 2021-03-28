@@ -380,7 +380,7 @@ sl_node_t *node_throw(sl_marker_t marker, sl_node_t *expr)
 
 static void printescape(char *str)
 {
-    while (*str != NULL)
+    while (*str != '\0')
     {
         if (*str == '\n')
             printf("\\n");
