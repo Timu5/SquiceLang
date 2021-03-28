@@ -21,6 +21,33 @@ Code consist of two parts: compiler and virtual machine. Compiler is parsing inp
 - String interpolation
 - Modules import
 
+## Getting started
+
+1. Download SquiceLang header distribution from [here](https://github.com/Timu5/SquiceLang/releases)
+2. Copy it to project directory
+3. Create main.c
+
+```c
+
+#include <stdio.h>
+
+#define SL_IMPLEMENTATION
+#include "SquiceLang.h"
+
+int main(int argc, char **argv)
+{
+    sl_ctx_t *ctx = sl_ctx_new(NULL);
+    sl_builtin_install(ctx);
+
+    if (!sl_eval_str(ctx, "print(\"Hello World!\");", NULL, NULL))
+    {
+        puts(sl_ex_msg);
+    }
+
+    return 0;
+}
+```
+
 ## Example
 
 ```javascript
