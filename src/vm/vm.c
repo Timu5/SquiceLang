@@ -145,6 +145,7 @@ struct callptr
     size_t sp;
     sl_ctx_t *ctx;
     size_t ctx_size;
+    sl_binary_t *bin;
 };
 
 typedef struct callptr callptr_t;
@@ -162,12 +163,28 @@ sl_marker_t sl_getmarker(sl_binary_t *binary, size_t ip)
 sl_vector(sl_ctx_t *) ctx_stack = NULL;
 sl_ctx_t **current = NULL;
 
+void print_vars(sl_ctx_t *ctx)
+{
+    if(ctx == NULL) return;
+    putchar('(');
+    for(int i =0; i < sl_vector_size(ctx->vars); i++)
+    {
+        printf("%s, ", ctx->vars[i]->name);
+    }
+    print_vars(ctx->parent);
+    putchar(')');
+
+}
+
 void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
-    char *opcodes = binary->block;
-    int size = binary->size;
     sl_vector(callptr_t) call_stack = NULL;
     sl_vector(tryptr_t) try_stack = NULL;
+
+
+    sl_vector(sl_ctx_t *)  old_ctx_stack = ctx_stack;
+    sl_ctx_t **old_current = current;
+
     ctx_stack = NULL;
     int oldip = 0;
 
@@ -178,13 +195,15 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 
     sl_vector_push(ctx_stack, global);
 
+    #define opcodes binary->block
+
     sl_try
     {
         while (1)
         {
-            if (ip >= size)
+            if (ip >= binary->size)
                 break;
-            int byte = opcodes[ip];
+            int byte = binary->block[ip];
             oldip = ip;
             ip += 1;
 
@@ -298,10 +317,11 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 {
                     sl_vector_push(global->stack, argc);
                     sl_binary_t *fn_binary = fn->binary;
+                    size_t sp = sl_vector_size(global->stack) - 1 - (int)(argc->number);
                     if (binary == fn_binary)
                     {
                         // same module :)
-                        sl_vector_push(call_stack, ((callptr_t){ip, sl_vector_size(global->stack) - 1 - (int)(argc->number), context, sl_vector_size(ctx_stack)}));
+                        sl_vector_push(call_stack, ((callptr_t){ip, sp, context, sl_vector_size(ctx_stack), binary}));
                         sl_vector_push(ctx_stack, context);
                         context = sl_ctx_new(NULL);
                         context->parent = global;
@@ -315,15 +335,18 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     else
                     {
                         // diffrent module :(
-                        sl_ctx_t *n_context = sl_ctx_new(fn->ctx);
+                        // TODO: Fix try .. catch on external modules
+                        sl_vector_push(call_stack, ((callptr_t){ip, sp, context, sl_vector_size(ctx_stack), binary}));
+                        sl_vector_push(ctx_stack, context);
+                        context = sl_ctx_new(NULL);
+                        context->parent = fn->ctx;
+
                         if (byte == SL_OPCODE_CALLM)
                         {
-                            sl_ctx_addvar(n_context, strdup("this"), parent); // add "this" variable
+                            sl_ctx_addvar(context, strdup("this"), parent); // add "this" variable
                         }
-                        sl_exec(global, n_context, fn->binary, fn->address, load_module, trap);
-                        // what with return value ???? :(
-                        // TODO: Fix try .. catch on external modules
-                        // TODO: Remove sl_exec, maybe link libraries together into single memory space???
+                        binary = fn_binary;
+                        ip = fn->address;
                     }
                 }
             }
@@ -341,8 +364,8 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 sl_vector_shrinkto(global->stack, cp.sp);
                 sl_vector_shrinkto(ctx_stack, cp.ctx_size);
                 sl_vector_push(global->stack, val);
-                int ret_adr = cp.addr;
-                ip = ret_adr;
+                binary = cp.bin;
+                ip = cp.addr;
                 context->parent = NULL;
                 context = cp.ctx;
                 break;
@@ -484,4 +507,10 @@ end:
     sl_vector_free(call_stack);
     sl_vector_free(try_stack);
     sl_vector_free(ctx_stack);
+    
+    ctx_stack = old_ctx_stack;
+    current = old_current;
+
+    #undef opcodes
+
 }
