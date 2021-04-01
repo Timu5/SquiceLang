@@ -178,8 +178,6 @@ void print_vars(sl_ctx_t *ctx)
 
 void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, sl_binary_t *(*load_module)(char *name), void *(trap)(sl_ctx_t *ctx))
 {
-    char *opcodes = binary->block;
-    int size = binary->size;
     sl_vector(callptr_t) call_stack = NULL;
     sl_vector(tryptr_t) try_stack = NULL;
 
@@ -197,13 +195,15 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
 
     sl_vector_push(ctx_stack, global);
 
+    #define opcodes binary->block
+
     sl_try
     {
         while (1)
         {
-            if (ip >= size)
+            if (ip >= binary->size)
                 break;
-            int byte = opcodes[ip];
+            int byte = binary->block[ip];
             oldip = ip;
             ip += 1;
 
@@ -215,10 +215,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 byte &= ~SL_OPCODE_TRAP_MASK;
             }
 #endif
-        printf("<trap> %x", context);
-        print_vars(context);
-        printf("\n");
-        getchar();
 
             switch (byte)
             {
@@ -338,7 +334,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                     }
                     else
                     {
-                        printf("call");
                         // diffrent module :(
                         // TODO: Fix try .. catch on external modules
                         sl_vector_push(call_stack, ((callptr_t){ip, sp, context, sl_vector_size(ctx_stack), binary}));
@@ -359,7 +354,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
             case SL_OPCODE_RETN:
                 sl_vector_push(global->stack, sl_value_null());
             case SL_OPCODE_RET:
-                printf("hle?");
                 if (sl_vector_size(call_stack) == 0)
                 {
                     // nothing to return
@@ -373,7 +367,6 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 binary = cp.bin;
                 ip = cp.addr;
                 context->parent = NULL;
-                printf("%x %x\n", context, cp.ctx);
                 context = cp.ctx;
                 break;
             case SL_OPCODE_JMP:
@@ -486,12 +479,10 @@ void sl_exec(sl_ctx_t *global, sl_ctx_t *context, sl_binary_t *binary, int ip, s
                 break;
             }
             case SL_OPCODE_SCOPE:
-            printf("scope\n");
                 sl_vector_push(ctx_stack, context);
                 context = sl_ctx_new(context);
                 break;
             case SL_OPCODE_ENDSCOPE:
-             printf("ensdcope\n");
                 context->parent = NULL;
                 context = sl_vector_pop(ctx_stack);
                 break;
@@ -519,5 +510,7 @@ end:
     
     ctx_stack = old_ctx_stack;
     current = old_current;
+
+    #undef opcodes
 
 }
